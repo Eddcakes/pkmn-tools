@@ -1,0 +1,15 @@
+Pokemon TCG list cleaner
+
+# Why
+
+When people post their exports they often have different rarities of the same card which is a little hard to read and organise
+
+# goals
+
+[] - read different formats of lists: limitlesstcg.com/ and poke tcg app at the least
+[] - output a cleaned list with only one of each card, ideally the lowest rarity, need to find an api that has "versions", or do I have to create my own database of legal cards?
+[x] - we should keep the count of cards
+[x] - unique card should be by name and set
+[x] - we should be able to compare multiple lists and see what is different
+[no longer needed] - maybe be able to click over a list to be the main to compare against?
+[] - I should be able to save the deck lists in local storage

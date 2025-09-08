@@ -1,0 +1,35 @@
+Pokémon: 12
+1 Miraidon ex SVI 81
+1 Iron Hands ex PAR 223
+3 Gholdengo ex PAR 252
+2 Gimmighoul PAR 88
+1 Gholdengo ex PAR 231
+1 Gimmighoul SSP 97
+1 Genesect ex BLK 169
+1 Fezandipiti ex SFA 38
+1 Pikachu ex SSP 57
+1 Iron Bundle PAR 56
+2 Joltik SCR 50
+1 Gimmighoul PAR 87
+
+Trainer: 13
+3 Earthen Vessel PAR 163
+3 Buddy-Buddy Poffin TEF 144
+1 Ciphermaniac's Codebreaking TEF 145
+1 Night Stretcher SSP 251
+3 Air Balloon BLK 79
+1 Professor Turo's Scenario PAR 171
+4 Superior Energy Retrieval PAL 189
+3 Pokégear 3.0 SVI 186
+1 Prime Catcher TEF 157
+2 Levincia JTG 150
+4 Nest Ball SVI 181
+4 Arven SVI 166
+3 Boss's Orders BRS 132
+
+Energy: 3
+4 Basic {G} Energy SVE 1
+4 Basic {L} Energy SVE 4
+3 Basic {M} Energy SVE 8
+
+Total Cards: 60
