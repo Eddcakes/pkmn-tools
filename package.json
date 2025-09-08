@@ -10,15 +10,17 @@
     "format": "biome format --write"
   },
   "dependencies": {
+    "@adobe/react-spectrum": "^3.44.1",
+    "glob": "^11.0.3",
+    "next": "15.5.2",
     "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "next": "15.5.2"
+    "react-dom": "19.1.0"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@biomejs/biome": "2.2.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@biomejs/biome": "2.2.0"
+    "typescript": "^5"
   }
 }
