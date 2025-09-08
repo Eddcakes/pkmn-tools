@@ -1,15 +1,5 @@
 "use client";
 
-import {
-  ActionButton,
-  Button,
-  Flex,
-  Form,
-  Heading,
-  TextArea,
-  TextField,
-  View,
-} from "@adobe/react-spectrum";
 import { useState } from "react";
 
 const MAX_DECKS = 6;
@@ -158,42 +148,62 @@ export default function ComparisonPage() {
   };
 
   return (
-    <View padding="size-400">
-      <Heading level={1} marginBottom="size-400">
+    <div className="p-8 max-w-7xl mx-auto">
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">
         Pokémon Deck Comparison
-      </Heading>
+      </h1>
 
-      <Flex direction="column" gap="size-400">
+      <div className="flex flex-col gap-8">
         {/* Deck Input Section */}
-        <View>
-          <Flex direction="row" gap="size-200" marginBottom="size-300" wrap>
-            <Button variant="primary" onPress={updateComparison}>
+        <div>
+          <div className="flex flex-row gap-4 mb-6 flex-wrap">
+            <button
+              onClick={updateComparison}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+            >
               Update Comparison
-            </Button>
-            <ActionButton
-              onPress={addDeck}
-              isDisabled={decks.length >= MAX_DECKS}
+            </button>
+            <button
+              onClick={addDeck}
+              disabled={decks.length >= MAX_DECKS}
+              className="bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg transition-colors"
             >
               Add Deck ({decks.length}/{MAX_DECKS})
-            </ActionButton>
-          </Flex>
+            </button>
+          </div>
 
-          <Flex direction="row" gap="size-300" wrap>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {decks.map((deck) => (
-              <View key={deck.id} minWidth="size-3600">
-                <Form>
-                  <TextField
-                    label="Deck Label"
-                    value={deck.label}
-                    onChange={(value) => updateDeck(deck.id, "label", value)}
-                    marginBottom="size-200"
-                  />
-                  <TextArea
-                    label="Deck List"
-                    value={deck.deckList}
-                    onChange={(value) => updateDeck(deck.id, "deckList", value)}
-                    height="size-3000"
-                    placeholder={`Paste your deck list here...
+              <div
+                key={deck.id}
+                className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm"
+              >
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Deck Label
+                    </label>
+                    <input
+                      type="text"
+                      value={deck.label}
+                      onChange={(e) =>
+                        updateDeck(deck.id, "label", e.target.value)
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Deck List
+                    </label>
+                    <textarea
+                      value={deck.deckList}
+                      onChange={(e) =>
+                        updateDeck(deck.id, "deckList", e.target.value)
+                      }
+                      rows={12}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                      placeholder={`Paste your deck list here...
 
 Example format:
 Pokémon: 16
@@ -207,114 +217,72 @@ Trainer: 33
 
 Energy: 11
 7 Psychic Energy SVE 13`}
-                  />
-                </Form>
+                    />
+                  </div>
+                </div>
                 {decks.length > 1 && (
-                  <ActionButton
-                    onPress={() => removeDeck(deck.id)}
-                    marginTop="size-200"
+                  <button
+                    onClick={() => removeDeck(deck.id)}
+                    className="mt-4 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
                   >
                     Remove Deck
-                  </ActionButton>
+                  </button>
                 )}
-              </View>
+              </div>
             ))}
-          </Flex>
-        </View>
+          </div>
+        </div>
 
         {/* Comparison Table */}
         {comparisonData.length > 0 && (
-          <View>
-            <Heading level={2} marginBottom="size-300">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
               Card Comparison
-            </Heading>
-            <View
-              borderWidth="thin"
-              borderColor="default"
-              borderRadius="medium"
-              overflow="auto"
-            >
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  fontSize: "14px",
-                }}
-              >
-                <thead>
-                  <tr
-                    style={{
-                      backgroundColor: "var(--spectrum-global-color-gray-100)",
-                    }}
-                  >
-                    <th
-                      style={{
-                        padding: "12px 16px",
-                        textAlign: "left",
-                        borderBottom:
-                          "1px solid var(--spectrum-global-color-gray-300)",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      Card Name
-                    </th>
-                    {decks.map((deck) => (
-                      <th
-                        key={deck.id}
-                        style={{
-                          padding: "12px 16px",
-                          textAlign: "center",
-                          borderBottom:
-                            "1px solid var(--spectrum-global-color-gray-300)",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        {deck.label}
+            </h2>
+            <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                        Card Name
                       </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {comparisonData.map((item, index) => (
-                    <tr
-                      key={item.cardId}
-                      style={{
-                        backgroundColor:
-                          index % 2 === 0
-                            ? "transparent"
-                            : "var(--spectrum-global-color-gray-50)",
-                      }}
-                    >
-                      <td
-                        style={{
-                          padding: "12px 16px",
-                          borderBottom:
-                            "1px solid var(--spectrum-global-color-gray-200)",
-                        }}
-                      >
-                        {item.displayName}
-                      </td>
                       {decks.map((deck) => (
-                        <td
+                        <th
                           key={deck.id}
-                          style={{
-                            padding: "12px 16px",
-                            textAlign: "center",
-                            borderBottom:
-                              "1px solid var(--spectrum-global-color-gray-200)",
-                          }}
+                          className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200"
                         >
-                          {item.counts[deck.id] || ""}
-                        </td>
+                          {deck.label}
+                        </th>
                       ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </View>
-          </View>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {comparisonData.map((item, index) => (
+                      <tr
+                        key={item.cardId}
+                        className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                      >
+                        <td className="px-6 py-4 text-sm text-gray-900 border-b border-gray-200">
+                          {item.displayName}
+                        </td>
+                        {decks.map((deck) => (
+                          <td
+                            key={deck.id}
+                            className="px-6 py-4 text-sm text-gray-900 text-center border-b border-gray-200"
+                          >
+                            {item.counts[deck.id] || ""}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         )}
-      </Flex>
-    </View>
+      </div>
+    </div>
   );
 }

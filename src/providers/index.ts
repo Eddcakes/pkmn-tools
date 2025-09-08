@@ -1,1 +1,0 @@
-export { SpectrumProvider } from "./Spectrum";

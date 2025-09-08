@@ -11,7 +11,6 @@ description: A prompt file for initialising a new page in a React and TypeScript
 - Use markdown formatting for code snippets and lists.
 - When providing code examples, ensure they are relevant to the context of the repository.
 - When writing comments use gb english spelling.
-- Prioritise using React Spectrum components when applicable.
 - If you encounter a task that requires external information, ask for clarification or additional details.
 
 # Task
