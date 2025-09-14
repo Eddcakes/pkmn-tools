@@ -10,9 +10,9 @@ When people post their exports they often have different rarities of the same ca
 [] - convert to a common format (prefer limitlesstcg format?)
 [] - output a cleaned list with only one of each card, ideally the lowest rarity, need to find an api that has "versions", or do I have to create my own database of legal cards?
 [] - Create a better nav - do we want a common header nav, or do we want to use breadcrumbs?
-[] - add a colours to the comparison, red for lower than average count green for higher, no background for average
-[] - hide cards that are the same in all lists by
-[] - add toggles for table settings (colour map and hiding same cards)
+[x] - add a colours to the comparison, red for lower than average count green for higher, no background for average
+[x] - hide cards that are the same in all lists by
+[x] - add toggles for table settings (colour map and hiding same cards)
 [] - Should I try to cache card tooltip images or will the browser do it for us
 
 [-] - we should keep the count of cards
