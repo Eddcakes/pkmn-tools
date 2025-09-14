@@ -1,6 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { Button } from "../../components/Button";
+import { LoadDeckModal } from "../../components/LoadDeckModal";
+import { SaveDeckModal } from "../../components/SaveDeckModal";
+import { CardPreview } from "../../components/CardPreview";
+import type { SavedDeck } from "../../utils/savedDecks";
 
 const MAX_DECKS = 6;
 
@@ -116,6 +122,9 @@ export default function ComparisonPage() {
     { id: "1", label: "Deck 1", deckList: "" },
   ]);
   const [comparisonData, setComparisonData] = useState<ComparisonCard[]>([]);
+  const [loadModalOpen, setLoadModalOpen] = useState(false);
+  const [saveModalOpen, setSaveModalOpen] = useState(false);
+  const [activeDeckId, setActiveDeckId] = useState<string | null>(null);
 
   const addDeck = () => {
     if (decks.length < MAX_DECKS) {
@@ -147,29 +156,54 @@ export default function ComparisonPage() {
     setComparisonData(data);
   };
 
+  const handleLoadDeck = (savedDeck: SavedDeck) => {
+    if (activeDeckId) {
+      updateDeck(activeDeckId, "label", savedDeck.label);
+      updateDeck(activeDeckId, "deckList", savedDeck.deckList);
+    }
+  };
+
+  const handleSaveDeck = (deckId: string) => {
+    const deck = decks.find((d) => d.id === deckId);
+    if (deck) {
+      setActiveDeckId(deckId);
+      setSaveModalOpen(true);
+    }
+  };
+
+  const handleLoadDeckClick = (deckId: string) => {
+    setActiveDeckId(deckId);
+    setLoadModalOpen(true);
+  };
+
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">
-        Pokémon Deck Comparison
-      </h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">
+          Pokémon Deck Comparison
+        </h1>
+        <div className="flex gap-4">
+          <Link href="/">
+            <Button variant="secondary">Home</Button>
+          </Link>
+          <Link href="/saved-decks">
+            <Button variant="secondary">Saved Decks</Button>
+          </Link>
+        </div>
+      </div>
 
       <div className="flex flex-col gap-8">
         {/* Deck Input Section */}
         <div>
           <div className="flex flex-row gap-4 mb-6 flex-wrap">
-            <button
-              onClick={updateComparison}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-            >
-              Update Comparison
-            </button>
-            <button
+            <Button onClick={updateComparison}>Update Comparison</Button>
+            <Button
               onClick={addDeck}
               disabled={decks.length >= MAX_DECKS}
-              className="bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg transition-colors"
+              variant="secondary"
             >
               Add Deck ({decks.length}/{MAX_DECKS})
-            </button>
+            </Button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -219,14 +253,32 @@ Energy: 11
 7 Psychic Energy SVE 13`}
                     />
                   </div>
+                  <div className="flex gap-2 mt-3">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => handleLoadDeckClick(deck.id)}
+                    >
+                      Load Deck
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => handleSaveDeck(deck.id)}
+                      disabled={!deck.deckList.trim()}
+                    >
+                      Save Deck
+                    </Button>
+                  </div>
                 </div>
                 {decks.length > 1 && (
-                  <button
+                  <Button
                     onClick={() => removeDeck(deck.id)}
-                    className="mt-4 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                    variant="danger"
+                    className="mt-4"
                   >
                     Remove Deck
-                  </button>
+                  </Button>
                 )}
               </div>
             ))}
@@ -264,7 +316,11 @@ Energy: 11
                         className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
                       >
                         <td className="px-6 py-4 text-sm text-gray-900 border-b border-gray-200">
-                          {item.displayName}
+                          <CardPreview cardName={item.displayName}>
+                            <span className="hover:text-blue-600 hover:underline transition-colors">
+                              {item.displayName}
+                            </span>
+                          </CardPreview>
                         </td>
                         {decks.map((deck) => (
                           <td
@@ -283,6 +339,28 @@ Energy: 11
           </div>
         )}
       </div>
+
+      {/* Modals */}
+      <LoadDeckModal
+        isOpen={loadModalOpen}
+        onClose={() => setLoadModalOpen(false)}
+        onLoadDeck={handleLoadDeck}
+      />
+
+      <SaveDeckModal
+        isOpen={saveModalOpen}
+        onClose={() => setSaveModalOpen(false)}
+        deckList={
+          activeDeckId
+            ? decks.find((d) => d.id === activeDeckId)?.deckList || ""
+            : ""
+        }
+        initialLabel={
+          activeDeckId
+            ? decks.find((d) => d.id === activeDeckId)?.label || ""
+            : ""
+        }
+      />
     </div>
   );
 }
