@@ -3,8 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "../../components/Button";
-import { LoadDeckModal } from "../../components/LoadDeckModal";
-import { SaveDeckModal } from "../../components/SaveDeckModal";
+import { LoadDeckModal } from "../../features/LoadDeckModal";
+import { SaveDeckModal } from "../../features/SaveDeckModal";
 import { CardPreview } from "../../components/CardPreview";
 import type { SavedDeck } from "../../utils/savedDecks";
 

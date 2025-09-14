@@ -31,7 +31,7 @@ export default function Home() {
             and organise your decks.
           </p>
           <Link href="/saved-decks">
-            <Button variant="secondary">Manage Saved Decks</Button>
+            <Button>Manage Saved Decks</Button>
           </Link>
         </div>
       </div>

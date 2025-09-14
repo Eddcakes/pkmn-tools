@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "../../components/Button";
-import { ImportDeckModal } from "../../components/ImportDeckModal";
+import { ImportDeckModal } from "../../features/ImportDeckModal";
+import { EditDeckModal } from "../../features/EditDeckModal";
 import {
   getSavedDecks,
   deleteSavedDeck,
@@ -14,6 +15,8 @@ import {
 export default function SavedDecksPage() {
   const [savedDecks, setSavedDecks] = useState<SavedDeck[]>([]);
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingDeck, setEditingDeck] = useState<SavedDeck | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
@@ -55,10 +58,26 @@ export default function SavedDecksPage() {
     }
   };
 
+  const handleEditDeck = (deck: SavedDeck) => {
+    setEditingDeck(deck);
+    setEditModalOpen(true);
+  };
+
   const handleImportComplete = () => {
     loadSavedDecks();
     setMessage("Deck imported successfully!");
     setTimeout(() => setMessage(""), 3000);
+  };
+
+  const handleEditComplete = () => {
+    loadSavedDecks();
+    setMessage("Deck updated successfully!");
+    setTimeout(() => setMessage(""), 3000);
+  };
+
+  const handleEditModalClose = () => {
+    setEditModalOpen(false);
+    setEditingDeck(null);
   };
 
   if (loading) {
@@ -143,6 +162,13 @@ export default function SavedDecksPage() {
                   <Button
                     size="sm"
                     variant="secondary"
+                    onClick={() => handleEditDeck(deck)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
                     onClick={() => handleExportDeck(deck)}
                   >
                     Copy to Clipboard
@@ -176,6 +202,14 @@ export default function SavedDecksPage() {
         isOpen={importModalOpen}
         onClose={() => setImportModalOpen(false)}
         onImported={handleImportComplete}
+      />
+
+      {/* Edit Modal */}
+      <EditDeckModal
+        isOpen={editModalOpen}
+        onClose={handleEditModalClose}
+        onUpdated={handleEditComplete}
+        deck={editingDeck}
       />
     </div>
   );

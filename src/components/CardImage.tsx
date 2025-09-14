@@ -57,7 +57,7 @@ export function CardImage({
       <img
         src={imageUrl}
         alt={cardName}
-        className={`w-48 h-auto rounded ${imageLoaded ? "block" : "hidden"}`}
+        className={`w-80 h-auto rounded ${imageLoaded ? "block" : "hidden"}`}
         onLoad={handleImageLoad}
         onError={handleImageError}
       />

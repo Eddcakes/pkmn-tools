@@ -10,6 +10,10 @@ import { CardImage } from "./CardImage";
 interface CardPreviewProps {
   cardName: string;
   children: React.ReactNode;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
+  triggerRef?: React.RefObject<HTMLElement>;
+  className?: string;
 }
 
 export function CardPreview({ cardName, children }: CardPreviewProps) {
@@ -31,21 +35,24 @@ export function CardPreview({ cardName, children }: CardPreviewProps) {
 
   const shouldShowTooltip = imageUrl && hasValidFormat;
 
+  // Clone children and add hover props to interactive elements
+  const enhancedChildren = React.Children.map(children, (child) => {
+    if (React.isValidElement(child)) {
+      return React.cloneElement(child, {
+        onMouseEnter: shouldShowTooltip ? handleMouseEnter : undefined,
+        onMouseLeave: shouldShowTooltip ? handleMouseLeave : undefined,
+        ref: shouldShowTooltip ? triggerRef : undefined,
+        className: `${(child.props as any).className || ""} ${
+          hasValidFormat ? "cursor-help" : "cursor-default"
+        }`.trim(),
+      } as any);
+    }
+    return child;
+  });
+
   return (
     <>
-      <div
-        ref={triggerRef as React.RefObject<HTMLDivElement>}
-        onMouseEnter={shouldShowTooltip ? handleMouseEnter : undefined}
-        onMouseLeave={shouldShowTooltip ? handleMouseLeave : undefined}
-        className={`inline-block ${
-          hasValidFormat ? "cursor-help" : "cursor-default"
-        }`}
-        title={
-          hasValidFormat ? "Hover to preview card" : "No preview available"
-        }
-      >
-        {children}
-      </div>
+      <div className="h-full items-center">{enhancedChildren}</div>
 
       {shouldShowTooltip && (
         <Tooltip isVisible={isVisible} position={position}>
