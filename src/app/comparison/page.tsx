@@ -158,8 +158,13 @@ export default function ComparisonPage() {
 
   const handleLoadDeck = (savedDeck: SavedDeck) => {
     if (activeDeckId) {
-      updateDeck(activeDeckId, "label", savedDeck.label);
-      updateDeck(activeDeckId, "deckList", savedDeck.deckList);
+      setDecks(
+        decks.map((d) =>
+          d.id === activeDeckId
+            ? { ...d, label: savedDeck.label, deckList: savedDeck.deckList }
+            : d
+        )
+      );
     }
   };
 
