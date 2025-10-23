@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "../components/Button";
 import { Modal } from "../components/Modal";
 import { ModalFooter } from "../components/ModalFooter";
 import { saveDeck } from "../utils/savedDecks";
+import { Tag } from "@/components/Tag";
+import { archetypeToTagType } from "@/utils/archetype";
 
 interface SaveDeckModalProps {
   isOpen: boolean;
@@ -10,6 +12,7 @@ interface SaveDeckModalProps {
   deckList: string;
   initialLabel?: string;
   onSaved?: () => void;
+  archetype?: string;
 }
 
 export function SaveDeckModal({
@@ -18,12 +21,13 @@ export function SaveDeckModal({
   deckList,
   initialLabel = "",
   onSaved,
+  archetype,
 }: SaveDeckModalProps) {
   const [label, setLabel] = useState(initialLabel);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isOpen) {
       setLabel(initialLabel);
       setError("");
@@ -45,7 +49,11 @@ export function SaveDeckModal({
     setError("");
 
     try {
-      await saveDeck(label.trim(), deckList);
+      const archetypeList = archetype
+        ? archetype.trim().split("#").filter(Boolean)
+        : [];
+
+      saveDeck(label.trim(), deckList, archetypeList);
       onSaved?.();
       onClose();
     } catch (err) {
@@ -73,7 +81,17 @@ export function SaveDeckModal({
             disabled={saving}
           />
         </div>
-
+        {archetype && (
+          <div className="gap-2 flex flex-wrap">
+            {archetype
+              .trim()
+              .split("#")
+              .filter(Boolean)
+              .map((tag) => (
+                <Tag key={tag} label={tag} type={archetypeToTagType(tag)} />
+              ))}
+          </div>
+        )}
         {error && <p className="text-red-600 text-sm">{error}</p>}
       </div>
 

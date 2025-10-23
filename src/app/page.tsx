@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { Button } from "../components/Button";
+import { Link } from "../components/Link";
 
 export default function Home() {
   return (
@@ -17,8 +16,8 @@ export default function Home() {
             Compare multiple Pokémon TCG decks side by side to see the
             differences and similarities.
           </p>
-          <Link href="/comparison">
-            <Button>Open Comparison Tool</Button>
+          <Link variant="button" href="/comparison">
+            Open Comparison Tool
           </Link>
         </div>
 
@@ -30,9 +29,27 @@ export default function Home() {
             Manage your collection of saved Pokémon TCG decks. Import, export,
             and organise your decks.
           </p>
-          <Link href="/saved-decks">
-            <Button>Manage Saved Decks</Button>
+          <Link variant="button" href="/saved-decks">
+            Manage Saved Decks
           </Link>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            Useful links
+          </h2>
+          <p className="text-gray-600 mb-4">-</p>
+          <ul>
+            <li>
+              <Link href="https://rk9.gg/">rk9</Link>
+            </li>
+            <li>
+              <Link href="https://www.trainerhill.com/">trainer hill</Link>
+            </li>
+            <li>
+              <Link href="https://limitlesstcg.com/">limitless</Link>
+            </li>
+          </ul>
         </div>
       </div>
     </div>

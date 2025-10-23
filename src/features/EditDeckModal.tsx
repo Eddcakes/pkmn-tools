@@ -18,6 +18,7 @@ export function EditDeckModal({
   deck,
 }: EditDeckModalProps) {
   const [label, setLabel] = useState("");
+  const [archetype, setArchetype] = useState("");
   const [deckList, setDeckList] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -25,9 +26,13 @@ export function EditDeckModal({
   useEffect(() => {
     if (deck) {
       setLabel(deck.label);
+      setArchetype(
+        deck.archetype ? deck.archetype.map((tag) => `#${tag}`).join(" ") : ""
+      );
       setDeckList(deck.deckList);
     } else {
       setLabel("");
+      setArchetype("");
       setDeckList("");
     }
     setError("");
@@ -51,10 +56,13 @@ export function EditDeckModal({
     setError("");
 
     try {
+      // for now havent created a custom tag selector so seperate tags with a # in a string
+      const archetypeList = archetype.trim().split("#").filter(Boolean);
       const updatedDeck = updateSavedDeck(
         deck.id,
         label.trim(),
-        deckList.trim()
+        deckList.trim(),
+        archetypeList
       );
       if (updatedDeck) {
         onUpdated();
@@ -109,7 +117,23 @@ export function EditDeckModal({
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
           />
         </div>
-
+        <div>
+          <label
+            htmlFor="edit-deck-archetype"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Deck Archetype
+          </label>
+          <input
+            id="edit-deck-archetype"
+            type="text"
+            value={archetype}
+            onChange={(e) => setArchetype(e.target.value)}
+            placeholder="Seperate #, e.g. '#gholdengo #joltik box'"
+            disabled={isSubmitting}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+          />
+        </div>
         <div>
           <label
             htmlFor="edit-deck-list"

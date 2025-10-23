@@ -11,6 +11,8 @@ import {
   exportDeckToClipboard,
   type SavedDeck,
 } from "../../utils/savedDecks";
+import { Tag } from "@/components/Tag";
+import { archetypeToTagType } from "@/utils/archetype";
 
 export default function SavedDecksPage() {
   const [savedDecks, setSavedDecks] = useState<SavedDeck[]>([]);
@@ -149,6 +151,17 @@ export default function SavedDecksPage() {
                   <h2 className="text-xl font-semibold text-gray-900 mb-2">
                     {deck.label}
                   </h2>
+                  {deck.archetype && (
+                    <div className="gap-2 flex flex-wrap">
+                      {deck.archetype.map((tag) => (
+                        <Tag
+                          key={tag}
+                          label={tag}
+                          type={archetypeToTagType(tag)}
+                        />
+                      ))}
+                    </div>
+                  )}
                   <div className="text-sm text-gray-500 space-y-1">
                     <p>
                       Created: {new Date(deck.createdAt).toLocaleDateString()}

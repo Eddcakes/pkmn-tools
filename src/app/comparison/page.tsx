@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Button } from "../../components/Button";
 import { LoadDeckModal } from "../../features/LoadDeckModal";
 import { SaveDeckModal } from "../../features/SaveDeckModal";
 import { CardPreview } from "../../components/CardPreview";
 import type { SavedDeck } from "../../utils/savedDecks";
+import { Link } from "@/components";
 
 const MAX_DECKS = 6;
 
@@ -23,6 +23,7 @@ interface DeckEntry {
   id: string;
   label: string;
   deckList: string;
+  archetype: string;
 }
 
 interface ParsedCard {
@@ -187,7 +188,7 @@ function areCountsIdentical(
 
 export default function ComparisonPage() {
   const [decks, setDecks] = useState<DeckEntry[]>([
-    { id: "1", label: "Deck 1", deckList: "" },
+    { id: "1", label: "Deck 1", deckList: "", archetype: "" },
   ]);
   const [comparisonData, setComparisonData] = useState<ComparisonCard[]>([]);
   const [loadModalOpen, setLoadModalOpen] = useState(false);
@@ -201,7 +202,10 @@ export default function ComparisonPage() {
       const newId = (
         Math.max(...decks.map((d) => parseInt(d.id))) + 1
       ).toString();
-      setDecks([...decks, { id: newId, label: `Deck ${newId}`, deckList: "" }]);
+      setDecks([
+        ...decks,
+        { id: newId, label: `Deck ${newId}`, deckList: "", archetype: "" },
+      ]);
     }
   };
 
@@ -213,7 +217,7 @@ export default function ComparisonPage() {
 
   const updateDeck = (
     deckId: string,
-    field: "label" | "deckList",
+    field: "label" | "deckList" | "archetype",
     value: string
   ) => {
     setDecks(
@@ -239,10 +243,18 @@ export default function ComparisonPage() {
 
   const handleLoadDeck = (savedDeck: SavedDeck) => {
     if (activeDeckId) {
+      const taggedArchetype = savedDeck.archetype
+        ? savedDeck.archetype.map((tag) => `#${tag}`).join(" ")
+        : "";
       setDecks(
         decks.map((d) =>
           d.id === activeDeckId
-            ? { ...d, label: savedDeck.label, deckList: savedDeck.deckList }
+            ? {
+                ...d,
+                label: savedDeck.label,
+                deckList: savedDeck.deckList,
+                archetype: taggedArchetype,
+              }
             : d
         )
       );
@@ -269,11 +281,11 @@ export default function ComparisonPage() {
           Pokémon Deck Comparison
         </h1>
         <div className="flex gap-4">
-          <Link href="/">
-            <Button variant="secondary">Home</Button>
+          <Link href="/" variant="button" buttonVariant="secondary">
+            Home
           </Link>
-          <Link href="/saved-decks">
-            <Button variant="secondary">Saved Decks</Button>
+          <Link href="/saved-decks" variant="button" buttonVariant="secondary">
+            Saved Decks
           </Link>
         </div>
       </div>
@@ -310,6 +322,24 @@ export default function ComparisonPage() {
                         updateDeck(deck.id, "label", e.target.value)
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="edit-deck-archetype"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Deck Archetype
+                    </label>
+                    <input
+                      id="edit-deck-archetype"
+                      type="text"
+                      value={deck.archetype}
+                      onChange={(e) =>
+                        updateDeck(deck.id, "archetype", e.target.value)
+                      }
+                      placeholder="Seperate #, e.g. '#gholdengo #joltik box'"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
                     />
                   </div>
                   <div>
@@ -531,6 +561,11 @@ Energy: 11
         initialLabel={
           activeDeckId
             ? decks.find((d) => d.id === activeDeckId)?.label || ""
+            : ""
+        }
+        archetype={
+          activeDeckId
+            ? decks.find((d) => d.id === activeDeckId)?.archetype || ""
             : ""
         }
       />

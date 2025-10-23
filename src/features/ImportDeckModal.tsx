@@ -17,6 +17,7 @@ export function ImportDeckModal({
 }: ImportDeckModalProps) {
   const [label, setLabel] = useState("");
   const [deckList, setDeckList] = useState("");
+  const [archetype, setArchetype] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -43,7 +44,7 @@ export function ImportDeckModal({
     setError("");
 
     try {
-      await saveDeck(label.trim(), deckList.trim());
+      saveDeck(label.trim(), deckList.trim());
       onImported?.();
       onClose();
     } catch (err) {
@@ -69,7 +70,22 @@ export function ImportDeckModal({
             disabled={saving}
           />
         </div>
-
+        <div>
+          <label
+            htmlFor="edit-deck-archetype"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Deck Archetype
+          </label>
+          <input
+            id="edit-deck-archetype"
+            type="text"
+            value={archetype}
+            onChange={(e) => setArchetype(e.target.value)}
+            placeholder="Seperate #, e.g. '#gholdengo #joltik box'"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+          />
+        </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Deck List

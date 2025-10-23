@@ -2,6 +2,7 @@ export interface SavedDeck {
   id: string;
   label: string;
   deckList: string;
+  archetype?: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -20,11 +21,16 @@ export function getSavedDecks(): SavedDeck[] {
   }
 }
 
-export function saveDeck(label: string, deckList: string): SavedDeck {
+export function saveDeck(
+  label: string,
+  deckList: string,
+  archetype?: string[]
+): SavedDeck {
   const deck: SavedDeck = {
     id: generateId(),
     label,
     deckList,
+    ...(archetype && archetype.length > 0 && { archetype }),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
@@ -45,7 +51,8 @@ export function saveDeck(label: string, deckList: string): SavedDeck {
 export function updateSavedDeck(
   id: string,
   label: string,
-  deckList: string
+  deckList: string,
+  archetype?: string[]
 ): SavedDeck | null {
   const decks = getSavedDecks();
   const deckIndex = decks.findIndex((deck) => deck.id === id);
@@ -56,6 +63,7 @@ export function updateSavedDeck(
     ...decks[deckIndex],
     label,
     deckList,
+    ...(archetype !== undefined && { archetype }),
     updatedAt: new Date().toISOString(),
   };
 
