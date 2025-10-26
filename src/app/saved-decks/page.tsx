@@ -114,6 +114,7 @@ export default function SavedDecksPage() {
       {savedDecks.length === 0 ? (
         <div className="text-center py-12">
           <div className="text-gray-500 mb-4">
+            {/* move to icons */}
             <svg
               className="mx-auto h-12 w-12"
               fill="none"

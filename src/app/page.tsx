@@ -36,6 +36,19 @@ export default function Home() {
 
         <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            Matchup Log
+          </h2>
+          <p className="text-gray-600 mb-4">
+            Track your matchup results against different archetypes to analyse
+            your deck's performance.
+          </p>
+          <Link variant="button" href="/matchup-records">
+            Matchup Log
+          </Link>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
             Useful links
           </h2>
           <p className="text-gray-600 mb-4">-</p>

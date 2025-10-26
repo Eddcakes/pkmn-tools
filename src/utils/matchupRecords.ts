@@ -1,0 +1,121 @@
+export interface MatchupRecord {
+  id: string;
+  userArchetype: string;
+  opponentArchetype: string;
+  result: "win" | "loss" | "tie";
+  notes?: string;
+  createdAt: string;
+}
+
+const STORAGE_KEY = "pokemon-matchup-records";
+
+export function getMatchupRecords(): MatchupRecord[] {
+  if (typeof window === "undefined") return [];
+
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error("Error loading matchup records:", error);
+    return [];
+  }
+}
+
+export function saveMatchupRecord(
+  userArchetype: string,
+  opponentArchetype: string,
+  result: "win" | "loss" | "tie",
+  notes?: string
+): MatchupRecord {
+  const record: MatchupRecord = {
+    id: generateId(),
+    userArchetype,
+    opponentArchetype,
+    result,
+    notes,
+    createdAt: new Date().toISOString(),
+  };
+
+  const records = getMatchupRecords();
+  records.push(record);
+
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  } catch (error) {
+    console.error("Error saving matchup record:", error);
+    throw new Error("Failed to save matchup record to local storage");
+  }
+
+  return record;
+}
+
+export function deleteMatchupRecord(id: string): boolean {
+  const records = getMatchupRecords();
+  const filteredRecords = records.filter((record) => record.id !== id);
+
+  if (filteredRecords.length === records.length) {
+    return false; // Record not found
+  }
+
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(filteredRecords));
+    return true;
+  } catch (error) {
+    console.error("Error deleting matchup record:", error);
+    throw new Error("Failed to delete matchup record from local storage");
+  }
+}
+
+export function getMatchupRecordById(id: string): MatchupRecord | null {
+  const records = getMatchupRecords();
+  return records.find((record) => record.id === id) || null;
+}
+
+export function getMatchupStatsByArchetype(userArchetype: string): {
+  opponentArchetype: string;
+  wins: number;
+  losses: number;
+  ties: number;
+  total: number;
+  winRate: number;
+}[] {
+  const records = getMatchupRecords().filter(
+    (r) => r.userArchetype.toLowerCase() === userArchetype.toLowerCase()
+  );
+
+  const statsByOpponent = new Map<
+    string,
+    { wins: number; losses: number; ties: number }
+  >();
+
+  for (const record of records) {
+    const opponent = record.opponentArchetype;
+    if (!statsByOpponent.has(opponent)) {
+      statsByOpponent.set(opponent, { wins: 0, losses: 0, ties: 0 });
+    }
+
+    const stats = statsByOpponent.get(opponent)!;
+    if (record.result === "win") stats.wins++;
+    else if (record.result === "loss") stats.losses++;
+    else if (record.result === "tie") stats.ties++;
+  }
+
+  return Array.from(statsByOpponent.entries()).map(
+    ([opponentArchetype, stats]) => {
+      const total = stats.wins + stats.losses + stats.ties;
+      const winRate = total > 0 ? (stats.wins / total) * 100 : 0;
+      return {
+        opponentArchetype,
+        wins: stats.wins,
+        losses: stats.losses,
+        ties: stats.ties,
+        total,
+        winRate: Math.round(winRate * 10) / 10, // Round to 1 decimal
+      };
+    }
+  );
+}
+
+function generateId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}

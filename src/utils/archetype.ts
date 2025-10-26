@@ -19,7 +19,6 @@ export const archetypeMapping: Record<string, TagType> = {
   "mega venusaur": "grass",
   "pidgeot control": "colorless",
   lucario: "fighting",
-  "joltic box": "lightning",
   crustle: "grass",
   conkeldurr: "fighting",
   "ethan's typhlosion": "fire",
