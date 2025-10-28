@@ -5,6 +5,7 @@ export interface MatchupRecord {
   result: "win" | "loss" | "tie";
   notes?: string;
   createdAt: string;
+  // format / set: MEG; -> any value from saving what version of format the record was created in
 }
 
 const STORAGE_KEY = "pokemon-matchup-records";

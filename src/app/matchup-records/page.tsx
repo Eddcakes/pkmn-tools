@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "../../components/Button";
 import { Link } from "../../components/Link";
-import { Select } from "../../components/Select";
+import { Select, type SelectGroup } from "../../components/Select";
 import { Tag } from "../../components/Tag";
 import {
   saveMatchupRecord,
@@ -14,6 +14,12 @@ import {
 import { archetypeMapping, archetypeToTagType } from "../../utils/archetype";
 import { IconButton } from "@/components/IconButton";
 import { CogIcon } from "@/components/Icons";
+import { MatchupSettingsModal } from "@/features/MatchupSettingsModal";
+import {
+  addRecentArchetype,
+  getCustomArchetypesArray,
+  getMatchupSettings,
+} from "@/utils/matchupSettings";
 
 export default function MatchupRecordsPage() {
   const [userArchetype, setUserArchetype] = useState("");
@@ -24,10 +30,81 @@ export default function MatchupRecordsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const [archetypeGroups, setArchetypeGroups] = useState<SelectGroup[]>([]);
 
   useEffect(() => {
     loadRecords();
+    loadArchetypeOptions();
   }, []);
+
+  const loadArchetypeOptions = () => {
+    const settings = getMatchupSettings();
+    const customArchetypes = getCustomArchetypesArray();
+
+    // Determine base archetypes (custom or default)
+    const baseArchetypes =
+      customArchetypes.length > 0
+        ? customArchetypes
+        : Object.keys(archetypeMapping);
+
+    // Create option objects
+    const allOptions = baseArchetypes.sort().map((archetype) => ({
+      value: archetype,
+      label: archetype.charAt(0).toUpperCase() + archetype.slice(1),
+    }));
+
+    const groups: SelectGroup[] = [];
+
+    // Add Recent Archetypes group if enabled and has items
+    if (settings.useRecentArchetypes && settings.recentArchetypes.length > 0) {
+      const recentOptions = settings.recentArchetypes
+        .map((archetype) => ({
+          value: archetype,
+          label: archetype.charAt(0).toUpperCase() + archetype.slice(1),
+        }))
+        .filter((option) =>
+          allOptions.some((opt) => opt.value === option.value)
+        );
+
+      if (recentOptions.length > 0) {
+        groups.push({
+          label: "Recent",
+          options: recentOptions,
+        });
+      }
+    }
+
+    // Add Favourite Archetypes group if enabled and has items
+    if (
+      settings.useFavouriteArchetypes &&
+      settings.favouriteArchetypes.length > 0
+    ) {
+      const favouriteOptions = settings.favouriteArchetypes
+        .map((archetype) => ({
+          value: archetype,
+          label: archetype.charAt(0).toUpperCase() + archetype.slice(1),
+        }))
+        .filter((option) =>
+          allOptions.some((opt) => opt.value === option.value)
+        );
+
+      if (favouriteOptions.length > 0) {
+        groups.push({
+          label: "Favourites",
+          options: favouriteOptions,
+        });
+      }
+    }
+
+    // Add All Archetypes group
+    groups.push({
+      label: "All Archetypes",
+      options: allOptions,
+    });
+
+    setArchetypeGroups(groups);
+  };
 
   const loadRecords = () => {
     const loadedRecords = getMatchupRecords();
@@ -38,13 +115,6 @@ export default function MatchupRecordsPage() {
     );
     setRecords(loadedRecords);
   };
-
-  const archetypeOptions = Object.keys(archetypeMapping)
-    .sort()
-    .map((archetype) => ({
-      value: archetype,
-      label: archetype.charAt(0).toUpperCase() + archetype.slice(1),
-    }));
 
   const resultOptions = [
     { value: "win", label: "Win" },
@@ -81,6 +151,12 @@ export default function MatchupRecordsPage() {
         result as "win" | "loss" | "tie",
         notes.trim() || undefined
       );
+
+      // Track recently used archetypes
+      addRecentArchetype(userArchetype);
+      if (userArchetype.toLowerCase() !== opponentArchetype.toLowerCase()) {
+        addRecentArchetype(opponentArchetype);
+      }
 
       // Reset form
       setUserArchetype("");
@@ -156,11 +232,11 @@ export default function MatchupRecordsPage() {
                 Add Matchup Record
               </h2>
               <IconButton
-                aria-label="quick settings for matchups"
+                aria-label="Quick settings for matchups"
                 icon={<CogIcon />}
                 size="sm"
+                onClick={() => setSettingsModalOpen(true)}
               />
-              {/* todo create a settings menu to default or favourite decks to the top of the list */}
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -187,7 +263,7 @@ export default function MatchupRecordsPage() {
                   id="user-archetype"
                   value={userArchetype}
                   onChange={setUserArchetype}
-                  options={archetypeOptions}
+                  groups={archetypeGroups}
                   placeholder="Select your archetype..."
                   disabled={saving}
                   required
@@ -206,7 +282,7 @@ export default function MatchupRecordsPage() {
                   id="opponent-archetype"
                   value={opponentArchetype}
                   onChange={setOpponentArchetype}
-                  options={archetypeOptions}
+                  groups={archetypeGroups}
                   placeholder="Select opponent archetype..."
                   disabled={saving}
                   required
@@ -264,6 +340,7 @@ export default function MatchupRecordsPage() {
           <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
               Recent Records ({records.length})
+              {/* do we limit this view to recent records only? (5?) */}
             </h2>
 
             {records.length === 0 ? (
@@ -326,6 +403,16 @@ export default function MatchupRecordsPage() {
           </div>
         </div>
       </div>
+
+      {/* Settings Modal */}
+      <MatchupSettingsModal
+        isOpen={settingsModalOpen}
+        onClose={() => setSettingsModalOpen(false)}
+        onUpdated={() => {
+          // Reload archetype options when settings are updated
+          loadArchetypeOptions();
+        }}
+      />
     </div>
   );
 }
