@@ -9,12 +9,15 @@ import {
   saveMatchupRecord,
   getMatchupRecords,
   deleteMatchupRecord,
+  getMatchupChartData,
   type MatchupRecord,
+  type MatchupChartData,
 } from "../../utils/matchupRecords";
 import { archetypeMapping, archetypeToTagType } from "../../utils/archetype";
 import { IconButton } from "@/components/IconButton";
 import { CogIcon } from "@/components/Icons";
 import { MatchupSettingsModal } from "@/features/MatchupSettingsModal";
+import { MatchupChart } from "@/features/MatchupChart";
 import {
   addRecentArchetype,
   getCustomArchetypesArray,
@@ -32,10 +35,16 @@ export default function MatchupRecordsPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [archetypeGroups, setArchetypeGroups] = useState<SelectGroup[]>([]);
+  const [chartData, setChartData] = useState<MatchupChartData>({
+    userArchetypes: [],
+    opponentArchetypes: [],
+    matrix: new Map(),
+  });
 
   useEffect(() => {
     loadRecords();
     loadArchetypeOptions();
+    updateChartData();
   }, []);
 
   const loadArchetypeOptions = () => {
@@ -116,6 +125,11 @@ export default function MatchupRecordsPage() {
     setRecords(loadedRecords);
   };
 
+  const updateChartData = () => {
+    const data = getMatchupChartData();
+    setChartData(data);
+  };
+
   const resultOptions = [
     { value: "win", label: "Win" },
     { value: "loss", label: "Loss" },
@@ -166,6 +180,7 @@ export default function MatchupRecordsPage() {
 
       // Reload records
       loadRecords();
+      updateChartData();
 
       setSuccessMessage("Matchup record saved successfully!");
       setTimeout(() => setSuccessMessage(""), 3000);
@@ -181,6 +196,7 @@ export default function MatchupRecordsPage() {
       try {
         deleteMatchupRecord(id);
         loadRecords();
+        updateChartData();
         setSuccessMessage("Record deleted successfully!");
         setTimeout(() => setSuccessMessage(""), 3000);
       } catch (err) {
@@ -403,6 +419,13 @@ export default function MatchupRecordsPage() {
           </div>
         </div>
       </div>
+
+      {/* Matchup Chart Section */}
+      {records.length > 0 && (
+        <div className="mt-8">
+          <MatchupChart data={chartData} />
+        </div>
+      )}
 
       {/* Settings Modal */}
       <MatchupSettingsModal
