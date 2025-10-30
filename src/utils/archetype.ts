@@ -8,7 +8,7 @@ export const archetypeMapping: Record<string, TagType> = {
   gardevoir: "psychic",
   dragapult: "dragon",
   "mega absol": "darkness",
-  goldengo: "metal",
+  gholdengo: "metal",
   "joltik box": "lightning",
   rocks: "fighting",
   "raging bolt": "dragon",

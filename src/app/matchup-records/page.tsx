@@ -40,6 +40,7 @@ export default function MatchupRecordsPage() {
     opponentArchetypes: [],
     matrix: new Map(),
   });
+  const [showAllRecords, setShowAllRecords] = useState(false);
 
   useEffect(() => {
     loadRecords();
@@ -230,6 +231,10 @@ export default function MatchupRecordsPage() {
     }
   };
 
+  // Get records to display (limited to 5 or all)
+  const displayedRecords = showAllRecords ? records : records.slice(0, 5);
+  const hasMoreRecords = records.length > 5;
+
   return (
     <div className="p-8 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-8">
@@ -356,7 +361,6 @@ export default function MatchupRecordsPage() {
           <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
               Recent Records ({records.length})
-              {/* do we limit this view to recent records only? (5?) */}
             </h2>
 
             {records.length === 0 ? (
@@ -367,54 +371,80 @@ export default function MatchupRecordsPage() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-4">
-                {records.map((record) => (
-                  <div
-                    key={record.id}
-                    className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors"
-                  >
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex items-center gap-2">
-                        <Tag
-                          label={record.userArchetype}
-                          type={archetypeToTagType(record.userArchetype)}
-                        />
-                        <span className="text-gray-400">vs</span>
-                        <Tag
-                          label={record.opponentArchetype}
-                          type={archetypeToTagType(record.opponentArchetype)}
-                        />
+              <>
+                <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                  {displayedRecords.map((record) => (
+                    <div
+                      key={record.id}
+                      className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors"
+                    >
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex items-center gap-2">
+                          <Tag
+                            label={record.userArchetype}
+                            type={archetypeToTagType(record.userArchetype)}
+                          />
+                          <span className="text-gray-400">vs</span>
+                          <Tag
+                            label={record.opponentArchetype}
+                            type={archetypeToTagType(record.opponentArchetype)}
+                          />
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="danger"
+                          onClick={() => handleDelete(record.id)}
+                        >
+                          Delete
+                        </Button>
                       </div>
-                      <Button
-                        size="sm"
-                        variant="danger"
-                        onClick={() => handleDelete(record.id)}
-                      >
-                        Delete
-                      </Button>
-                    </div>
 
-                    <div className="flex items-center gap-3 mb-2">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getResultBadgeColor(
-                          record.result
-                        )}`}
-                      >
-                        {record.result.toUpperCase()}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {formatDate(record.createdAt)}
-                      </span>
-                    </div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getResultBadgeColor(
+                            record.result
+                          )}`}
+                        >
+                          {record.result.toUpperCase()}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {formatDate(record.createdAt)}
+                        </span>
+                      </div>
 
-                    {record.notes && (
-                      <p className="text-sm text-gray-600 mt-2">
-                        {record.notes}
-                      </p>
-                    )}
+                      {record.notes && (
+                        <p className="text-sm text-gray-600 mt-2">
+                          {record.notes}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {hasMoreRecords && !showAllRecords && (
+                  <div className="mt-4 text-center">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setShowAllRecords(true)}
+                    >
+                      Show More ({records.length - 5} more records)
+                    </Button>
                   </div>
-                ))}
-              </div>
+                )}
+
+                {showAllRecords && (
+                  <div className="mt-4 text-center">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setShowAllRecords(false)}
+                    >
+                      Show Less
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
