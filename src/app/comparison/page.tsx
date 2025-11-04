@@ -6,7 +6,7 @@ import { LoadDeckModal } from "../../features/LoadDeckModal";
 import { SaveDeckModal } from "../../features/SaveDeckModal";
 import { ComparisonTable } from "../../features/ComparisonTable";
 import type { SavedDeck } from "../../utils/savedDecks";
-import { Link, Card } from "@/components";
+import { Link, Card, Alert } from "@/components";
 
 const MAX_DECKS = 6;
 
@@ -214,6 +214,17 @@ export default function ComparisonPage() {
             Saved Decks
           </Link>
         </div>
+      </div>
+
+      <div className="pb-8">
+        <Alert>
+          It is recommended either copy lists directly from{" "}
+          <Link href="https://limitlesstcg.com/decks">Limitless</Link> or use
+          the Limitless tool to{" "}
+          <Link href="https://limitlesstcg.com/tools/imggen">
+            reset cards to regular versions
+          </Link>
+        </Alert>
       </div>
 
       <div className="flex flex-col gap-8">
