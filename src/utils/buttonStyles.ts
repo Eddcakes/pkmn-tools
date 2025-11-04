@@ -14,7 +14,7 @@ export const BUTTON_SIZES = {
 } as const;
 
 export const BUTTON_BASE_CLASSES =
-  "font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2";
+  "font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer inline-flex items-center justify-center";
 
 export type ButtonVariant = keyof typeof BUTTON_VARIANTS;
 export type ButtonSize = keyof typeof BUTTON_SIZES;

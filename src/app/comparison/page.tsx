@@ -219,17 +219,6 @@ export default function ComparisonPage() {
       <div className="flex flex-col gap-8">
         {/* Deck Input Section */}
         <div>
-          <div className="flex flex-row gap-4 mb-6 flex-wrap">
-            <Button onClick={updateComparison}>Update Comparison</Button>
-            <Button
-              onClick={addDeck}
-              disabled={decks.length >= MAX_DECKS}
-              variant="secondary"
-            >
-              Add Deck ({decks.length}/{MAX_DECKS})
-            </Button>
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {decks.map((deck) => (
               <Card key={deck.id}>
@@ -321,10 +310,33 @@ Energy: 11
                 )}
               </Card>
             ))}
+
+            {decks.length < MAX_DECKS && (
+              <Card className="flex flex-col items-center justify-center min-h-[400px] bg-gray-50">
+                <div className="text-center space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                      Add Another Deck
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      Compare up to {MAX_DECKS} decks side by side
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    <Button onClick={addDeck}>
+                      Add Deck ({decks.length}/{MAX_DECKS})
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            )}
           </div>
         </div>
 
-        {/* Comparison Table */}
+        <div className="flex justify-center">
+          <Button onClick={updateComparison}>Update Comparison</Button>
+        </div>
+
         {comparisonData.length > 0 && (
           <ComparisonTable comparisonData={comparisonData} decks={decks} />
         )}
