@@ -14,7 +14,12 @@ export function getSavedDecks(): SavedDeck[] {
 
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
+    const decks: SavedDeck[] = stored ? JSON.parse(stored) : [];
+    // Sort by updatedAt descending (most recently updated first)
+    return decks.sort(
+      (a, b) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    );
   } catch (error) {
     console.error("Error loading saved decks:", error);
     return [];

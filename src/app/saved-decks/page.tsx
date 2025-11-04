@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "../../components/Button";
+import { Card } from "../../components/Card";
 import { ImportDeckModal } from "../../features/ImportDeckModal";
 import { EditDeckModal } from "../../features/EditDeckModal";
 import {
@@ -13,6 +14,7 @@ import {
 } from "../../utils/savedDecks";
 import { Tag } from "@/components/Tag";
 import { archetypeToTagType } from "@/utils/archetype";
+import { Alert } from "@/components/Alert";
 
 export default function SavedDecksPage() {
   const [savedDecks, setSavedDecks] = useState<SavedDeck[]>([]);
@@ -106,14 +108,20 @@ export default function SavedDecksPage() {
       </div>
 
       {message && (
-        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-green-800">{message}</p>
-        </div>
+        <Alert
+          intent="success"
+          dismissible
+          onDismiss={() => setMessage("")}
+          className="pb-4"
+        >
+          {message}
+        </Alert>
       )}
 
       {savedDecks.length === 0 ? (
         <div className="text-center py-12">
           <div className="text-gray-500 mb-4">
+            {/* move to icons */}
             <svg
               className="mx-auto h-12 w-12"
               fill="none"
@@ -142,10 +150,7 @@ export default function SavedDecksPage() {
       ) : (
         <div className="grid gap-6">
           {savedDecks.map((deck) => (
-            <div
-              key={deck.id}
-              className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm"
-            >
+            <Card key={deck.id}>
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900 mb-2">
@@ -205,7 +210,7 @@ export default function SavedDecksPage() {
                   {deck.deckList.split("\n").length > 10 && "\n..."}
                 </pre>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       )}

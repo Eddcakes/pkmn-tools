@@ -64,6 +64,7 @@ export function Modal({
               className="text-gray-400 hover:text-gray-600 transition-colors p-1"
               aria-label="Close modal"
             >
+              {/* move to icons */}
               <svg
                 className="w-6 h-6"
                 fill="none"
