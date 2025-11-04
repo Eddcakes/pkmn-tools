@@ -216,16 +216,14 @@ export default function ComparisonPage() {
         </div>
       </div>
 
-      <div className="pb-4">
-        <Alert>
-          It is recommended either copy lists directly from{" "}
-          <Link href="https://limitlesstcg.com/decks">Limitless</Link> or use
-          the Limitless tool to{" "}
-          <Link href="https://limitlesstcg.com/tools/imggen">
-            reset cards to regular versions
-          </Link>
-        </Alert>
-      </div>
+      <Alert className="pb-4">
+        It is recommended either copy lists directly from{" "}
+        <Link href="https://limitlesstcg.com/decks">Limitless</Link> or use the
+        Limitless tool to{" "}
+        <Link href="https://limitlesstcg.com/tools/imggen">
+          reset cards to regular versions
+        </Link>
+      </Alert>
 
       <div className="flex flex-col gap-8">
         {/* Deck Input Section */}

@@ -108,7 +108,12 @@ export default function SavedDecksPage() {
       </div>
 
       {message && (
-        <Alert intent="success" dismissible onDismiss={() => setMessage("")}>
+        <Alert
+          intent="success"
+          dismissible
+          onDismiss={() => setMessage("")}
+          className="pb-4"
+        >
           {message}
         </Alert>
       )}

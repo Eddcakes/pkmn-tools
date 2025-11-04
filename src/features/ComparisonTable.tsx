@@ -136,45 +136,43 @@ export function ComparisonTable({
       </div>
 
       {highlightDifferences && (
-        <div className="pb-4">
-          <Alert>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-sm font-medium text-blue-900">
-                Colour Legend:
-              </span>
+        <Alert className="pb-4">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-sm font-medium text-blue-900">
+              Colour Legend:
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-4 text-xs">
+            <div className="flex items-center gap-1">
+              <div
+                className={`w-4 h-4 ${COUNT_COLORS.muchLower} rounded border`}
+              ></div>
+              <span className="text-gray-700">Much Lower</span>
             </div>
-            <div className="flex flex-wrap gap-4 text-xs">
-              <div className="flex items-center gap-1">
-                <div
-                  className={`w-4 h-4 ${COUNT_COLORS.muchLower} rounded border`}
-                ></div>
-                <span className="text-gray-700">Much Lower</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div
-                  className={`w-4 h-4 ${COUNT_COLORS.lower} rounded border`}
-                ></div>
-                <span className="text-gray-700">Lower</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-4 h-4 bg-gray-200 rounded border"></div>
-                <span className="text-gray-700">Average</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div
-                  className={`w-4 h-4 ${COUNT_COLORS.higher} rounded border`}
-                ></div>
-                <span className="text-gray-700">Higher</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div
-                  className={`w-4 h-4 ${COUNT_COLORS.muchHigher} rounded border`}
-                ></div>
-                <span className="text-gray-700">Much Higher</span>
-              </div>
+            <div className="flex items-center gap-1">
+              <div
+                className={`w-4 h-4 ${COUNT_COLORS.lower} rounded border`}
+              ></div>
+              <span className="text-gray-700">Lower</span>
             </div>
-          </Alert>
-        </div>
+            <div className="flex items-center gap-1">
+              <div className="w-4 h-4 bg-gray-200 rounded border"></div>
+              <span className="text-gray-700">Average</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div
+                className={`w-4 h-4 ${COUNT_COLORS.higher} rounded border`}
+              ></div>
+              <span className="text-gray-700">Higher</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div
+                className={`w-4 h-4 ${COUNT_COLORS.muchHigher} rounded border`}
+              ></div>
+              <span className="text-gray-700">Much Higher</span>
+            </div>
+          </div>
+        </Alert>
       )}
 
       <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">

@@ -3,6 +3,7 @@ interface AlertProps {
   dismissible?: boolean;
   onDismiss?: () => void;
   intent?: "success" | "error" | "warning" | "info";
+  className?: string;
 }
 
 const INTENT_STYLES = {
@@ -29,6 +30,7 @@ export function Alert({
   dismissible = false,
   onDismiss,
   intent = "info",
+  className = "",
 }: AlertProps) {
   const styles = INTENT_STYLES[intent];
 
@@ -36,7 +38,7 @@ export function Alert({
     <div
       className={`p-3 border rounded-md ${styles.container} ${
         dismissible ? "flex items-start justify-between gap-3" : ""
-      }`}
+      } ${className}`}
       role="alert"
     >
       <p className={`${styles.text} text-sm flex-1`}>{children}</p>
