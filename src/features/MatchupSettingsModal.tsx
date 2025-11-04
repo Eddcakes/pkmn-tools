@@ -145,7 +145,7 @@ export function MatchupSettingsModal({
             intent="success"
             dismissible
             onDismiss={() => setSuccessMessage("")}
-            className="pb-4"
+            className="mb-4"
           >
             {successMessage}
           </Alert>

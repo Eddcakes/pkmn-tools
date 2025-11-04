@@ -112,7 +112,7 @@ export default function SavedDecksPage() {
           intent="success"
           dismissible
           onDismiss={() => setMessage("")}
-          className="pb-4"
+          className="mb-4"
         >
           {message}
         </Alert>
