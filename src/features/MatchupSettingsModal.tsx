@@ -12,6 +12,7 @@ import {
   type MatchupSettings,
 } from "../utils/matchupSettings";
 import { archetypeMapping, archetypeToTagType } from "../utils/archetype";
+import { Alert } from "@/components/Alert";
 
 interface MatchupSettingsModalProps {
   isOpen: boolean;
@@ -140,9 +141,13 @@ export function MatchupSettingsModal({
         )}
 
         {successMessage && (
-          <div className="p-3 bg-green-50 border border-green-200 rounded-md">
-            <p className="text-green-800 text-sm">{successMessage}</p>
-          </div>
+          <Alert
+            intent="success"
+            dismissible
+            onDismiss={() => setSuccessMessage("")}
+          >
+            {successMessage}
+          </Alert>
         )}
 
         {/* Recent Archetypes Section */}

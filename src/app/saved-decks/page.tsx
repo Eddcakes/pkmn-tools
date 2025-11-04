@@ -13,6 +13,7 @@ import {
 } from "../../utils/savedDecks";
 import { Tag } from "@/components/Tag";
 import { archetypeToTagType } from "@/utils/archetype";
+import { Alert } from "@/components/Alert";
 
 export default function SavedDecksPage() {
   const [savedDecks, setSavedDecks] = useState<SavedDeck[]>([]);
@@ -106,9 +107,9 @@ export default function SavedDecksPage() {
       </div>
 
       {message && (
-        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-green-800">{message}</p>
-        </div>
+        <Alert intent="success" dismissible onDismiss={() => setMessage("")}>
+          {message}
+        </Alert>
       )}
 
       {savedDecks.length === 0 ? (

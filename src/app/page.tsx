@@ -1,6 +1,6 @@
 "use client";
 
-import { Link } from "../components/Link";
+import { Link, Card } from "../components";
 
 export default function Home() {
   return (
@@ -8,7 +8,7 @@ export default function Home() {
       <h1 className="text-4xl font-bold text-gray-900 mb-8">Pokémon Tools</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+        <Card>
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
             Deck Comparison
           </h2>
@@ -19,9 +19,9 @@ export default function Home() {
           <Link variant="button" href="/comparison">
             Open Comparison Tool
           </Link>
-        </div>
+        </Card>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+        <Card>
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
             Saved Decks
           </h2>
@@ -32,9 +32,9 @@ export default function Home() {
           <Link variant="button" href="/saved-decks">
             Manage Saved Decks
           </Link>
-        </div>
+        </Card>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+        <Card>
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
             Matchup Log
           </h2>
@@ -45,9 +45,9 @@ export default function Home() {
           <Link variant="button" href="/matchup-records">
             Matchup Log
           </Link>
-        </div>
+        </Card>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+        <Card>
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
             Useful links
           </h2>
@@ -63,7 +63,7 @@ export default function Home() {
               <Link href="https://limitlesstcg.com/">limitless</Link>
             </li>
           </ul>
-        </div>
+        </Card>
       </div>
     </div>
   );

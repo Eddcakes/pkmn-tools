@@ -23,6 +23,7 @@ import {
   getCustomArchetypesArray,
   getMatchupSettings,
 } from "@/utils/matchupSettings";
+import { Alert } from "@/components/Alert";
 
 export default function MatchupRecordsPage() {
   const [userArchetype, setUserArchetype] = useState("");
@@ -268,9 +269,13 @@ export default function MatchupRecordsPage() {
               )}
 
               {successMessage && (
-                <div className="p-3 bg-green-50 border border-green-200 rounded-md">
-                  <p className="text-green-800 text-sm">{successMessage}</p>
-                </div>
+                <Alert
+                  intent="success"
+                  dismissible
+                  onDismiss={() => setSuccessMessage("")}
+                >
+                  {successMessage}
+                </Alert>
               )}
 
               <div>
