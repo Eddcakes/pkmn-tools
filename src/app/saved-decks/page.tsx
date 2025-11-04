@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "../../components/Button";
+import { Card } from "../../components/Card";
 import { ImportDeckModal } from "../../features/ImportDeckModal";
 import { EditDeckModal } from "../../features/EditDeckModal";
 import {
@@ -144,10 +145,7 @@ export default function SavedDecksPage() {
       ) : (
         <div className="grid gap-6">
           {savedDecks.map((deck) => (
-            <div
-              key={deck.id}
-              className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm"
-            >
+            <Card key={deck.id}>
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900 mb-2">
@@ -207,7 +205,7 @@ export default function SavedDecksPage() {
                   {deck.deckList.split("\n").length > 10 && "\n..."}
                 </pre>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       )}

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "../../components/Button";
 import { Link } from "../../components/Link";
+import { Card } from "../../components/Card";
 import { Select, type SelectGroup } from "../../components/Select";
 import { Tag } from "../../components/Tag";
 import {
@@ -248,7 +249,7 @@ export default function MatchupRecordsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Form Section */}
         <div className="lg:col-span-1">
-          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm sticky top-8">
+          <Card className="sticky top-8">
             <div className="flex justify-between mb-4">
               <h2 className="text-xl font-semibold text-gray-900">
                 Add Matchup Record
@@ -358,12 +359,12 @@ export default function MatchupRecordsPage() {
                 {saving ? "Saving..." : "Save Record"}
               </Button>
             </form>
-          </div>
+          </Card>
         </div>
 
         {/* Records List Section */}
         <div className="lg:col-span-2">
-          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+          <Card>
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
               Recent Records ({records.length})
             </h2>
@@ -451,7 +452,7 @@ export default function MatchupRecordsPage() {
                 )}
               </>
             )}
-          </div>
+          </Card>
         </div>
       </div>
 
