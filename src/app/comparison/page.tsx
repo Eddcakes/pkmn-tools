@@ -216,7 +216,7 @@ export default function ComparisonPage() {
         </div>
       </div>
 
-      <Alert className="pb-4">
+      <Alert className="mb-4">
         It is recommended either copy lists directly from{" "}
         <Link href="https://limitlesstcg.com/decks">Limitless</Link> or use the
         Limitless tool to{" "}

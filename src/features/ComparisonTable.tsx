@@ -136,7 +136,7 @@ export function ComparisonTable({
       </div>
 
       {highlightDifferences && (
-        <Alert className="pb-4">
+        <Alert className="mb-4">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-sm font-medium text-blue-900">
               Colour Legend:
