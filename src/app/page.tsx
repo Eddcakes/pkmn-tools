@@ -1,6 +1,6 @@
 "use client";
 
-import { Link, Card } from "../components";
+import { Card, Link } from "../components";
 
 export default function Home() {
   return (

@@ -87,16 +87,18 @@ function createComparisonData(decks: DeckEntry[]): ComparisonCard[] {
     for (const card of parsedCards) {
       const cardId = `${card.name} ${card.setCode} ${card.number}`;
 
-      if (!cardMap.has(cardId)) {
-        cardMap.set(cardId, {
+      let comparisonCard = cardMap.get(cardId);
+
+      if (!comparisonCard) {
+        comparisonCard = {
           cardId,
           displayName: `${card.name} (${card.setCode} ${card.number})`,
           category: card.category,
           counts: {}
-        });
+        };
+        cardMap.set(cardId, comparisonCard);
       }
 
-      const comparisonCard = cardMap.get(cardId)!;
       comparisonCard.counts[deck.id] = card.count;
     }
   }

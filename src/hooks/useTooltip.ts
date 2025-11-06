@@ -75,7 +75,7 @@ export function useTooltip(options: TooltipOptions = {}): UseTooltipReturn {
   }, []);
 
   const handleMouseEnter = useCallback(
-    (e: React.MouseEvent) => {
+    (_e: React.MouseEvent) => {
       // Clear any existing timeout
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Alert } from "@/components/Alert";
 import { Tag } from "@/components/Tag";
 import { archetypeToTagType } from "@/utils/archetype";
@@ -23,16 +23,16 @@ export default function SavedDecksPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    loadSavedDecks();
-  }, []);
-
-  const loadSavedDecks = () => {
+  const loadSavedDecks = useCallback(() => {
     setLoading(true);
     const decks = getSavedDecks();
     setSavedDecks(decks);
     setLoading(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    loadSavedDecks();
+  }, [loadSavedDecks]);
 
   const handleDeleteDeck = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this deck?")) {
@@ -43,7 +43,7 @@ export default function SavedDecksPage() {
           setMessage("Deck deleted successfully");
           setTimeout(() => setMessage(""), 3000);
         }
-      } catch (error) {
+      } catch {
         setMessage("Failed to delete deck");
         setTimeout(() => setMessage(""), 3000);
       }
@@ -55,7 +55,7 @@ export default function SavedDecksPage() {
       await exportDeckToClipboard(deck.deckList);
       setMessage("Deck copied to clipboard!");
       setTimeout(() => setMessage(""), 3000);
-    } catch (error) {
+    } catch {
       setMessage("Failed to copy deck to clipboard");
       setTimeout(() => setMessage(""), 3000);
     }

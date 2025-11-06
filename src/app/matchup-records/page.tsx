@@ -1,29 +1,29 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Button } from "../../components/Button";
-import { Card } from "../../components/Card";
-import { Select, type SelectGroup } from "../../components/Select";
-import { Tag } from "../../components/Tag";
-import {
-  saveMatchupRecord,
-  getMatchupRecords,
-  deleteMatchupRecord,
-  getMatchupChartData,
-  type MatchupRecord,
-  type MatchupChartData
-} from "../../utils/matchupRecords";
-import { archetypeMapping, archetypeToTagType } from "../../utils/archetype";
+import { useCallback, useEffect, useState } from "react";
+import { Alert } from "@/components/Alert";
 import { IconButton } from "@/components/IconButton";
 import { CogIcon } from "@/components/Icons";
-import { MatchupSettingsModal } from "@/features/MatchupSettingsModal";
 import { MatchupChart } from "@/features/MatchupChart";
+import { MatchupSettingsModal } from "@/features/MatchupSettingsModal";
 import {
   addRecentArchetype,
   getCustomArchetypesArray,
   getMatchupSettings
 } from "@/utils/matchupSettings";
-import { Alert } from "@/components/Alert";
+import { Button } from "../../components/Button";
+import { Card } from "../../components/Card";
+import { Select, type SelectGroup } from "../../components/Select";
+import { Tag } from "../../components/Tag";
+import { archetypeMapping, archetypeToTagType } from "../../utils/archetype";
+import {
+  deleteMatchupRecord,
+  getMatchupChartData,
+  getMatchupRecords,
+  type MatchupChartData,
+  type MatchupRecord,
+  saveMatchupRecord
+} from "../../utils/matchupRecords";
 
 export default function MatchupRecordsPage() {
   const [userArchetype, setUserArchetype] = useState("");
@@ -43,13 +43,7 @@ export default function MatchupRecordsPage() {
   });
   const [showAllRecords, setShowAllRecords] = useState(false);
 
-  useEffect(() => {
-    loadRecords();
-    loadArchetypeOptions();
-    updateChartData();
-  }, []);
-
-  const loadArchetypeOptions = () => {
+  const loadArchetypeOptions = useCallback(() => {
     const settings = getMatchupSettings();
     const customArchetypes = getCustomArchetypesArray();
 
@@ -115,9 +109,9 @@ export default function MatchupRecordsPage() {
     });
 
     setArchetypeGroups(groups);
-  };
+  }, []);
 
-  const loadRecords = () => {
+  const loadRecords = useCallback(() => {
     const loadedRecords = getMatchupRecords();
     // Sort by most recent first
     loadedRecords.sort(
@@ -125,12 +119,18 @@ export default function MatchupRecordsPage() {
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
     setRecords(loadedRecords);
-  };
+  }, []);
 
-  const updateChartData = () => {
+  const updateChartData = useCallback(() => {
     const data = getMatchupChartData();
     setChartData(data);
-  };
+  }, []);
+
+  useEffect(() => {
+    loadRecords();
+    loadArchetypeOptions();
+    updateChartData();
+  }, [loadRecords, loadArchetypeOptions, updateChartData]);
 
   const resultOptions = [
     { value: "win", label: "Win" },
