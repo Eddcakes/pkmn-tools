@@ -48,7 +48,7 @@ function calculateCountStatistics(counts: number[]): {
 
 function getCountColorClass(
   count: number,
-  statistics: { average: number; min: number; max: number }
+  statistics: { average: number; min: number; max: number },
 ): string {
   if (count === 0 || statistics.average === 0) {
     return "";
@@ -80,7 +80,7 @@ function getCountColorClass(
 
 function areCountsIdentical(
   comparisonCard: ComparisonCard,
-  deckIds: string[]
+  deckIds: string[],
 ): boolean {
   const counts = deckIds.map((deckId) => comparisonCard.counts[deckId] || 0);
   const firstCount = counts[0];
@@ -100,8 +100,8 @@ export function ComparisonTable({
         (item) =>
           !areCountsIdentical(
             item,
-            decks.map((d) => d.id)
-          )
+            decks.map((d) => d.id),
+          ),
       )
     : comparisonData;
 
@@ -198,7 +198,7 @@ export function ComparisonTable({
                 // Calculate statistics for this row when highlighting is enabled
                 const deckIds = decks.map((d) => d.id);
                 const counts = deckIds.map(
-                  (deckId) => item.counts[deckId] || 0
+                  (deckId) => item.counts[deckId] || 0,
                 );
                 const statistics = highlightDifferences
                   ? calculateCountStatistics(counts)

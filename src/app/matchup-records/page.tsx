@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "../../components/Button";
-import { Link } from "../../components/Link";
 import { Card } from "../../components/Card";
 import { Select, type SelectGroup } from "../../components/Select";
 import { Tag } from "../../components/Tag";
@@ -239,11 +238,8 @@ export default function MatchupRecordsPage() {
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
+      <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Matchup Records</h1>
-        <Link href="/">
-          <Button variant="secondary">Home</Button>
-        </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

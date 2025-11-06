@@ -27,7 +27,7 @@ export function EditDeckModal({
     if (deck) {
       setLabel(deck.label);
       setArchetype(
-        deck.archetype ? deck.archetype.map((tag) => `#${tag}`).join(" ") : ""
+        deck.archetype ? deck.archetype.map((tag) => `#${tag}`).join(" ") : "",
       );
       setDeckList(deck.deckList);
     } else {
@@ -62,7 +62,7 @@ export function EditDeckModal({
         deck.id,
         label.trim(),
         deckList.trim(),
-        archetypeList
+        archetypeList,
       );
       if (updatedDeck) {
         onUpdated();

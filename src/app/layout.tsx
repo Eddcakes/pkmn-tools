@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Navigation } from "../features/Navigation";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -14,7 +15,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-gray-50 min-h-screen">
-        <div>{children}</div>
+        <Navigation />
+        <main>{children}</main>
       </body>
     </html>
   );

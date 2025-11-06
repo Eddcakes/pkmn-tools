@@ -202,18 +202,10 @@ export default function ComparisonPage() {
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
+      <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">
           Pokémon Deck Comparison
         </h1>
-        <div className="flex gap-4">
-          <Link href="/" variant="button" buttonVariant="secondary">
-            Home
-          </Link>
-          <Link href="/saved-decks" variant="button" buttonVariant="secondary">
-            Saved Decks
-          </Link>
-        </div>
       </div>
 
       <Alert className="mb-4">
