@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { IconButton } from "./IconButton";
 import { ChevronIcon, CrossIcon } from "./Icons";
 
@@ -274,44 +274,42 @@ export function Select({
             </li>
           ) : filteredGroups ? (
             // Render grouped options
-            <>
-              {filteredGroups.map((group, groupIndex) => (
-                <React.Fragment key={group.label}>
-                  {/* Group header */}
-                  <li className="px-3 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide bg-gray-50 sticky top-0">
-                    {group.label}
-                  </li>
-                  {/* Group options */}
-                  {group.options.map((option) => {
-                    const globalIndex = filteredOptions.findIndex(
-                      (opt) => opt.value === option.value
-                    );
-                    return (
-                      <li
-                        key={option.value}
-                        className={`px-3 py-2 cursor-pointer text-sm transition-colors ${
-                          globalIndex === highlightedIndex
-                            ? "bg-blue-50 text-blue-900"
-                            : "hover:bg-gray-50"
-                        } ${
-                          option.value === value
-                            ? "bg-blue-100 font-medium"
-                            : ""
-                        }`}
-                        onClick={() => handleOptionSelect(option.value)}
-                        onMouseEnter={() => setHighlightedIndex(globalIndex)}
-                      >
-                        {option.label}
-                      </li>
-                    );
-                  })}
-                  {/* Divider between groups (except after last group) */}
-                  {groupIndex < filteredGroups.length - 1 && (
-                    <li className="border-t border-gray-200 my-1" />
-                  )}
-                </React.Fragment>
-              ))}
-            </>
+
+            filteredGroups.map((group, groupIndex) => (
+              <React.Fragment key={group.label}>
+                {/* Group header */}
+                <li className="px-3 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide bg-gray-50 sticky top-0">
+                  {group.label}
+                </li>
+                {/* Group options */}
+                {group.options.map((option) => {
+                  const globalIndex = filteredOptions.findIndex(
+                    (opt) => opt.value === option.value
+                  );
+                  return (
+                    <li
+                      key={option.value}
+                      className={`px-3 py-2 cursor-pointer text-sm transition-colors ${
+                        globalIndex === highlightedIndex
+                          ? "bg-blue-50 text-blue-900"
+                          : "hover:bg-gray-50"
+                      } ${
+                        option.value === value ? "bg-blue-100 font-medium" : ""
+                      }`}
+                      onClick={() => handleOptionSelect(option.value)}
+                      onKeyDown={() => handleOptionSelect(option.value)}
+                      onMouseEnter={() => setHighlightedIndex(globalIndex)}
+                    >
+                      {option.label}
+                    </li>
+                  );
+                })}
+                {/* Divider between groups (except after last group) */}
+                {groupIndex < filteredGroups.length - 1 && (
+                  <li className="border-t border-gray-200 my-1" />
+                )}
+              </React.Fragment>
+            ))
           ) : (
             // Render flat options
             filteredOptions.map((option, index) => (
@@ -323,6 +321,7 @@ export function Select({
                     : "hover:bg-gray-50"
                 } ${option.value === value ? "bg-blue-100 font-medium" : ""}`}
                 onClick={() => handleOptionSelect(option.value)}
+                onKeyDown={() => handleOptionSelect(option.value)}
                 onMouseEnter={() => setHighlightedIndex(index)}
               >
                 {option.label}

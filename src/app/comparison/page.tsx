@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { Alert, Card, Link } from "@/components";
 import { Button } from "../../components/Button";
+import { ComparisonTable } from "../../features/ComparisonTable";
 import { LoadDeckModal } from "../../features/LoadDeckModal";
 import { SaveDeckModal } from "../../features/SaveDeckModal";
-import { ComparisonTable } from "../../features/ComparisonTable";
 import type { SavedDeck } from "../../utils/savedDecks";
-import { Link, Card, Alert } from "@/components";
 
 const MAX_DECKS = 6;
 
@@ -23,13 +23,6 @@ interface ParsedCard {
   number: string;
   count: number;
   category: string;
-}
-
-interface ComparisonCard {
-  cardId: string;
-  displayName: string;
-  category: string;
-  counts: Record<string, number>;
 }
 
 function parseDeckList(deckListText: string): ParsedCard[] {
@@ -94,16 +87,18 @@ function createComparisonData(decks: DeckEntry[]): ComparisonCard[] {
     for (const card of parsedCards) {
       const cardId = `${card.name} ${card.setCode} ${card.number}`;
 
-      if (!cardMap.has(cardId)) {
-        cardMap.set(cardId, {
+      let comparisonCard = cardMap.get(cardId);
+
+      if (!comparisonCard) {
+        comparisonCard = {
           cardId,
           displayName: `${card.name} (${card.setCode} ${card.number})`,
           category: card.category,
           counts: {}
-        });
+        };
+        cardMap.set(cardId, comparisonCard);
       }
 
-      const comparisonCard = cardMap.get(cardId)!;
       comparisonCard.counts[deck.id] = card.count;
     }
   }
@@ -137,7 +132,7 @@ export default function ComparisonPage() {
   const addDeck = () => {
     if (decks.length < MAX_DECKS) {
       const newId = (
-        Math.max(...decks.map((d) => parseInt(d.id))) + 1
+        Math.max(...decks.map((d) => parseInt(d.id, 10))) + 1
       ).toString();
       setDecks([
         ...decks,
@@ -225,10 +220,14 @@ export default function ComparisonPage() {
               <Card key={deck.id}>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label
+                      htmlFor={`deckLabel-${deck.id}`}
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
                       Deck Label
                     </label>
                     <input
+                      id={`deckLabel-${deck.id}`}
                       type="text"
                       value={deck.label}
                       onChange={(e) =>
@@ -256,10 +255,14 @@ export default function ComparisonPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label
+                      htmlFor={`deckList-${deck.id}`}
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
                       Deck List
                     </label>
                     <textarea
+                      id={`deckList-${deck.id}`}
                       value={deck.deckList}
                       onChange={(e) =>
                         updateDeck(deck.id, "deckList", e.target.value)

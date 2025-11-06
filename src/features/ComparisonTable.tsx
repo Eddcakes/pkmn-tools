@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Alert, Card } from "@/components";
+import { Alert } from "@/components";
 import { CardPreview } from "@/components/CardPreview";
 
 // Color configuration for count differences

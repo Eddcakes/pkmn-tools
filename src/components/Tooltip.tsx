@@ -1,4 +1,4 @@
-import React from "react";
+import type { ReactNode } from "react";
 
 interface Position {
   x: number;
@@ -8,7 +8,7 @@ interface Position {
 interface TooltipProps {
   isVisible: boolean;
   position: Position;
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
 }
 

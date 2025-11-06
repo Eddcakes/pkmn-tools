@@ -10,6 +10,7 @@ const CrossIcon = ({ className }: IconProps) => {
       viewBox="0 0 24 24"
       stroke="currentColor"
     >
+      <title>Close</title>
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -28,6 +29,7 @@ const CogIcon = ({ className }: IconProps) => {
       viewBox="0 0 24 24"
       stroke="currentColor"
     >
+      <title>Settings</title>
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -52,6 +54,7 @@ const ChevronIcon = ({ className }: IconProps) => {
       viewBox="0 0 24 24"
       stroke="currentColor"
     >
+      <title>Chevron Down</title>
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -70,8 +73,9 @@ const MenuIcon = ({ className }: IconProps) => {
       viewBox="0 0 24 24"
       strokeWidth={1.5}
       stroke="currentColor"
-      className="size-6"
+      className={`size-6 ${className}`}
     >
+      <title>Menu</title>
       <path
         strokeLinecap="round"
         strokeLinejoin="round"

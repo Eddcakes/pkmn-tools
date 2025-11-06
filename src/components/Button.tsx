@@ -1,8 +1,8 @@
-import React from "react";
+import type React from "react";
 import {
-  getButtonClasses,
+  type ButtonSize,
   type ButtonVariant,
-  type ButtonSize
+  getButtonClasses
 } from "../utils/buttonStyles";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {

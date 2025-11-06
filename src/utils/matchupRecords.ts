@@ -91,11 +91,13 @@ export function getMatchupStatsByArchetype(userArchetype: string): {
 
   for (const record of records) {
     const opponent = record.opponentArchetype;
-    if (!statsByOpponent.has(opponent)) {
-      statsByOpponent.set(opponent, { wins: 0, losses: 0, ties: 0 });
+    let stats = statsByOpponent.get(opponent);
+
+    if (!stats) {
+      stats = { wins: 0, losses: 0, ties: 0 };
+      statsByOpponent.set(opponent, stats);
     }
 
-    const stats = statsByOpponent.get(opponent)!;
     if (record.result === "win") stats.wins++;
     else if (record.result === "loss") stats.losses++;
     else if (record.result === "tie") stats.ties++;
@@ -149,16 +151,18 @@ export function getMatchupChartData(): MatchupChartData {
     const userArch = record.userArchetype.toLowerCase();
     const oppArch = record.opponentArchetype.toLowerCase();
 
-    if (!statsMatrix.has(userArch)) {
-      statsMatrix.set(userArch, new Map());
+    let userStats = statsMatrix.get(userArch);
+    if (!userStats) {
+      userStats = new Map();
+      statsMatrix.set(userArch, userStats);
     }
 
-    const userStats = statsMatrix.get(userArch)!;
-    if (!userStats.has(oppArch)) {
-      userStats.set(oppArch, { wins: 0, total: 0 });
+    let matchupStats = userStats.get(oppArch);
+    if (!matchupStats) {
+      matchupStats = { wins: 0, total: 0 };
+      userStats.set(oppArch, matchupStats);
     }
 
-    const matchupStats = userStats.get(oppArch)!;
     matchupStats.total++;
     if (record.result === "win") {
       matchupStats.wins++;
@@ -170,8 +174,8 @@ export function getMatchupChartData(): MatchupChartData {
   const matrix = new Map<string, Map<string, number>>();
 
   for (const userArch of userArchetypes) {
-    matrix.set(userArch, new Map());
-    const winRateMap = matrix.get(userArch)!;
+    const winRateMap = new Map<string, number>();
+    matrix.set(userArch, winRateMap);
 
     for (const oppArch of opponentArchetypes) {
       const stats = statsMatrix.get(userArch)?.get(oppArch);

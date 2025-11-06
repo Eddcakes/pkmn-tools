@@ -1,4 +1,4 @@
-import { TagType } from "@/components/Tag";
+import type { TagType } from "@/components/Tag";
 
 // Archetype keyword mapping to type used in Badge component
 export const archetypeMapping: Record<string, TagType> = {

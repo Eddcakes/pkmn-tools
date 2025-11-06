@@ -1,13 +1,13 @@
 "use client";
 
 import React from "react";
+import { useTooltip } from "../hooks/useTooltip";
 import {
   getCardImageFromDisplayName,
   isValidCardFormat
 } from "../utils/cardImages";
-import { useTooltip } from "../hooks/useTooltip";
-import { Tooltip } from "./Tooltip";
 import { CardImage } from "./CardImage";
+import { Tooltip } from "./Tooltip";
 
 interface CardPreviewProps {
   cardName: string;
@@ -40,14 +40,28 @@ export function CardPreview({ cardName, children }: CardPreviewProps) {
   // Clone children and add hover props to interactive elements
   const enhancedChildren = React.Children.map(children, (child) => {
     if (React.isValidElement(child)) {
-      return React.cloneElement(child, {
+      const existingClassName =
+        typeof child.props === "object" &&
+        child.props &&
+        "className" in child.props
+          ? String(child.props.className || "")
+          : "";
+
+      const newClassName = `${existingClassName} ${
+        hasValidFormat ? "cursor-help" : "cursor-default"
+      }`.trim();
+
+      const newProps: Record<string, unknown> = {
         onMouseEnter: shouldShowTooltip ? handleMouseEnter : undefined,
         onMouseLeave: shouldShowTooltip ? handleMouseLeave : undefined,
-        ref: shouldShowTooltip ? triggerRef : undefined,
-        className: `${(child.props as any).className || ""} ${
-          hasValidFormat ? "cursor-help" : "cursor-default"
-        }`.trim()
-      } as any);
+        className: newClassName
+      };
+
+      if (shouldShowTooltip) {
+        newProps.ref = triggerRef;
+      }
+
+      return React.cloneElement(child, newProps);
     }
     return child;
   });

@@ -47,6 +47,7 @@ export function Alert({
           onClick={onDismiss}
           className={`${styles.text} hover:opacity-70 transition-opacity flex-shrink-0`}
           aria-label="Dismiss alert"
+          type="button"
         >
           <svg
             className="w-4 h-4"
@@ -54,6 +55,7 @@ export function Alert({
             stroke="currentColor"
             viewBox="0 0 24 24"
           >
+            <title>Close Icon</title>
             <path
               strokeLinecap="round"
               strokeLinejoin="round"

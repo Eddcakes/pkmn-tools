@@ -1,8 +1,8 @@
 import {
-  getCardImageUrl,
-  parseCardIdentifier,
   getCardImageFromDisplayName,
-  isValidCardFormat
+  getCardImageUrl,
+  isValidCardFormat,
+  parseCardIdentifier
 } from "../utils/cardImages";
 
 // Test the utility functions
@@ -39,5 +39,3 @@ testCards.forEach((card) => {
   const url = getCardImageFromDisplayName(card);
   console.log(`${card}: Valid=${isValid}, URL=${url}`);
 });
-
-export {};

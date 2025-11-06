@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { Tag } from "@/components/Tag";
+import { archetypeToTagType } from "@/utils/archetype";
 import { Button } from "../components/Button";
 import { Modal } from "../components/Modal";
 import { ModalFooter } from "../components/ModalFooter";
 import { saveDeck } from "../utils/savedDecks";
-import { Tag } from "@/components/Tag";
-import { archetypeToTagType } from "@/utils/archetype";
 
 interface SaveDeckModalProps {
   isOpen: boolean;
@@ -69,10 +69,14 @@ export function SaveDeckModal({
     <Modal isOpen={isOpen} onClose={onClose} title="Save Deck" maxWidth="md">
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="deck-label"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Deck Label
           </label>
           <input
+            id="deck-label"
             type="text"
             value={label}
             onChange={(e) => setLabel(e.target.value)}
