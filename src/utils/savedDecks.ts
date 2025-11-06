@@ -37,7 +37,7 @@ export function saveDeck(
     deckList,
     ...(archetype && archetype.length > 0 && { archetype }),
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   };
 
   const decks = getSavedDecks();
@@ -69,7 +69,7 @@ export function updateSavedDeck(
     label,
     deckList,
     ...(archetype !== undefined && { archetype }),
-    updatedAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   };
 
   try {

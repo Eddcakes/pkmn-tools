@@ -4,11 +4,11 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Pokémon Tools",
-  description: "Tools for Pokémon TCG deck analysis and comparison",
+  description: "Tools for Pokémon TCG deck analysis and comparison"
 };
 
 export default function RootLayout({
-  children,
+  children
 }: Readonly<{
   children: React.ReactNode;
 }>) {

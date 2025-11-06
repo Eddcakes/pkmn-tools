@@ -9,7 +9,7 @@ import {
   getSavedDecks,
   deleteSavedDeck,
   exportDeckToClipboard,
-  type SavedDeck,
+  type SavedDeck
 } from "../../utils/savedDecks";
 import { Tag } from "@/components/Tag";
 import { archetypeToTagType } from "@/utils/archetype";

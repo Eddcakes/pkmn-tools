@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface Position {
   x: number;
@@ -27,7 +27,7 @@ export function useTooltip(options: TooltipOptions = {}): UseTooltipReturn {
     delay = 300,
     offset = 10,
     tooltipWidth = 250,
-    tooltipHeight = 350,
+    tooltipHeight = 350
   } = options;
 
   const [isVisible, setIsVisible] = useState(false);
@@ -113,6 +113,6 @@ export function useTooltip(options: TooltipOptions = {}): UseTooltipReturn {
     handleMouseEnter,
     handleMouseLeave,
     showTooltip,
-    hideTooltip,
+    hideTooltip
   };
 }

@@ -13,7 +13,7 @@ const WIN_RATE_COLORS = {
   average: "bg-gray-50",
   aboveAverage: "bg-emerald-50",
   high: "bg-emerald-100",
-  veryHigh: "bg-emerald-200",
+  veryHigh: "bg-emerald-200"
 } as const;
 
 function getWinRateColorClass(winRate: number): string {

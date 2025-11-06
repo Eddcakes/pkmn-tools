@@ -2,14 +2,14 @@ import React from "react";
 import {
   BUTTON_BASE_CLASSES,
   BUTTON_VARIANTS,
-  type ButtonVariant,
+  type ButtonVariant
 } from "../utils/buttonStyles";
 
 const ICON_BUTTON_SIZES = {
   xs: "p-1",
   sm: "p-1.5",
   md: "p-2",
-  lg: "p-3",
+  lg: "p-3"
 } as const;
 
 type IconButtonSize = keyof typeof ICON_BUTTON_SIZES;

@@ -14,7 +14,7 @@ interface LoadDeckModalProps {
 export function LoadDeckModal({
   isOpen,
   onClose,
-  onLoadDeck,
+  onLoadDeck
 }: LoadDeckModalProps) {
   const [savedDecks, setSavedDecks] = useState<SavedDeck[]>([]);
 

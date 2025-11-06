@@ -21,7 +21,7 @@ export function SaveDeckModal({
   deckList,
   initialLabel = "",
   onSaved,
-  archetype,
+  archetype
 }: SaveDeckModalProps) {
   const [label, setLabel] = useState(initialLabel);
   const [saving, setSaving] = useState(false);

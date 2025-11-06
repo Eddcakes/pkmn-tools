@@ -14,16 +14,16 @@ interface NavigationItem {
 const navigationItems: NavigationItem[] = [
   {
     href: "/comparison",
-    label: "Deck Comparison",
+    label: "Deck Comparison"
   },
   {
     href: "/matchup-records",
-    label: "Matchup Records",
+    label: "Matchup Records"
   },
   {
     href: "/saved-decks",
-    label: "Saved Decks",
-  },
+    label: "Saved Decks"
+  }
 ];
 
 export function Navigation() {

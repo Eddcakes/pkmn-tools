@@ -70,7 +70,7 @@ function parseDeckList(deckListText: string): ParsedCard[] {
         setCode,
         number,
         count: parseInt(countStr, 10),
-        category: currentSection,
+        category: currentSection
       });
     }
   }
@@ -99,7 +99,7 @@ function createComparisonData(decks: DeckEntry[]): ComparisonCard[] {
           cardId,
           displayName: `${card.name} (${card.setCode} ${card.number})`,
           category: card.category,
-          counts: {},
+          counts: {}
         });
       }
 
@@ -127,7 +127,7 @@ function createComparisonData(decks: DeckEntry[]): ComparisonCard[] {
 
 export default function ComparisonPage() {
   const [decks, setDecks] = useState<DeckEntry[]>([
-    { id: "1", label: "Deck 1", deckList: "", archetype: "" },
+    { id: "1", label: "Deck 1", deckList: "", archetype: "" }
   ]);
   const [comparisonData, setComparisonData] = useState<ComparisonCard[]>([]);
   const [loadModalOpen, setLoadModalOpen] = useState(false);
@@ -141,7 +141,7 @@ export default function ComparisonPage() {
       ).toString();
       setDecks([
         ...decks,
-        { id: newId, label: `Deck ${newId}`, deckList: "", archetype: "" },
+        { id: newId, label: `Deck ${newId}`, deckList: "", archetype: "" }
       ]);
     }
   };
@@ -179,7 +179,7 @@ export default function ComparisonPage() {
                 ...d,
                 label: savedDeck.label,
                 deckList: savedDeck.deckList,
-                archetype: taggedArchetype,
+                archetype: taggedArchetype
               }
             : d
         )

@@ -2,7 +2,7 @@ import React from "react";
 import {
   getButtonClasses,
   type ButtonVariant,
-  type ButtonSize,
+  type ButtonSize
 } from "../utils/buttonStyles";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {

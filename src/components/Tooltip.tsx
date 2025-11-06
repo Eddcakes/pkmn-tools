@@ -16,7 +16,7 @@ export function Tooltip({
   isVisible,
   position,
   children,
-  className = "",
+  className = ""
 }: TooltipProps) {
   if (!isVisible) return null;
 

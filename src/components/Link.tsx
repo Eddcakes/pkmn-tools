@@ -3,7 +3,7 @@ import NextLink from "next/link";
 import {
   getButtonClasses,
   type ButtonVariant,
-  type ButtonSize,
+  type ButtonSize
 } from "../utils/buttonStyles";
 
 interface LinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {

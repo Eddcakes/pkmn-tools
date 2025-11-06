@@ -17,7 +17,7 @@ export function getMatchupSettings(): MatchupSettings {
       useFavouriteArchetypes: false,
       recentArchetypes: [],
       favouriteArchetypes: [],
-      customArchetypes: "",
+      customArchetypes: ""
     };
   }
 
@@ -30,7 +30,7 @@ export function getMatchupSettings(): MatchupSettings {
           useFavouriteArchetypes: false,
           recentArchetypes: [],
           favouriteArchetypes: [],
-          customArchetypes: "",
+          customArchetypes: ""
         };
   } catch (error) {
     console.error("Error loading matchup settings:", error);
@@ -39,7 +39,7 @@ export function getMatchupSettings(): MatchupSettings {
       useFavouriteArchetypes: false,
       recentArchetypes: [],
       favouriteArchetypes: [],
-      customArchetypes: "",
+      customArchetypes: ""
     };
   }
 }
@@ -71,7 +71,7 @@ export function addRecentArchetype(archetype: string): void {
 
   saveMatchupSettings({
     ...settings,
-    recentArchetypes: updated,
+    recentArchetypes: updated
   });
 }
 
@@ -91,7 +91,7 @@ export function addFavouriteArchetype(archetype: string): void {
   if (settings.favouriteArchetypes.length < MAX_FAVOURITES) {
     saveMatchupSettings({
       ...settings,
-      favouriteArchetypes: [...settings.favouriteArchetypes, archetype],
+      favouriteArchetypes: [...settings.favouriteArchetypes, archetype]
     });
   }
 }
@@ -103,7 +103,7 @@ export function removeFavouriteArchetype(archetype: string): void {
     ...settings,
     favouriteArchetypes: settings.favouriteArchetypes.filter(
       (a) => a.toLowerCase() !== archetype.toLowerCase()
-    ),
+    )
   });
 }
 
@@ -120,6 +120,6 @@ export function clearRecentArchetypes(): void {
 
   saveMatchupSettings({
     ...settings,
-    recentArchetypes: [],
+    recentArchetypes: []
   });
 }
