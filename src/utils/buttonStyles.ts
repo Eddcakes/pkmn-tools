@@ -4,13 +4,13 @@ export const BUTTON_VARIANTS = {
   danger: "bg-red-600 hover:bg-red-700 text-white focus:ring-red-500",
   ghost: "bg-transparent hover:bg-gray-100 text-gray-600 focus:ring-gray-400",
   outline:
-    "bg-transparent hover:bg-gray-50 text-gray-700 border border-gray-300 focus:ring-gray-400",
+    "bg-transparent hover:bg-gray-50 text-gray-700 border border-gray-300 focus:ring-gray-400"
 } as const;
 
 export const BUTTON_SIZES = {
   sm: "px-3 py-1.5 text-sm",
   md: "px-4 py-2",
-  lg: "px-6 py-3 text-lg",
+  lg: "px-6 py-3 text-lg"
 } as const;
 
 export const BUTTON_BASE_CLASSES =

@@ -35,7 +35,7 @@ export function Select({
   disabled = false,
   required = false,
   className = "",
-  allowCustom = false,
+  allowCustom = false
 }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -61,7 +61,7 @@ export function Select({
           ...group,
           options: group.options.filter((option) =>
             option.label.toLowerCase().includes(searchText.toLowerCase())
-          ),
+          )
         }))
         .filter((group) => group.options.length > 0)
     : null;
@@ -95,7 +95,7 @@ export function Select({
       if (highlightedElement) {
         highlightedElement.scrollIntoView({
           block: "nearest",
-          behavior: "smooth",
+          behavior: "smooth"
         });
       }
     }

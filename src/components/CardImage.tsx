@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+"use client";
+import { useState } from "react";
 
 interface CardImageProps {
   imageUrl: string;
@@ -11,7 +12,7 @@ export function CardImage({
   imageUrl,
   cardName,
   width = 192,
-  height = 256,
+  height = 256
 }: CardImageProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);

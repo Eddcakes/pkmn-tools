@@ -17,7 +17,7 @@ export function Modal({
   children,
   maxWidth = "lg",
   showCloseButton = true,
-  closeOnOverlayClick = true,
+  closeOnOverlayClick = true
 }: ModalProps) {
   if (!isOpen) return null;
 
@@ -26,7 +26,7 @@ export function Modal({
     md: "max-w-md",
     lg: "max-w-2xl",
     xl: "max-w-4xl",
-    "2xl": "max-w-6xl",
+    "2xl": "max-w-6xl"
   };
 
   const handleOverlayClick = (e: React.MouseEvent) => {

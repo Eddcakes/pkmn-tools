@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
 import { ImportDeckModal } from "../../features/ImportDeckModal";
@@ -10,7 +9,7 @@ import {
   getSavedDecks,
   deleteSavedDeck,
   exportDeckToClipboard,
-  type SavedDeck,
+  type SavedDeck
 } from "../../utils/savedDecks";
 import { Tag } from "@/components/Tag";
 import { archetypeToTagType } from "@/utils/archetype";
@@ -97,12 +96,6 @@ export default function SavedDecksPage() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Saved Decks</h1>
         <div className="flex gap-4">
-          <Link href="/">
-            <Button variant="secondary">Home</Button>
-          </Link>
-          <Link href="/comparison">
-            <Button variant="secondary">Back to Comparison</Button>
-          </Link>
           <Button onClick={() => setImportModalOpen(true)}>Import Deck</Button>
         </div>
       </div>

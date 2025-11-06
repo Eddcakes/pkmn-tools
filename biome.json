@@ -14,6 +14,11 @@
     "indentStyle": "space",
     "indentWidth": 2
   },
+  "javascript": {
+    "formatter": {
+      "trailingCommas": "none"
+    }
+  },
   "linter": {
     "enabled": true,
     "rules": {

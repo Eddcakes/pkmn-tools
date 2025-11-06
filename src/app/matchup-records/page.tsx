@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "../../components/Button";
-import { Link } from "../../components/Link";
 import { Card } from "../../components/Card";
 import { Select, type SelectGroup } from "../../components/Select";
 import { Tag } from "../../components/Tag";
@@ -12,7 +11,7 @@ import {
   deleteMatchupRecord,
   getMatchupChartData,
   type MatchupRecord,
-  type MatchupChartData,
+  type MatchupChartData
 } from "../../utils/matchupRecords";
 import { archetypeMapping, archetypeToTagType } from "../../utils/archetype";
 import { IconButton } from "@/components/IconButton";
@@ -22,7 +21,7 @@ import { MatchupChart } from "@/features/MatchupChart";
 import {
   addRecentArchetype,
   getCustomArchetypesArray,
-  getMatchupSettings,
+  getMatchupSettings
 } from "@/utils/matchupSettings";
 import { Alert } from "@/components/Alert";
 
@@ -40,7 +39,7 @@ export default function MatchupRecordsPage() {
   const [chartData, setChartData] = useState<MatchupChartData>({
     userArchetypes: [],
     opponentArchetypes: [],
-    matrix: new Map(),
+    matrix: new Map()
   });
   const [showAllRecords, setShowAllRecords] = useState(false);
 
@@ -63,7 +62,7 @@ export default function MatchupRecordsPage() {
     // Create option objects
     const allOptions = baseArchetypes.sort().map((archetype) => ({
       value: archetype,
-      label: archetype.charAt(0).toUpperCase() + archetype.slice(1),
+      label: archetype.charAt(0).toUpperCase() + archetype.slice(1)
     }));
 
     const groups: SelectGroup[] = [];
@@ -73,7 +72,7 @@ export default function MatchupRecordsPage() {
       const recentOptions = settings.recentArchetypes
         .map((archetype) => ({
           value: archetype,
-          label: archetype.charAt(0).toUpperCase() + archetype.slice(1),
+          label: archetype.charAt(0).toUpperCase() + archetype.slice(1)
         }))
         .filter((option) =>
           allOptions.some((opt) => opt.value === option.value)
@@ -82,7 +81,7 @@ export default function MatchupRecordsPage() {
       if (recentOptions.length > 0) {
         groups.push({
           label: "Recent",
-          options: recentOptions,
+          options: recentOptions
         });
       }
     }
@@ -95,7 +94,7 @@ export default function MatchupRecordsPage() {
       const favouriteOptions = settings.favouriteArchetypes
         .map((archetype) => ({
           value: archetype,
-          label: archetype.charAt(0).toUpperCase() + archetype.slice(1),
+          label: archetype.charAt(0).toUpperCase() + archetype.slice(1)
         }))
         .filter((option) =>
           allOptions.some((opt) => opt.value === option.value)
@@ -104,7 +103,7 @@ export default function MatchupRecordsPage() {
       if (favouriteOptions.length > 0) {
         groups.push({
           label: "Favourites",
-          options: favouriteOptions,
+          options: favouriteOptions
         });
       }
     }
@@ -112,7 +111,7 @@ export default function MatchupRecordsPage() {
     // Add All Archetypes group
     groups.push({
       label: "All Archetypes",
-      options: allOptions,
+      options: allOptions
     });
 
     setArchetypeGroups(groups);
@@ -136,7 +135,7 @@ export default function MatchupRecordsPage() {
   const resultOptions = [
     { value: "win", label: "Win" },
     { value: "loss", label: "Loss" },
-    { value: "tie", label: "Tie" },
+    { value: "tie", label: "Tie" }
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -216,7 +215,7 @@ export default function MatchupRecordsPage() {
       month: "short",
       year: "numeric",
       hour: "2-digit",
-      minute: "2-digit",
+      minute: "2-digit"
     });
   };
 
@@ -239,11 +238,8 @@ export default function MatchupRecordsPage() {
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
+      <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Matchup Records</h1>
-        <Link href="/">
-          <Button variant="secondary">Home</Button>
-        </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

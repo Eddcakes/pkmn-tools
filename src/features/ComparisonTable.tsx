@@ -8,7 +8,7 @@ const COUNT_COLORS = {
   lower: "bg-rose-50",
   average: "",
   higher: "bg-emerald-50",
-  muchHigher: "bg-emerald-100",
+  muchHigher: "bg-emerald-100"
 } as const;
 
 interface ComparisonCard {
@@ -89,7 +89,7 @@ function areCountsIdentical(
 
 export function ComparisonTable({
   comparisonData,
-  decks,
+  decks
 }: ComparisonTableProps) {
   const [highlightDifferences, setHighlightDifferences] = useState(false);
   const [hideIdenticalRows, setHideIdenticalRows] = useState(false);

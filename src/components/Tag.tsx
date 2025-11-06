@@ -8,7 +8,7 @@ const colourMapping = {
   colorless: "bg-stone-50 text-stone-400 inset-ring-stone-500/10",
   darkness: "bg-slate-50 text-slate-600 inset-ring-slate-500/10",
   metal: "bg-zinc-50 text-zinc-400 inset-ring-zinc-500/10",
-  dragon: "bg-indigo-50 text-indigo-700 inset-ring-indigo-700/10",
+  dragon: "bg-indigo-50 text-indigo-700 inset-ring-indigo-700/10"
 };
 
 export type TagType = keyof typeof colourMapping;

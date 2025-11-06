@@ -34,7 +34,7 @@ export function saveMatchupRecord(
     opponentArchetype,
     result,
     notes,
-    createdAt: new Date().toISOString(),
+    createdAt: new Date().toISOString()
   };
 
   const records = getMatchupRecords();
@@ -111,7 +111,7 @@ export function getMatchupStatsByArchetype(userArchetype: string): {
         losses: stats.losses,
         ties: stats.ties,
         total,
-        winRate: Math.round(winRate * 10) / 10, // Round to 1 decimal
+        winRate: Math.round(winRate * 10) / 10 // Round to 1 decimal
       };
     }
   );
@@ -190,7 +190,7 @@ export function getMatchupChartData(): MatchupChartData {
   return {
     userArchetypes,
     opponentArchetypes,
-    matrix,
+    matrix
   };
 }
 

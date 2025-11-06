@@ -9,20 +9,20 @@ interface AlertProps {
 const INTENT_STYLES = {
   success: {
     container: "bg-green-50 border-green-200",
-    text: "text-green-800",
+    text: "text-green-800"
   },
   error: {
     container: "bg-red-50 border-red-200",
-    text: "text-red-800",
+    text: "text-red-800"
   },
   warning: {
     container: "bg-yellow-50 border-yellow-200",
-    text: "text-yellow-800",
+    text: "text-yellow-800"
   },
   info: {
     container: "bg-blue-50 border-blue-200",
-    text: "text-blue-800",
-  },
+    text: "text-blue-800"
+  }
 };
 
 export function Alert({
@@ -30,7 +30,7 @@ export function Alert({
   dismissible = false,
   onDismiss,
   intent = "info",
-  className = "",
+  className = ""
 }: AlertProps) {
   const styles = INTENT_STYLES[intent];
 

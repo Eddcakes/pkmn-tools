@@ -13,7 +13,7 @@ interface ImportDeckModalProps {
 export function ImportDeckModal({
   isOpen,
   onClose,
-  onImported,
+  onImported
 }: ImportDeckModalProps) {
   const [label, setLabel] = useState("");
   const [deckList, setDeckList] = useState("");

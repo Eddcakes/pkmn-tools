@@ -1,7 +1,9 @@
+"use client";
+
 import React from "react";
 import {
   getCardImageFromDisplayName,
-  isValidCardFormat,
+  isValidCardFormat
 } from "../utils/cardImages";
 import { useTooltip } from "../hooks/useTooltip";
 import { Tooltip } from "./Tooltip";
@@ -25,12 +27,12 @@ export function CardPreview({ cardName, children }: CardPreviewProps) {
     position,
     triggerRef,
     handleMouseEnter,
-    handleMouseLeave,
+    handleMouseLeave
   } = useTooltip({
     delay: 300,
     offset: 10,
     tooltipWidth: 250,
-    tooltipHeight: 350,
+    tooltipHeight: 350
   });
 
   const shouldShowTooltip = imageUrl && hasValidFormat;
@@ -44,7 +46,7 @@ export function CardPreview({ cardName, children }: CardPreviewProps) {
         ref: shouldShowTooltip ? triggerRef : undefined,
         className: `${(child.props as any).className || ""} ${
           hasValidFormat ? "cursor-help" : "cursor-default"
-        }`.trim(),
+        }`.trim()
       } as any);
     }
     return child;

@@ -15,7 +15,7 @@ export function EditDeckModal({
   isOpen,
   onClose,
   onUpdated,
-  deck,
+  deck
 }: EditDeckModalProps) {
   const [label, setLabel] = useState("");
   const [archetype, setArchetype] = useState("");

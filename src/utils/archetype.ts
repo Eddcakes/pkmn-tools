@@ -35,7 +35,7 @@ export const archetypeMapping: Record<string, TagType> = {
   "roaring moon": "darkness",
   wugtrio: "water",
   miraidon: "lightning",
-  "mega kangaskhan": "colorless",
+  "mega kangaskhan": "colorless"
 };
 
 export const archetypeToTagType = (archetype: string): TagType | undefined => {

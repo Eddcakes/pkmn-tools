@@ -9,7 +9,7 @@ import { Select } from "../components/Select";
 import {
   getMatchupSettings,
   saveMatchupSettings,
-  type MatchupSettings,
+  type MatchupSettings
 } from "../utils/matchupSettings";
 import { archetypeMapping, archetypeToTagType } from "../utils/archetype";
 import { Alert } from "@/components/Alert";
@@ -23,14 +23,14 @@ interface MatchupSettingsModalProps {
 export function MatchupSettingsModal({
   isOpen,
   onClose,
-  onUpdated,
+  onUpdated
 }: MatchupSettingsModalProps) {
   const [settings, setSettings] = useState<MatchupSettings>({
     useRecentArchetypes: true,
     useFavouriteArchetypes: false,
     recentArchetypes: [],
     favouriteArchetypes: [],
-    customArchetypes: "",
+    customArchetypes: ""
   });
   const [newFavourite, setNewFavourite] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -66,7 +66,7 @@ export function MatchupSettingsModal({
 
     setSettings({
       ...settings,
-      favouriteArchetypes: [...settings.favouriteArchetypes, newFavourite],
+      favouriteArchetypes: [...settings.favouriteArchetypes, newFavourite]
     });
     setNewFavourite("");
     setError("");
@@ -77,7 +77,7 @@ export function MatchupSettingsModal({
       ...settings,
       favouriteArchetypes: settings.favouriteArchetypes.filter(
         (a) => a !== archetype
-      ),
+      )
     });
   };
 
@@ -85,7 +85,7 @@ export function MatchupSettingsModal({
     if (window.confirm("Are you sure you want to clear recent archetypes?")) {
       setSettings({
         ...settings,
-        recentArchetypes: [],
+        recentArchetypes: []
       });
     }
   };
@@ -121,7 +121,7 @@ export function MatchupSettingsModal({
     .sort()
     .map((archetype) => ({
       value: archetype,
-      label: archetype.charAt(0).toUpperCase() + archetype.slice(1),
+      label: archetype.charAt(0).toUpperCase() + archetype.slice(1)
     }));
 
   if (!isOpen) return null;
@@ -161,7 +161,7 @@ export function MatchupSettingsModal({
                 onChange={(e) =>
                   setSettings({
                     ...settings,
-                    useRecentArchetypes: e.target.checked,
+                    useRecentArchetypes: e.target.checked
                   })
                 }
                 disabled={isSubmitting}
@@ -210,7 +210,7 @@ export function MatchupSettingsModal({
               onChange={(e) =>
                 setSettings({
                   ...settings,
-                  useFavouriteArchetypes: e.target.checked,
+                  useFavouriteArchetypes: e.target.checked
                 })
               }
               disabled={isSubmitting}
@@ -281,7 +281,7 @@ export function MatchupSettingsModal({
             onChange={(e) =>
               setSettings({
                 ...settings,
-                customArchetypes: e.target.value,
+                customArchetypes: e.target.value
               })
             }
             placeholder="Enter custom archetypes, one per line&#10;Example:&#10;regidrago&#10;lugia&#10;charizard ex"

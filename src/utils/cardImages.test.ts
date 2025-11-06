@@ -2,7 +2,7 @@ import {
   getCardImageUrl,
   parseCardIdentifier,
   getCardImageFromDisplayName,
-  isValidCardFormat,
+  isValidCardFormat
 } from "../utils/cardImages";
 
 // Test the utility functions
@@ -31,7 +31,7 @@ const testCards = [
   "Iono (PAL 185)",
   "Psychic Energy (SVE 13)",
   "Invalid Card Name",
-  "Another Card (INVALID)",
+  "Another Card (INVALID)"
 ];
 
 testCards.forEach((card) => {
