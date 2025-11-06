@@ -1,13 +1,13 @@
 "use client";
 
 import React from "react";
+import { useTooltip } from "../hooks/useTooltip";
 import {
   getCardImageFromDisplayName,
   isValidCardFormat
 } from "../utils/cardImages";
-import { useTooltip } from "../hooks/useTooltip";
-import { Tooltip } from "./Tooltip";
 import { CardImage } from "./CardImage";
+import { Tooltip } from "./Tooltip";
 
 interface CardPreviewProps {
   cardName: string;

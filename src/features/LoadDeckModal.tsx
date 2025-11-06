@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { Button } from "../components/Button";
 import { Modal } from "../components/Modal";
 import { ModalFooter } from "../components/ModalFooter";
-import { getSavedDecks } from "../utils/savedDecks";
 import type { SavedDeck } from "../utils/savedDecks";
+import { getSavedDecks } from "../utils/savedDecks";
 
 interface LoadDeckModalProps {
   isOpen: boolean;

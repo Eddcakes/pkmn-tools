@@ -1,4 +1,4 @@
-import React from "react";
+import type { ButtonHTMLAttributes, ReactNode } from "react";
 import {
   BUTTON_BASE_CLASSES,
   BUTTON_VARIANTS,
@@ -14,11 +14,10 @@ const ICON_BUTTON_SIZES = {
 
 type IconButtonSize = keyof typeof ICON_BUTTON_SIZES;
 
-interface IconButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: IconButtonSize;
-  icon: React.ReactNode;
+  icon: ReactNode;
   "aria-label": string;
 }
 

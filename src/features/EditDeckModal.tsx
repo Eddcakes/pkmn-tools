@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import type { FormEvent } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../components/Button";
 import { Modal } from "../components/Modal";
 import { ModalFooter } from "../components/ModalFooter";
-import { updateSavedDeck, type SavedDeck } from "../utils/savedDecks";
+import { type SavedDeck, updateSavedDeck } from "../utils/savedDecks";
 
 interface EditDeckModalProps {
   isOpen: boolean;
@@ -36,9 +37,9 @@ export function EditDeckModal({
       setDeckList("");
     }
     setError("");
-  }, [deck, isOpen]);
+  }, [deck]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!deck) return;
 

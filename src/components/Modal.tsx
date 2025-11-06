@@ -1,10 +1,10 @@
-import React from "react";
+import type { KeyboardEvent, MouseEvent, ReactNode } from "react";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
   maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl";
   showCloseButton?: boolean;
   closeOnOverlayClick?: boolean;
@@ -29,13 +29,13 @@ export function Modal({
     "2xl": "max-w-6xl"
   };
 
-  const handleOverlayClick = (e: React.MouseEvent) => {
+  const handleOverlayClick = (e: MouseEvent) => {
     if (closeOnOverlayClick && e.target === e.currentTarget) {
       onClose();
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === "Escape") {
       onClose();
     }
@@ -63,6 +63,7 @@ export function Modal({
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 transition-colors p-1"
               aria-label="Close modal"
+              type="button"
             >
               {/* move to icons */}
               <svg
@@ -71,6 +72,7 @@ export function Modal({
                 viewBox="0 0 24 24"
                 stroke="currentColor"
               >
+                <title>Close</title>
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"

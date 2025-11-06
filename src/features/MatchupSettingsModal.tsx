@@ -1,18 +1,19 @@
-import React, { useState, useEffect } from "react";
+import type { FormEvent } from "react";
+import { useEffect, useState } from "react";
+import { Alert } from "@/components/Alert";
 import { Button } from "../components/Button";
-import { Modal } from "../components/Modal";
-import { ModalFooter } from "../components/ModalFooter";
-import { Tag } from "../components/Tag";
 import { IconButton } from "../components/IconButton";
 import { CrossIcon } from "../components/Icons";
+import { Modal } from "../components/Modal";
+import { ModalFooter } from "../components/ModalFooter";
 import { Select } from "../components/Select";
+import { Tag } from "../components/Tag";
+import { archetypeMapping, archetypeToTagType } from "../utils/archetype";
 import {
   getMatchupSettings,
-  saveMatchupSettings,
-  type MatchupSettings
+  type MatchupSettings,
+  saveMatchupSettings
 } from "../utils/matchupSettings";
-import { archetypeMapping, archetypeToTagType } from "../utils/archetype";
-import { Alert } from "@/components/Alert";
 
 interface MatchupSettingsModalProps {
   isOpen: boolean;
@@ -90,7 +91,7 @@ export function MatchupSettingsModal({
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     setIsSubmitting(true);
@@ -268,7 +269,10 @@ export function MatchupSettingsModal({
 
         {/* Custom Archetypes Section */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="custom-archetypes"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Custom Archetypes
           </label>
           <p className="text-xs text-gray-500 mb-3">
@@ -277,6 +281,7 @@ export function MatchupSettingsModal({
           </p>
 
           <textarea
+            id="custom-archetypes"
             value={settings.customArchetypes}
             onChange={(e) =>
               setSettings({

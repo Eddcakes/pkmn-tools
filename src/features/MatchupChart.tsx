@@ -1,4 +1,3 @@
-import React from "react";
 import type { MatchupChartData } from "../utils/matchupRecords";
 
 interface MatchupChartProps {

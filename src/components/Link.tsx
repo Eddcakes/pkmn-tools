@@ -1,17 +1,17 @@
-import React from "react";
 import NextLink from "next/link";
+import type { AnchorHTMLAttributes, ReactNode } from "react";
 import {
-  getButtonClasses,
+  type ButtonSize,
   type ButtonVariant,
-  type ButtonSize
+  getButtonClasses
 } from "../utils/buttonStyles";
 
-interface LinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
+interface LinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
   href: string;
   variant?: "default" | "button";
   buttonVariant?: ButtonVariant;
   size?: ButtonSize;
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export function Link({

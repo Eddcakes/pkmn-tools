@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import { usePathname } from "next/navigation";
+import { type ComponentType, useState } from "react";
+import { CrossIcon, MenuIcon } from "../components/Icons";
 import { Link } from "../components/Link";
-import { MenuIcon, CrossIcon } from "../components/Icons";
 
 interface NavigationItem {
   href: string;
   label: string;
-  icon?: React.ComponentType<{ className?: string }>;
+  icon?: ComponentType<{ className?: string }>;
 }
 
 const navigationItems: NavigationItem[] = [
@@ -90,6 +90,7 @@ export function Navigation() {
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               aria-label="Toggle mobile menu"
+              type="button"
             >
               {isMobileMenuOpen ? (
                 <CrossIcon className="w-6 h-6" />

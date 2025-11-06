@@ -58,10 +58,14 @@ export function ImportDeckModal({
     <Modal isOpen={isOpen} onClose={onClose} title="Import Deck" maxWidth="lg">
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor={`deckName`}
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Deck Label
           </label>
           <input
+            id={`deckName`}
             type="text"
             value={label}
             onChange={(e) => setLabel(e.target.value)}
@@ -87,10 +91,14 @@ export function ImportDeckModal({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor={`deckList`}
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Deck List
           </label>
           <textarea
+            id={`deckList`}
             value={deckList}
             onChange={(e) => setDeckList(e.target.value)}
             rows={12}

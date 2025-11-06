@@ -1,19 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Button } from "../../components/Button";
-import { Card } from "../../components/Card";
-import { ImportDeckModal } from "../../features/ImportDeckModal";
-import { EditDeckModal } from "../../features/EditDeckModal";
-import {
-  getSavedDecks,
-  deleteSavedDeck,
-  exportDeckToClipboard,
-  type SavedDeck
-} from "../../utils/savedDecks";
+import { useEffect, useState } from "react";
+import { Alert } from "@/components/Alert";
 import { Tag } from "@/components/Tag";
 import { archetypeToTagType } from "@/utils/archetype";
-import { Alert } from "@/components/Alert";
+import { Button } from "../../components/Button";
+import { Card } from "../../components/Card";
+import { EditDeckModal } from "../../features/EditDeckModal";
+import { ImportDeckModal } from "../../features/ImportDeckModal";
+import {
+  deleteSavedDeck,
+  exportDeckToClipboard,
+  getSavedDecks,
+  type SavedDeck
+} from "../../utils/savedDecks";
 
 export default function SavedDecksPage() {
   const [savedDecks, setSavedDecks] = useState<SavedDeck[]>([]);
@@ -121,6 +121,7 @@ export default function SavedDecksPage() {
               viewBox="0 0 24 24"
               stroke="currentColor"
             >
+              <title>Trash Icon</title>
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
