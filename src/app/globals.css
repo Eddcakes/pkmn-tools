@@ -1,1 +1,6 @@
 @import "tailwindcss";
+
+/* Force scrollbar to always be visible to prevent layout shift */
+html {
+  overflow-y: scroll;
+}

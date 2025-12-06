@@ -31,10 +31,13 @@ export function Navigation() {
   const pathname = usePathname();
 
   const isActiveLink = (href: string) => {
+    // Remove basePath if present to compare routes correctly
+    const normalizedPath = pathname.replace(/^\/pkmn-tools/, "") || "/";
+
     if (href === "/") {
-      return pathname === "/";
+      return normalizedPath === "/";
     }
-    return pathname.startsWith(href);
+    return normalizedPath.startsWith(href);
   };
 
   return (

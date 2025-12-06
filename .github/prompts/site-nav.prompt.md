@@ -1,6 +1,6 @@
 ---
-mode: agent
-model: Claude Sonnet 4
+agent: agent
+model: Claude Sonnet 4.5
 description: A prompt file for creating a new global navigation component in a React and TypeScript project.
 ---
 
