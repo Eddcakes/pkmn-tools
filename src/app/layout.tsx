@@ -3,8 +3,15 @@ import { Navigation } from "../features/Navigation";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Pokémon Tools",
-  description: "Tools for Pokémon TCG deck analysis and comparison"
+  title: "Pokémon TCG Tools",
+  description: "Tools for Pokémon TCG deck analysis and comparison",
+  keywords: "pokemon, tcg, trading card game, matchup tracker",
+  authors: [{ name: "Eddcakes" }],
+  openGraph: {
+    title: "Pokémon TCG Tools",
+    description: "Tools for Pokémon Trading Card Game players",
+    type: "website"
+  }
 };
 
 export default function RootLayout({
