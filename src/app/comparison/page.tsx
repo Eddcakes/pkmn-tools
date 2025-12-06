@@ -25,37 +25,58 @@ interface ParsedCard {
   category: string;
 }
 
+// Define valid category names
+const VALID_CATEGORIES = ["Pokémon", "Trainer", "Energy"];
+
 function parseDeckList(deckListText: string): ParsedCard[] {
   const lines = deckListText.split("\n");
   const cards: ParsedCard[] = [];
   let currentSection = "";
+  let pendingLine = "";
 
-  for (const line of lines) {
-    const trimmedLine = line.trim();
+  for (let i = 0; i < lines.length; i++) {
+    const trimmedLine = lines[i].trim();
+
     // Skip empty lines
     if (!trimmedLine) {
+      pendingLine = "";
       continue;
     }
 
+    // Combine with pending line if exists
+    const fullLine = pendingLine
+      ? `${pendingLine} ${trimmedLine}`
+      : trimmedLine;
+
     // Check for section headers - handle both "Pokémon:" and "Pokémon: 16" formats
-    if (trimmedLine.includes(":")) {
-      const sectionName = trimmedLine.split(":")[0].trim();
+    // Only treat as section header if it matches a known category
+    if (fullLine.includes(":")) {
+      const sectionName = fullLine.split(":")[0].trim();
+      let isValidSection = false;
+
       // Normalize section names
       if (
         sectionName.toLowerCase().includes("pokémon") ||
         sectionName.toLowerCase().includes("pokemon")
       ) {
         currentSection = "Pokémon";
+        isValidSection = true;
       } else if (sectionName.toLowerCase().includes("trainer")) {
         currentSection = "Trainer";
+        isValidSection = true;
       } else if (sectionName.toLowerCase().includes("energy")) {
         currentSection = "Energy";
+        isValidSection = true;
       }
-      continue;
+
+      if (isValidSection) {
+        pendingLine = "";
+        continue;
+      }
     }
 
     // Parse format: "4 Munkidori TWM 95"
-    const match = trimmedLine.match(/^(\d+)\s+(.+?)\s+([A-Z]+)\s+(\d+)$/);
+    const match = fullLine.match(/^(\d+)\s+(.+?)\s+([A-Z]+)\s+(\d+)$/);
     if (match) {
       const [, countStr, name, setCode, number] = match;
       cards.push({
@@ -65,6 +86,10 @@ function parseDeckList(deckListText: string): ParsedCard[] {
         count: parseInt(countStr, 10),
         category: currentSection
       });
+      pendingLine = ""; // Clear pending line after successful parse
+    } else {
+      // Line doesn't match pattern, save it as pending for next iteration
+      pendingLine = fullLine;
     }
   }
 
@@ -103,13 +128,10 @@ function createComparisonData(decks: DeckEntry[]): ComparisonCard[] {
     }
   }
 
-  // Define category order
-  const categoryOrder = ["Pokémon", "Trainer", "Energy"];
-
   return Array.from(cardMap.values()).sort((a, b) => {
     // First sort by category
-    const aCategoryIndex = categoryOrder.indexOf(a.category);
-    const bCategoryIndex = categoryOrder.indexOf(b.category);
+    const aCategoryIndex = VALID_CATEGORIES.indexOf(a.category);
+    const bCategoryIndex = VALID_CATEGORIES.indexOf(b.category);
 
     if (aCategoryIndex !== bCategoryIndex) {
       return aCategoryIndex - bCategoryIndex;
