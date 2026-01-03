@@ -404,7 +404,7 @@ export default function MatchupRecordsPage() {
                     onChange={setUserArchetypeFilter}
                     groups={archetypeGroups}
                     placeholder="All decks..."
-                    allowCustom={false}
+                    allowCustom={true}
                   />
                 </div>
 

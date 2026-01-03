@@ -43,6 +43,7 @@ export function Select({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const shouldScrollRef = useRef(false);
 
   // Flatten all options from groups or use direct options
   const allOptions: SelectOption[] = groups
@@ -70,6 +71,12 @@ export function Select({
   const selectedOption = allOptions.find((opt) => opt.value === value);
   const displayLabel = selectedOption ? selectedOption.label : value;
 
+  // Check if search text exactly matches any existing option value
+  const hasExactMatch = allOptions.some(
+    (opt) => opt.value.toLowerCase() === searchText.trim().toLowerCase()
+  );
+  const canAddCustom = allowCustom && searchText.trim() && !hasExactMatch;
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -86,9 +93,9 @@ export function Select({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Scroll highlighted option into view
+  // Scroll highlighted option into view (only for keyboard navigation)
   useEffect(() => {
-    if (highlightedIndex >= 0 && listRef.current) {
+    if (shouldScrollRef.current && highlightedIndex >= 0 && listRef.current) {
       const highlightedElement = listRef.current.children[
         highlightedIndex
       ] as HTMLElement;
@@ -98,6 +105,7 @@ export function Select({
           behavior: "smooth"
         });
       }
+      shouldScrollRef.current = false;
     }
   }, [highlightedIndex]);
 
@@ -139,7 +147,7 @@ export function Select({
   };
 
   const handleAddCustom = () => {
-    if (allowCustom && searchText.trim() && filteredOptions.length === 0) {
+    if (canAddCustom) {
       onChange(searchText.trim().toLowerCase());
       setSearchText("");
       setIsOpen(false);
@@ -152,6 +160,7 @@ export function Select({
       case "ArrowDown":
         e.preventDefault();
         setIsOpen(true);
+        shouldScrollRef.current = true;
         setHighlightedIndex((prev) =>
           prev < filteredOptions.length - 1 ? prev + 1 : prev
         );
@@ -160,16 +169,19 @@ export function Select({
       case "ArrowUp":
         e.preventDefault();
         setIsOpen(true);
+        shouldScrollRef.current = true;
         setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : 0));
         break;
 
       case "Home":
         e.preventDefault();
+        shouldScrollRef.current = true;
         setHighlightedIndex(0);
         break;
 
       case "End":
         e.preventDefault();
+        shouldScrollRef.current = true;
         setHighlightedIndex(filteredOptions.length - 1);
         break;
 
@@ -181,11 +193,7 @@ export function Select({
           highlightedIndex < filteredOptions.length
         ) {
           handleOptionSelect(filteredOptions[highlightedIndex].value);
-        } else if (
-          allowCustom &&
-          searchText.trim() &&
-          filteredOptions.length === 0
-        ) {
+        } else if (canAddCustom) {
           handleAddCustom();
         }
         break;
@@ -258,16 +266,23 @@ export function Select({
           ref={listRef}
           className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
         >
+          {/* Show add custom option at top when there are filtered results */}
+          {canAddCustom && filteredOptions.length > 0 && (
+            <li className="px-3 py-2 text-sm text-gray-500">
+              <CustomTextButton
+                onClick={handleAddCustom}
+                searchText={searchText}
+              />
+            </li>
+          )}
+
           {filteredOptions.length === 0 ? (
             <li className="px-3 py-2 text-sm text-gray-500">
-              {allowCustom && searchText.trim() ? (
-                <button
-                  type="button"
+              {canAddCustom ? (
+                <CustomTextButton
                   onClick={handleAddCustom}
-                  className="w-full text-left hover:bg-blue-50 px-2 py-1 rounded"
-                >
-                  Add "{searchText.trim()}"
-                </button>
+                  searchText={searchText}
+                />
               ) : (
                 "No options found"
               )}
@@ -331,5 +346,23 @@ export function Select({
         </ul>
       )}
     </div>
+  );
+}
+
+function CustomTextButton({
+  onClick,
+  searchText
+}: {
+  onClick: () => void;
+  searchText: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full text-left hover:bg-blue-50 px-2 py-1 rounded"
+    >
+      "{searchText.trim()}"
+    </button>
   );
 }
