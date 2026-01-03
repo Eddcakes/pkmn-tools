@@ -4,7 +4,10 @@
  * @param cardNumber - The card number (e.g., "86", "95")
  * @returns The full URL to the card image
  */
-export function getCardImageUrl(setCode: string, cardNumber: string): string {
+export function getPreviewImageUrl(
+  setCode: string,
+  cardNumber: string
+): string {
   // Format: https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/{SET}/{SET}_{NUMBER}_R_EN_LG.png
   const paddedNumber = cardNumber.padStart(3, "0"); // Ensure 3 digits
   return `https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/${setCode}/${setCode}_${paddedNumber}_R_EN_LG.png`;
@@ -41,7 +44,7 @@ export function parseCardIdentifier(
  * @param displayName - Card name in format "Card Name (SET NUMBER)"
  * @returns The image URL or null if parsing fails
  */
-export function getCardImageFromDisplayName(
+export function getPreviewImageFromDisplayName(
   displayName: string
 ): string | null {
   const parsed = parseCardIdentifier(displayName);
@@ -49,7 +52,7 @@ export function getCardImageFromDisplayName(
     return null;
   }
 
-  return getCardImageUrl(parsed.setCode, parsed.cardNumber);
+  return getPreviewImageUrl(parsed.setCode, parsed.cardNumber);
 }
 
 /**

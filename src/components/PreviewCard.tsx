@@ -3,13 +3,13 @@
 import React from "react";
 import { useTooltip } from "../hooks/useTooltip";
 import {
-  getCardImageFromDisplayName,
+  getPreviewImageFromDisplayName,
   isValidCardFormat
-} from "../utils/cardImages";
-import { CardImage } from "./CardImage";
+} from "../utils/previewImages";
+import { PreviewImage } from "./PreviewImage";
 import { Tooltip } from "./Tooltip";
 
-interface CardPreviewProps {
+interface PreviewCardProps {
   cardName: string;
   children: React.ReactNode;
   onMouseEnter?: () => void;
@@ -18,8 +18,8 @@ interface CardPreviewProps {
   className?: string;
 }
 
-export function CardPreview({ cardName, children }: CardPreviewProps) {
-  const imageUrl = getCardImageFromDisplayName(cardName);
+export function PreviewCard({ cardName, children }: PreviewCardProps) {
+  const imageUrl = getPreviewImageFromDisplayName(cardName);
   const hasValidFormat = isValidCardFormat(cardName);
 
   const {
@@ -72,7 +72,7 @@ export function CardPreview({ cardName, children }: CardPreviewProps) {
 
       {shouldShowTooltip && (
         <Tooltip isVisible={isVisible} position={position}>
-          <CardImage imageUrl={imageUrl} cardName={cardName} />
+          <PreviewImage imageUrl={imageUrl} cardName={cardName} />
         </Tooltip>
       )}
     </>

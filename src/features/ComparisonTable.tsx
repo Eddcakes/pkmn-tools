@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Alert } from "@/components";
-import { CardPreview } from "@/components/CardPreview";
+import { PreviewCard } from "@/components/PreviewCard";
 
 // Color configuration for count differences
 const COUNT_COLORS = {
@@ -210,11 +210,11 @@ export function ComparisonTable({
                     className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
                   >
                     <td className="px-6 py-4 text-sm text-gray-900 border-b border-gray-200">
-                      <CardPreview cardName={item.displayName}>
+                      <PreviewCard cardName={item.displayName}>
                         <span className="hover:text-blue-600 hover:underline transition-colors">
                           {item.displayName}
                         </span>
-                      </CardPreview>
+                      </PreviewCard>
                     </td>
                     {decks.map((deck) => {
                       const count = item.counts[deck.id] || 0;

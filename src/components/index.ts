@@ -1,9 +1,9 @@
 export { Alert } from "./Alert";
 export { Button } from "./Button";
 export { Card } from "./Card";
-export { CardImage } from "./CardImage";
-export { CardPreview } from "./CardPreview";
 export { Link } from "./Link";
 export { Modal } from "./Modal";
 export { ModalFooter } from "./ModalFooter";
+export { PreviewCard } from "./PreviewCard";
+export { PreviewImage } from "./PreviewImage";
 export { Tooltip } from "./Tooltip";
