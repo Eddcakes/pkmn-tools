@@ -43,6 +43,9 @@ export default function MatchupRecordsPage() {
     matrix: new Map()
   });
   const [showAllRecords, setShowAllRecords] = useState(false);
+  const [userArchetypeFilter, setUserArchetypeFilter] = useState("");
+  const [opponentArchetypeFilter, setOpponentArchetypeFilter] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
 
   const loadArchetypeOptions = useCallback(() => {
     const settings = getMatchupSettings();
@@ -223,9 +226,23 @@ export default function MatchupRecordsPage() {
     }
   };
 
+  // Filter records based on selected filters
+  const filteredRecords = records.filter((record) => {
+    const matchesUserArchetype =
+      !userArchetypeFilter ||
+      record.userArchetype.toLowerCase() === userArchetypeFilter.toLowerCase();
+    const matchesOpponentArchetype =
+      !opponentArchetypeFilter ||
+      record.opponentArchetype.toLowerCase() ===
+        opponentArchetypeFilter.toLowerCase();
+    return matchesUserArchetype && matchesOpponentArchetype;
+  });
+
   // Get records to display (limited to 5 or all)
-  const displayedRecords = showAllRecords ? records : records.slice(0, 5);
-  const hasMoreRecords = records.length > 5;
+  const displayedRecords = showAllRecords
+    ? filteredRecords
+    : filteredRecords.slice(0, 5);
+  const hasMoreRecords = filteredRecords.length > 5;
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
@@ -353,9 +370,77 @@ export default function MatchupRecordsPage() {
         {/* Records List Section */}
         <div className="lg:col-span-2">
           <Card>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Recent Records ({records.length})
-            </h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Records ({filteredRecords.length}
+                {filteredRecords.length !== records.length
+                  ? ` of ${records.length}`
+                  : ""}
+                )
+              </h2>
+              {records.length > 0 && (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => setShowFilters(!showFilters)}
+                >
+                  {showFilters ? "Hide Filters" : "Filters"}
+                </Button>
+              )}
+            </div>
+
+            {showFilters && records.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 pb-4 border-b border-gray-200">
+                <div>
+                  <label
+                    htmlFor="filter-user-archetype"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Filter Your Deck
+                  </label>
+                  <Select
+                    id="filter-user-archetype"
+                    value={userArchetypeFilter}
+                    onChange={setUserArchetypeFilter}
+                    groups={archetypeGroups}
+                    placeholder="All decks..."
+                    allowCustom={false}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="filter-opponent-archetype"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Filter Opponent Deck
+                  </label>
+                  <Select
+                    id="filter-opponent-archetype"
+                    value={opponentArchetypeFilter}
+                    onChange={setOpponentArchetypeFilter}
+                    groups={archetypeGroups}
+                    placeholder="All decks..."
+                    allowCustom={false}
+                  />
+                </div>
+
+                {(userArchetypeFilter || opponentArchetypeFilter) && (
+                  <div className="col-span-full">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => {
+                        setUserArchetypeFilter("");
+                        setOpponentArchetypeFilter("");
+                      }}
+                    >
+                      Clear Filters
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {records.length === 0 ? (
               <div className="text-center py-12">
@@ -363,6 +448,22 @@ export default function MatchupRecordsPage() {
                 <p className="text-sm text-gray-400">
                   Add your first matchup record using the form on the left.
                 </p>
+              </div>
+            ) : filteredRecords.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500 mb-4">
+                  No records match the selected filters.
+                </p>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => {
+                    setUserArchetypeFilter("");
+                    setOpponentArchetypeFilter("");
+                  }}
+                >
+                  Clear Filters
+                </Button>
               </div>
             ) : (
               <>
@@ -405,7 +506,7 @@ export default function MatchupRecordsPage() {
                           {formatDate(record.createdAt)}
                         </span>
                         <span
-                          data-fileNameForSync
+                          data-file-name-for-syncing
                           className="text-xs text-white"
                         >
                           {formatFileNameFromDateString(record.createdAt)}
@@ -428,7 +529,7 @@ export default function MatchupRecordsPage() {
                       size="sm"
                       onClick={() => setShowAllRecords(true)}
                     >
-                      Show More ({records.length - 5} more records)
+                      Show More ({filteredRecords.length - 5} more records)
                     </Button>
                   </div>
                 )}
