@@ -16,6 +16,7 @@ import { Card } from "../../components/Card";
 import { Select, type SelectGroup } from "../../components/Select";
 import { Tag } from "../../components/Tag";
 import { archetypeMapping, archetypeToTagType } from "../../utils/archetype";
+import { formatDate, formatFileNameFromDateString } from "../../utils/date";
 import {
   deleteMatchupRecord,
   getMatchupChartData,
@@ -207,16 +208,6 @@ export default function MatchupRecordsPage() {
         );
       }
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit"
-    });
   };
 
   const getResultBadgeColor = (result: string) => {
@@ -412,6 +403,12 @@ export default function MatchupRecordsPage() {
                         </span>
                         <span className="text-xs text-gray-500">
                           {formatDate(record.createdAt)}
+                        </span>
+                        <span
+                          data-fileNameForSync
+                          className="text-xs text-white"
+                        >
+                          {formatFileNameFromDateString(record.createdAt)}
                         </span>
                       </div>
 
