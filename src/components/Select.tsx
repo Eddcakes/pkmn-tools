@@ -55,17 +55,33 @@ export function Select({
     option.label.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  // Filter groups based on search text
+  // Filter groups based on search text and deduplicate options across groups
   const filteredGroups = groups
-    ? groups
-        .map((group) => ({
-          ...group,
-          options: group.options.filter((option) =>
-            option.label.toLowerCase().includes(searchText.toLowerCase())
-          )
-        }))
-        .filter((group) => group.options.length > 0)
+    ? (() => {
+        const seenValues = new Set<string>();
+        return groups
+          .map((group) => ({
+            ...group,
+            options: group.options.filter((option) => {
+              const matchesSearch = option.label
+                .toLowerCase()
+                .includes(searchText.toLowerCase());
+              const notSeenYet = !seenValues.has(option.value);
+              if (matchesSearch && notSeenYet) {
+                seenValues.add(option.value);
+                return true;
+              }
+              return false;
+            })
+          }))
+          .filter((group) => group.options.length > 0);
+      })()
     : null;
+
+  // Create a flat deduplicated list for keyboard navigation (matches render order)
+  const deduplicatedOptions = filteredGroups
+    ? filteredGroups.flatMap((group) => group.options)
+    : filteredOptions;
 
   // Get display label for selected value
   const selectedOption = allOptions.find((opt) => opt.value === value);
@@ -162,7 +178,7 @@ export function Select({
         setIsOpen(true);
         shouldScrollRef.current = true;
         setHighlightedIndex((prev) =>
-          prev < filteredOptions.length - 1 ? prev + 1 : prev
+          prev < deduplicatedOptions.length - 1 ? prev + 1 : prev
         );
         break;
 
@@ -182,7 +198,7 @@ export function Select({
       case "End":
         e.preventDefault();
         shouldScrollRef.current = true;
-        setHighlightedIndex(filteredOptions.length - 1);
+        setHighlightedIndex(deduplicatedOptions.length - 1);
         break;
 
       case "Enter":
@@ -190,9 +206,9 @@ export function Select({
         if (
           isOpen &&
           highlightedIndex >= 0 &&
-          highlightedIndex < filteredOptions.length
+          highlightedIndex < deduplicatedOptions.length
         ) {
-          handleOptionSelect(filteredOptions[highlightedIndex].value);
+          handleOptionSelect(deduplicatedOptions[highlightedIndex].value);
         } else if (canAddCustom) {
           handleAddCustom();
         }
@@ -267,7 +283,7 @@ export function Select({
           className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
         >
           {/* Show add custom option at top when there are filtered results */}
-          {canAddCustom && filteredOptions.length > 0 && (
+          {canAddCustom && deduplicatedOptions.length > 0 && (
             <li className="px-3 py-2 text-sm text-gray-500">
               <CustomTextButton
                 onClick={handleAddCustom}
@@ -276,7 +292,7 @@ export function Select({
             </li>
           )}
 
-          {filteredOptions.length === 0 ? (
+          {deduplicatedOptions.length === 0 ? (
             <li className="px-3 py-2 text-sm text-gray-500">
               {canAddCustom ? (
                 <CustomTextButton
@@ -289,7 +305,6 @@ export function Select({
             </li>
           ) : filteredGroups ? (
             // Render grouped options
-
             filteredGroups.map((group, groupIndex) => (
               <React.Fragment key={group.label}>
                 {/* Group header */}
@@ -298,7 +313,7 @@ export function Select({
                 </li>
                 {/* Group options */}
                 {group.options.map((option) => {
-                  const globalIndex = filteredOptions.findIndex(
+                  const globalIndex = deduplicatedOptions.findIndex(
                     (opt) => opt.value === option.value
                   );
                   return (
