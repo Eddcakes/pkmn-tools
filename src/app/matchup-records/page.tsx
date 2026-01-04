@@ -184,9 +184,10 @@ export default function MatchupRecordsPage() {
       setResult("");
       setNotes("");
 
-      // Reload records
+      // Reload records and archetype options
       loadRecords();
       updateChartData();
+      loadArchetypeOptions();
 
       setSuccessMessage("Matchup record saved successfully!");
       setTimeout(() => setSuccessMessage(""), 3000);
@@ -267,23 +268,6 @@ export default function MatchupRecordsPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                  <p className="text-red-800 text-sm">{error}</p>
-                </div>
-              )}
-
-              {successMessage && (
-                <Alert
-                  intent="success"
-                  dismissible
-                  onDismiss={() => setSuccessMessage("")}
-                  className="mb-4"
-                >
-                  {successMessage}
-                </Alert>
-              )}
-
               <div>
                 <label
                   htmlFor="user-archetype"
@@ -363,6 +347,22 @@ export default function MatchupRecordsPage() {
               <Button type="submit" disabled={saving} className="w-full">
                 {saving ? "Saving..." : "Save Record"}
               </Button>
+
+              {error && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                  <p className="text-red-800 text-sm">{error}</p>
+                </div>
+              )}
+
+              {successMessage && (
+                <Alert
+                  intent="success"
+                  dismissible
+                  onDismiss={() => setSuccessMessage("")}
+                >
+                  {successMessage}
+                </Alert>
+              )}
             </form>
           </Card>
         </div>
