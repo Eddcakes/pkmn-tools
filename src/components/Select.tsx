@@ -112,9 +112,9 @@ export function Select({
   // Scroll highlighted option into view (only for keyboard navigation)
   useEffect(() => {
     if (shouldScrollRef.current && highlightedIndex >= 0 && listRef.current) {
-      const highlightedElement = listRef.current.children[
-        highlightedIndex
-      ] as HTMLElement;
+      const highlightedElement = listRef.current.querySelector(
+        `[data-option-index="${highlightedIndex}"]`
+      ) as HTMLElement;
       if (highlightedElement) {
         highlightedElement.scrollIntoView({
           block: "nearest",
@@ -319,6 +319,7 @@ export function Select({
                   return (
                     <li
                       key={option.value}
+                      data-option-index={globalIndex}
                       className={`px-3 py-2 cursor-pointer text-sm transition-colors ${
                         globalIndex === highlightedIndex
                           ? "bg-blue-50 text-blue-900"
@@ -345,6 +346,7 @@ export function Select({
             filteredOptions.map((option, index) => (
               <li
                 key={option.value}
+                data-option-index={index}
                 className={`px-3 py-2 cursor-pointer text-sm transition-colors ${
                   index === highlightedIndex
                     ? "bg-blue-50 text-blue-900"

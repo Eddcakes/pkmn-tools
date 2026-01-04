@@ -403,7 +403,7 @@ export default function MatchupRecordsPage() {
                     value={userArchetypeFilter}
                     onChange={setUserArchetypeFilter}
                     groups={archetypeGroups}
-                    placeholder="All decks..."
+                    placeholder="Select Archetype"
                     allowCustom={true}
                   />
                 </div>
@@ -420,8 +420,8 @@ export default function MatchupRecordsPage() {
                     value={opponentArchetypeFilter}
                     onChange={setOpponentArchetypeFilter}
                     groups={archetypeGroups}
-                    placeholder="All decks..."
-                    allowCustom={false}
+                    placeholder="Select Archetype"
+                    allowCustom={true}
                   />
                 </div>
 
