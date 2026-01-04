@@ -21,3 +21,11 @@ Paste your deck list in PTCGL format (e.g., "4 Pikachu ex MEW 123")
 npm install
 npm run dev
 ```
+
+### experimental 
+
+Recording gameplay for review, using shareX it's easy to setup automatic naming of the files:
+
+file name: `%y-%mo-%d__T%h%mi%s.mp4`
+
+We then can link up with the notes from Matchup Records pretty loosly as it is unlikely we will save at the same second/even minute, but should be easy to find from there.

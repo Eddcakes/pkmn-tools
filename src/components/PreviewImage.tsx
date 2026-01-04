@@ -1,19 +1,19 @@
 "use client";
 import { useState } from "react";
 
-interface CardImageProps {
+interface PreviewImageProps {
   imageUrl: string;
   cardName: string;
   width?: number;
   height?: number;
 }
 
-export function CardImage({
+export function PreviewImage({
   imageUrl,
   cardName,
   width = 192,
   height = 256
-}: CardImageProps) {
+}: PreviewImageProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 

@@ -43,6 +43,7 @@ export function Select({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const shouldScrollRef = useRef(false);
 
   // Flatten all options from groups or use direct options
   const allOptions: SelectOption[] = groups
@@ -54,21 +55,43 @@ export function Select({
     option.label.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  // Filter groups based on search text
+  // Filter groups based on search text and deduplicate options across groups
   const filteredGroups = groups
-    ? groups
-        .map((group) => ({
-          ...group,
-          options: group.options.filter((option) =>
-            option.label.toLowerCase().includes(searchText.toLowerCase())
-          )
-        }))
-        .filter((group) => group.options.length > 0)
+    ? (() => {
+        const seenValues = new Set<string>();
+        return groups
+          .map((group) => ({
+            ...group,
+            options: group.options.filter((option) => {
+              const matchesSearch = option.label
+                .toLowerCase()
+                .includes(searchText.toLowerCase());
+              const notSeenYet = !seenValues.has(option.value);
+              if (matchesSearch && notSeenYet) {
+                seenValues.add(option.value);
+                return true;
+              }
+              return false;
+            })
+          }))
+          .filter((group) => group.options.length > 0);
+      })()
     : null;
+
+  // Create a flat deduplicated list for keyboard navigation (matches render order)
+  const deduplicatedOptions = filteredGroups
+    ? filteredGroups.flatMap((group) => group.options)
+    : filteredOptions;
 
   // Get display label for selected value
   const selectedOption = allOptions.find((opt) => opt.value === value);
   const displayLabel = selectedOption ? selectedOption.label : value;
+
+  // Check if search text exactly matches any existing option value
+  const hasExactMatch = allOptions.some(
+    (opt) => opt.value.toLowerCase() === searchText.trim().toLowerCase()
+  );
+  const canAddCustom = allowCustom && searchText.trim() && !hasExactMatch;
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -86,18 +109,19 @@ export function Select({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Scroll highlighted option into view
+  // Scroll highlighted option into view (only for keyboard navigation)
   useEffect(() => {
-    if (highlightedIndex >= 0 && listRef.current) {
-      const highlightedElement = listRef.current.children[
-        highlightedIndex
-      ] as HTMLElement;
+    if (shouldScrollRef.current && highlightedIndex >= 0 && listRef.current) {
+      const highlightedElement = listRef.current.querySelector(
+        `[data-option-index="${highlightedIndex}"]`
+      ) as HTMLElement;
       if (highlightedElement) {
         highlightedElement.scrollIntoView({
           block: "nearest",
           behavior: "smooth"
         });
       }
+      shouldScrollRef.current = false;
     }
   }, [highlightedIndex]);
 
@@ -139,7 +163,7 @@ export function Select({
   };
 
   const handleAddCustom = () => {
-    if (allowCustom && searchText.trim() && filteredOptions.length === 0) {
+    if (canAddCustom) {
       onChange(searchText.trim().toLowerCase());
       setSearchText("");
       setIsOpen(false);
@@ -152,25 +176,29 @@ export function Select({
       case "ArrowDown":
         e.preventDefault();
         setIsOpen(true);
+        shouldScrollRef.current = true;
         setHighlightedIndex((prev) =>
-          prev < filteredOptions.length - 1 ? prev + 1 : prev
+          prev < deduplicatedOptions.length - 1 ? prev + 1 : prev
         );
         break;
 
       case "ArrowUp":
         e.preventDefault();
         setIsOpen(true);
+        shouldScrollRef.current = true;
         setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : 0));
         break;
 
       case "Home":
         e.preventDefault();
+        shouldScrollRef.current = true;
         setHighlightedIndex(0);
         break;
 
       case "End":
         e.preventDefault();
-        setHighlightedIndex(filteredOptions.length - 1);
+        shouldScrollRef.current = true;
+        setHighlightedIndex(deduplicatedOptions.length - 1);
         break;
 
       case "Enter":
@@ -178,14 +206,10 @@ export function Select({
         if (
           isOpen &&
           highlightedIndex >= 0 &&
-          highlightedIndex < filteredOptions.length
+          highlightedIndex < deduplicatedOptions.length
         ) {
-          handleOptionSelect(filteredOptions[highlightedIndex].value);
-        } else if (
-          allowCustom &&
-          searchText.trim() &&
-          filteredOptions.length === 0
-        ) {
+          handleOptionSelect(deduplicatedOptions[highlightedIndex].value);
+        } else if (canAddCustom) {
           handleAddCustom();
         }
         break;
@@ -258,23 +282,29 @@ export function Select({
           ref={listRef}
           className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
         >
-          {filteredOptions.length === 0 ? (
+          {/* Show add custom option at top when there are filtered results */}
+          {canAddCustom && deduplicatedOptions.length > 0 && (
             <li className="px-3 py-2 text-sm text-gray-500">
-              {allowCustom && searchText.trim() ? (
-                <button
-                  type="button"
+              <CustomTextButton
+                onClick={handleAddCustom}
+                searchText={searchText}
+              />
+            </li>
+          )}
+
+          {deduplicatedOptions.length === 0 ? (
+            <li className="px-3 py-2 text-sm text-gray-500">
+              {canAddCustom ? (
+                <CustomTextButton
                   onClick={handleAddCustom}
-                  className="w-full text-left hover:bg-blue-50 px-2 py-1 rounded"
-                >
-                  Add "{searchText.trim()}"
-                </button>
+                  searchText={searchText}
+                />
               ) : (
                 "No options found"
               )}
             </li>
           ) : filteredGroups ? (
             // Render grouped options
-
             filteredGroups.map((group, groupIndex) => (
               <React.Fragment key={group.label}>
                 {/* Group header */}
@@ -283,12 +313,13 @@ export function Select({
                 </li>
                 {/* Group options */}
                 {group.options.map((option) => {
-                  const globalIndex = filteredOptions.findIndex(
+                  const globalIndex = deduplicatedOptions.findIndex(
                     (opt) => opt.value === option.value
                   );
                   return (
                     <li
                       key={option.value}
+                      data-option-index={globalIndex}
                       className={`px-3 py-2 cursor-pointer text-sm transition-colors ${
                         globalIndex === highlightedIndex
                           ? "bg-blue-50 text-blue-900"
@@ -315,6 +346,7 @@ export function Select({
             filteredOptions.map((option, index) => (
               <li
                 key={option.value}
+                data-option-index={index}
                 className={`px-3 py-2 cursor-pointer text-sm transition-colors ${
                   index === highlightedIndex
                     ? "bg-blue-50 text-blue-900"
@@ -331,5 +363,23 @@ export function Select({
         </ul>
       )}
     </div>
+  );
+}
+
+function CustomTextButton({
+  onClick,
+  searchText
+}: {
+  onClick: () => void;
+  searchText: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full text-left hover:bg-blue-50 px-2 py-1 rounded"
+    >
+      "{searchText.trim()}"
+    </button>
   );
 }
