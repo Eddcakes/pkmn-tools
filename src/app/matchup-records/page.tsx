@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Alert } from "@/components/Alert";
 import { IconButton } from "@/components/IconButton";
 import { CogIcon } from "@/components/Icons";
+import { EditMatchupRecordModal } from "@/features/EditMatchupRecordModal";
 import { MatchupChart } from "@/features/MatchupChart";
 import { MatchupSettingsModal } from "@/features/MatchupSettingsModal";
 import {
@@ -46,6 +47,8 @@ export default function MatchupRecordsPage() {
   const [userArchetypeFilter, setUserArchetypeFilter] = useState("");
   const [opponentArchetypeFilter, setOpponentArchetypeFilter] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [recordToEdit, setRecordToEdit] = useState<MatchupRecord | null>(null);
 
   const loadArchetypeOptions = useCallback(() => {
     const settings = getMatchupSettings();
@@ -212,6 +215,19 @@ export default function MatchupRecordsPage() {
         );
       }
     }
+  };
+
+  const handleEdit = (record: MatchupRecord) => {
+    setRecordToEdit(record);
+    setEditModalOpen(true);
+  };
+
+  const handleEditUpdated = () => {
+    loadRecords();
+    updateChartData();
+    loadArchetypeOptions();
+    setSuccessMessage("Record updated successfully!");
+    setTimeout(() => setSuccessMessage(""), 3000);
   };
 
   const getResultBadgeColor = (result: string) => {
@@ -485,13 +501,22 @@ export default function MatchupRecordsPage() {
                             type={archetypeToTagType(record.opponentArchetype)}
                           />
                         </div>
-                        <Button
-                          size="sm"
-                          variant="danger"
-                          onClick={() => handleDelete(record.id)}
-                        >
-                          Delete
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => handleEdit(record)}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="danger"
+                            onClick={() => handleDelete(record.id)}
+                          >
+                            Delete
+                          </Button>
+                        </div>
                       </div>
 
                       <div className="flex items-center gap-3 mb-2">
@@ -566,6 +591,18 @@ export default function MatchupRecordsPage() {
           // Reload archetype options when settings are updated
           loadArchetypeOptions();
         }}
+      />
+
+      {/* Edit Record Modal */}
+      <EditMatchupRecordModal
+        isOpen={editModalOpen}
+        onClose={() => {
+          setEditModalOpen(false);
+          setRecordToEdit(null);
+        }}
+        onUpdated={handleEditUpdated}
+        record={recordToEdit}
+        archetypeGroups={archetypeGroups}
       />
     </div>
   );
