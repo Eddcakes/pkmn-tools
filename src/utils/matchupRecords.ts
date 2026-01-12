@@ -5,17 +5,46 @@ export interface MatchupRecord {
   result: "win" | "loss" | "tie";
   notes?: string;
   createdAt: string;
+  updatedAt?: string;
   // format / set: MEG; -> any value from saving what version of format the record was created in
 }
 
 const STORAGE_KEY = "pokemon-matchup-records";
+
+function migrateRecordsToIncludeUpdatedAt(
+  records: MatchupRecord[]
+): MatchupRecord[] {
+  let needsMigration = false;
+
+  const migratedRecords = records.map((record) => {
+    if (!record.updatedAt) {
+      needsMigration = true;
+      return {
+        ...record,
+        updatedAt: record.createdAt
+      };
+    }
+    return record;
+  });
+
+  if (needsMigration) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(migratedRecords));
+    } catch (error) {
+      console.error("Error migrating matchup records:", error);
+    }
+  }
+
+  return migratedRecords;
+}
 
 export function getMatchupRecords(): MatchupRecord[] {
   if (typeof window === "undefined") return [];
 
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
+    const records = stored ? JSON.parse(stored) : [];
+    return migrateRecordsToIncludeUpdatedAt(records);
   } catch (error) {
     console.error("Error loading matchup records:", error);
     return [];
@@ -28,13 +57,15 @@ export function saveMatchupRecord(
   result: "win" | "loss" | "tie",
   notes?: string
 ): MatchupRecord {
+  const now = new Date().toISOString();
   const record: MatchupRecord = {
     id: generateId(),
     userArchetype,
     opponentArchetype,
     result,
     notes,
-    createdAt: new Date().toISOString()
+    createdAt: now,
+    updatedAt: now
   };
 
   const records = getMatchupRecords();
@@ -64,6 +95,42 @@ export function deleteMatchupRecord(id: string): boolean {
   } catch (error) {
     console.error("Error deleting matchup record:", error);
     throw new Error("Failed to delete matchup record from local storage");
+  }
+}
+
+export function updateMatchupRecord(
+  id: string,
+  updates: {
+    userArchetype?: string;
+    opponentArchetype?: string;
+    result?: "win" | "loss" | "tie";
+    notes?: string;
+  }
+): MatchupRecord | null {
+  const records = getMatchupRecords();
+  const recordIndex = records.findIndex((record) => record.id === id);
+
+  if (recordIndex === -1) {
+    return null; // Record not found
+  }
+
+  const existingRecord = records[recordIndex];
+  const updatedRecord: MatchupRecord = {
+    ...existingRecord,
+    ...updates,
+    updatedAt: new Date().toISOString(),
+    // Ensure createdAt is never changed
+    createdAt: existingRecord.createdAt
+  };
+
+  records[recordIndex] = updatedRecord;
+
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+    return updatedRecord;
+  } catch (error) {
+    console.error("Error updating matchup record:", error);
+    throw new Error("Failed to update matchup record in local storage");
   }
 }
 
