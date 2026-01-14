@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert } from "@/components/Alert";
 import { IconButton } from "@/components/IconButton";
 import { CogIcon } from "@/components/Icons";
@@ -49,6 +49,7 @@ export default function MatchupRecordsPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [recordToEdit, setRecordToEdit] = useState<MatchupRecord | null>(null);
+  const recordsListRef = useRef<HTMLDivElement>(null);
 
   const loadArchetypeOptions = useCallback(() => {
     const settings = getMatchupSettings();
@@ -191,6 +192,9 @@ export default function MatchupRecordsPage() {
       loadRecords();
       updateChartData();
       loadArchetypeOptions();
+
+      // Scroll the records list to the top
+      recordsListRef.current?.scrollTo({ top: 0, behavior: "smooth" });
 
       setSuccessMessage("Matchup record saved successfully!");
       setTimeout(() => setSuccessMessage(""), 3000);
@@ -483,7 +487,10 @@ export default function MatchupRecordsPage() {
               </div>
             ) : (
               <>
-                <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                <div
+                  ref={recordsListRef}
+                  className="space-y-4 max-h-[600px] overflow-y-auto pr-2"
+                >
                   {displayedRecords.map((record) => (
                     <div
                       key={record.id}
