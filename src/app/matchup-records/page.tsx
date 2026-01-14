@@ -528,11 +528,11 @@ export default function MatchupRecordsPage() {
 
                       <div className="flex items-center gap-3 mb-2">
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getResultBadgeColor(
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium uppercase ${getResultBadgeColor(
                             record.result
                           )}`}
                         >
-                          {record.result.toUpperCase()}
+                          {record.result}
                         </span>
                         <span className="text-xs text-gray-500">
                           {formatDate(record.createdAt)}

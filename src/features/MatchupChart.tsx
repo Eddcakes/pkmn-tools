@@ -45,10 +45,6 @@ function formatWinRate(winRate: number): string {
   return winRate.toFixed(2);
 }
 
-function capitalizeArchetype(archetype: string): string {
-  return archetype.charAt(0).toUpperCase() + archetype.slice(1);
-}
-
 export function MatchupChart({ data }: MatchupChartProps) {
   const { userArchetypes, opponentArchetypes, matrix } = data;
 
@@ -136,15 +132,15 @@ export function MatchupChart({ data }: MatchupChartProps) {
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-r border-gray-200 sticky left-0 bg-gray-50">
-                Your Deck
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-900 uppercase tracking-wider border-b border-r border-gray-200 sticky left-0 bg-gray-50 whitespace-nowrap">
+                Your Deck ▼
               </th>
               {opponentArchetypes.map((archetype) => (
                 <th
                   key={archetype}
-                  className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200 min-w-[100px]"
+                  className="px-4 py-3 text-center text-xs font-medium text-gray-500 capitalize tracking-wider border-b border-gray-200 min-w-[100px]"
                 >
-                  {capitalizeArchetype(archetype)}
+                  {archetype}
                 </th>
               ))}
             </tr>
@@ -159,8 +155,8 @@ export function MatchupChart({ data }: MatchupChartProps) {
                   key={userArchetype}
                   className={rowIndex % 2 === 0 ? "bg-white" : "bg-gray-50"}
                 >
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900 border-b border-r border-gray-200 sticky left-0 bg-inherit">
-                    {capitalizeArchetype(userArchetype)}
+                  <td className="px-4 py-3 text-xs font-medium text-gray-900 border-b border-r border-gray-200 sticky left-0 bg-inherit capitalize tracking-wider">
+                    {userArchetype}
                   </td>
                   {opponentArchetypes.map((opponentArchetype) => {
                     const winRate = winRates.get(opponentArchetype) ?? -1;

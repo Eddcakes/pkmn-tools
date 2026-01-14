@@ -25,7 +25,7 @@ export function Tag({ label, type }: TagProps) {
     : classesArray[classesArray.length % label.length];
   return (
     <span
-      className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium inset-ring ${tagColour}`}
+      className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium inset-ring capitalize ${tagColour}`}
     >
       {label}
     </span>
