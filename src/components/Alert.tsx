@@ -41,11 +41,11 @@ export function Alert({
       } ${className}`}
       role="alert"
     >
-      <p className={`${styles.text} text-sm flex-1`}>{children}</p>
+      <div className={`${styles.text} text-sm flex-1`}>{children}</div>
       {dismissible && onDismiss && (
         <button
           onClick={onDismiss}
-          className={`${styles.text} hover:opacity-70 transition-opacity flex-shrink-0`}
+          className={`${styles.text} hover:opacity-70 transition-opacity shrink-0`}
           aria-label="Dismiss alert"
           type="button"
         >
