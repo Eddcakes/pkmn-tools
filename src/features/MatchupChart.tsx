@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import type { MatchupChartData } from "../utils/matchupRecords";
 
 interface MatchupChartProps {
@@ -14,6 +17,8 @@ const WIN_RATE_COLORS = {
   high: "bg-emerald-100",
   veryHigh: "bg-emerald-200"
 } as const;
+
+const SHOW_COUNTS_STORAGE_KEY = "matchup-chart-show-counts";
 
 function getWinRateColorClass(winRate: number): string {
   if (winRate < 0) {
@@ -46,7 +51,23 @@ function formatWinRate(winRate: number): string {
 }
 
 export function MatchupChart({ data }: MatchupChartProps) {
-  const { userArchetypes, opponentArchetypes, matrix } = data;
+  const { userArchetypes, opponentArchetypes, matrix, counts } = data;
+  const [showCounts, setShowCounts] = useState(() => {
+    if (typeof window === "undefined") {
+      return true;
+    }
+
+    const storedValue = window.localStorage.getItem(SHOW_COUNTS_STORAGE_KEY);
+    if (storedValue === null) {
+      return true;
+    }
+
+    return storedValue === "true";
+  });
+
+  useEffect(() => {
+    window.localStorage.setItem(SHOW_COUNTS_STORAGE_KEY, String(showCounts));
+  }, [showCounts]);
 
   if (userArchetypes.length === 0) {
     return (
@@ -72,10 +93,19 @@ export function MatchupChart({ data }: MatchupChartProps) {
 
       {/* Colour Legend */}
       <div className="p-4 bg-blue-50 border-b border-blue-200">
-        <div className="flex items-center gap-2 mb-2">
+        <div className="flex items-center justify-between gap-2 mb-2">
           <span className="text-sm font-medium text-blue-900">
             Win Rate Colour Legend:
           </span>
+          <label className="inline-flex items-center gap-2 text-xs text-gray-700 select-none">
+            <input
+              type="checkbox"
+              checked={showCounts}
+              onChange={(event) => setShowCounts(event.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            Show counts (W-L-T)
+          </label>
         </div>
         <div className="flex flex-wrap gap-3 text-xs">
           <div className="flex items-center gap-1">
@@ -138,7 +168,7 @@ export function MatchupChart({ data }: MatchupChartProps) {
               {opponentArchetypes.map((archetype) => (
                 <th
                   key={archetype}
-                  className="px-4 py-3 text-center text-xs font-medium text-gray-500 capitalize tracking-wider border-b border-gray-200 min-w-[100px]"
+                  className="px-4 py-3 text-center text-xs font-medium text-gray-500 capitalize tracking-wider border-b border-gray-200 min-w-25"
                 >
                   {archetype}
                 </th>
@@ -161,12 +191,30 @@ export function MatchupChart({ data }: MatchupChartProps) {
                   {opponentArchetypes.map((opponentArchetype) => {
                     const winRate = winRates.get(opponentArchetype) ?? -1;
                     const colorClass = getWinRateColorClass(winRate);
+                    const cellCounts = counts
+                      .get(userArchetype)
+                      ?.get(opponentArchetype);
+                    const hasData =
+                      cellCounts &&
+                      cellCounts.wins + cellCounts.losses + cellCounts.ties > 0;
 
                     return (
                       <td
                         key={opponentArchetype}
-                        className={`px-4 py-3 text-sm text-gray-900 text-center border-b border-gray-200 ${colorClass}`}
+                        className={`px-4 py-3 text-sm text-gray-900 text-center border-b border-gray-200 ${colorClass} relative`}
                       >
+                        {hasData && cellCounts && (
+                          <span
+                            className={`absolute top-1 right-1 text-xs text-gray-500 transition-opacity ${
+                              showCounts
+                                ? "opacity-100"
+                                : "opacity-0 pointer-events-none"
+                            }`}
+                          >
+                            {cellCounts.wins}-{cellCounts.losses}-
+                            {cellCounts.ties}
+                          </span>
+                        )}
                         {formatWinRate(winRate)}
                       </td>
                     );

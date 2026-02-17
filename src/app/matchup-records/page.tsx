@@ -41,7 +41,8 @@ export default function MatchupRecordsPage() {
   const [chartData, setChartData] = useState<MatchupChartData>({
     userArchetypes: [],
     opponentArchetypes: [],
-    matrix: new Map()
+    matrix: new Map(),
+    counts: new Map()
   });
   const [showAllRecords, setShowAllRecords] = useState(false);
   const [userArchetypeFilter, setUserArchetypeFilter] = useState("");
