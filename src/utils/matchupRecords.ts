@@ -190,6 +190,10 @@ export interface MatchupChartData {
   userArchetypes: string[]; // Archetypes the user has played (rows)
   opponentArchetypes: string[]; // All archetypes faced (columns)
   matrix: Map<string, Map<string, number>>; // userArchetype -> opponentArchetype -> winRate
+  counts: Map<
+    string,
+    Map<string, { wins: number; losses: number; ties: number }>
+  >; // userArchetype -> opponentArchetype -> counts
 }
 
 export function getMatchupChartData(): MatchupChartData {
@@ -208,10 +212,10 @@ export function getMatchupChartData(): MatchupChartData {
   const userArchetypes = Array.from(userArchetypesSet).sort();
   const opponentArchetypes = Array.from(opponentArchetypesSet).sort();
 
-  // Build matrix: userArchetype -> opponentArchetype -> { wins, total }
+  // Build matrix: userArchetype -> opponentArchetype -> { wins, losses, ties }
   const statsMatrix = new Map<
     string,
-    Map<string, { wins: number; total: number }>
+    Map<string, { wins: number; losses: number; ties: number }>
   >();
 
   for (const record of records) {
@@ -226,34 +230,57 @@ export function getMatchupChartData(): MatchupChartData {
 
     let matchupStats = userStats.get(oppArch);
     if (!matchupStats) {
-      matchupStats = { wins: 0, total: 0 };
+      matchupStats = { wins: 0, losses: 0, ties: 0 };
       userStats.set(oppArch, matchupStats);
     }
 
-    matchupStats.total++;
     if (record.result === "win") {
       matchupStats.wins++;
+    } else if (record.result === "loss") {
+      matchupStats.losses++;
+    } else if (record.result === "tie") {
+      matchupStats.ties++;
     }
-    // Losses and ties count as 0 points (no wins added)
   }
 
   // Convert to win rate matrix (0-1 decimal values)
   const matrix = new Map<string, Map<string, number>>();
+  const counts = new Map<
+    string,
+    Map<string, { wins: number; losses: number; ties: number }>
+  >();
 
   for (const userArch of userArchetypes) {
     const winRateMap = new Map<string, number>();
+    const countsMap = new Map<
+      string,
+      { wins: number; losses: number; ties: number }
+    >();
     matrix.set(userArch, winRateMap);
+    counts.set(userArch, countsMap);
 
     for (const oppArch of opponentArchetypes) {
       const stats = statsMatrix.get(userArch)?.get(oppArch);
-      if (stats && stats.total > 0) {
-        // Calculate win rate as decimal (0-1)
-        const winRate = stats.wins / stats.total;
-        // Round to 2 decimal places
-        winRateMap.set(oppArch, Math.round(winRate * 100) / 100);
+      if (stats) {
+        const total = stats.wins + stats.losses + stats.ties;
+        if (total > 0) {
+          // Calculate win rate as decimal (0-1)
+          const winRate = stats.wins / total;
+          // Round to 2 decimal places
+          winRateMap.set(oppArch, Math.round(winRate * 100) / 100);
+          countsMap.set(oppArch, {
+            wins: stats.wins,
+            losses: stats.losses,
+            ties: stats.ties
+          });
+        } else {
+          winRateMap.set(oppArch, -1);
+          countsMap.set(oppArch, { wins: 0, losses: 0, ties: 0 });
+        }
       } else {
         // No data for this matchup
         winRateMap.set(oppArch, -1); // Use -1 to indicate no data
+        countsMap.set(oppArch, { wins: 0, losses: 0, ties: 0 });
       }
     }
   }
@@ -261,7 +288,8 @@ export function getMatchupChartData(): MatchupChartData {
   return {
     userArchetypes,
     opponentArchetypes,
-    matrix
+    matrix,
+    counts
   };
 }
 

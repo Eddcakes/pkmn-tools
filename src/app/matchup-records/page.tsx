@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert } from "@/components/Alert";
 import { IconButton } from "@/components/IconButton";
 import { CogIcon } from "@/components/Icons";
@@ -41,7 +41,8 @@ export default function MatchupRecordsPage() {
   const [chartData, setChartData] = useState<MatchupChartData>({
     userArchetypes: [],
     opponentArchetypes: [],
-    matrix: new Map()
+    matrix: new Map(),
+    counts: new Map()
   });
   const [showAllRecords, setShowAllRecords] = useState(false);
   const [userArchetypeFilter, setUserArchetypeFilter] = useState("");
@@ -49,6 +50,7 @@ export default function MatchupRecordsPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [recordToEdit, setRecordToEdit] = useState<MatchupRecord | null>(null);
+  const recordsListRef = useRef<HTMLDivElement>(null);
 
   const loadArchetypeOptions = useCallback(() => {
     const settings = getMatchupSettings();
@@ -191,6 +193,9 @@ export default function MatchupRecordsPage() {
       loadRecords();
       updateChartData();
       loadArchetypeOptions();
+
+      // Scroll the records list to the top
+      recordsListRef.current?.scrollTo({ top: 0, behavior: "smooth" });
 
       setSuccessMessage("Matchup record saved successfully!");
       setTimeout(() => setSuccessMessage(""), 3000);
@@ -483,7 +488,10 @@ export default function MatchupRecordsPage() {
               </div>
             ) : (
               <>
-                <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                <div
+                  ref={recordsListRef}
+                  className="space-y-4 max-h-[600px] overflow-y-auto pr-2"
+                >
                   {displayedRecords.map((record) => (
                     <div
                       key={record.id}
@@ -521,11 +529,11 @@ export default function MatchupRecordsPage() {
 
                       <div className="flex items-center gap-3 mb-2">
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getResultBadgeColor(
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium uppercase ${getResultBadgeColor(
                             record.result
                           )}`}
                         >
-                          {record.result.toUpperCase()}
+                          {record.result}
                         </span>
                         <span className="text-xs text-gray-500">
                           {formatDate(record.createdAt)}
