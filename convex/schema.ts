@@ -16,7 +16,7 @@ export default defineSchema({
     clientId: v.string()
   })
     .index("by_user", ["userId"])
-    .index("by_client_id", ["clientId"]),
+    .index("by_user_and_client_id", ["userId", "clientId"]),
 
   matchupRecords: defineTable({
     userId: v.string(),
@@ -29,7 +29,7 @@ export default defineSchema({
     clientId: v.string()
   })
     .index("by_user", ["userId"])
-    .index("by_client_id", ["clientId"]),
+    .index("by_user_and_client_id", ["userId", "clientId"]),
 
   matchupSettings: defineTable({
     userId: v.string(),

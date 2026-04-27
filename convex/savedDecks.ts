@@ -2,6 +2,8 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
+const MAX_SAVED_DECKS = 500;
+
 export const list = query({
   args: {},
   handler: async (ctx) => {
@@ -10,7 +12,8 @@ export const list = query({
     return ctx.db
       .query("savedDecks")
       .withIndex("by_user", (q) => q.eq("userId", userId))
-      .collect();
+      .order("desc")
+      .take(MAX_SAVED_DECKS);
   }
 });
 
@@ -29,12 +32,12 @@ export const upsert = mutation({
 
     const existing = await ctx.db
       .query("savedDecks")
-      .withIndex("by_client_id", (q) => q.eq("clientId", args.clientId))
+      .withIndex("by_user_and_client_id", (q) =>
+        q.eq("userId", userId).eq("clientId", args.clientId)
+      )
       .first();
 
     if (existing) {
-      // Only update if we own it
-      if (existing.userId !== userId) throw new Error("Forbidden");
       await ctx.db.patch(existing._id, {
         label: args.label,
         deckList: args.deckList,
@@ -62,11 +65,12 @@ export const update = mutation({
 
     const existing = await ctx.db
       .query("savedDecks")
-      .withIndex("by_client_id", (q) => q.eq("clientId", args.clientId))
+      .withIndex("by_user_and_client_id", (q) =>
+        q.eq("userId", userId).eq("clientId", args.clientId)
+      )
       .first();
 
     if (!existing) throw new Error("Not found");
-    if (existing.userId !== userId) throw new Error("Forbidden");
 
     await ctx.db.patch(existing._id, {
       label: args.label,
@@ -85,11 +89,12 @@ export const remove = mutation({
 
     const existing = await ctx.db
       .query("savedDecks")
-      .withIndex("by_client_id", (q) => q.eq("clientId", args.clientId))
+      .withIndex("by_user_and_client_id", (q) =>
+        q.eq("userId", userId).eq("clientId", args.clientId)
+      )
       .first();
 
     if (!existing) return;
-    if (existing.userId !== userId) throw new Error("Forbidden");
 
     await ctx.db.delete(existing._id);
   }

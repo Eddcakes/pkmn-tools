@@ -2,6 +2,8 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
+const MAX_MATCHUP_RECORDS = 1000;
+
 export const list = query({
   args: {},
   handler: async (ctx) => {
@@ -10,7 +12,8 @@ export const list = query({
     return ctx.db
       .query("matchupRecords")
       .withIndex("by_user", (q) => q.eq("userId", userId))
-      .collect();
+      .order("desc")
+      .take(MAX_MATCHUP_RECORDS);
   }
 });
 
@@ -30,11 +33,12 @@ export const upsert = mutation({
 
     const existing = await ctx.db
       .query("matchupRecords")
-      .withIndex("by_client_id", (q) => q.eq("clientId", args.clientId))
+      .withIndex("by_user_and_client_id", (q) =>
+        q.eq("userId", userId).eq("clientId", args.clientId)
+      )
       .first();
 
     if (existing) {
-      if (existing.userId !== userId) throw new Error("Forbidden");
       await ctx.db.patch(existing._id, {
         userArchetype: args.userArchetype,
         opponentArchetype: args.opponentArchetype,
@@ -66,11 +70,12 @@ export const update = mutation({
 
     const existing = await ctx.db
       .query("matchupRecords")
-      .withIndex("by_client_id", (q) => q.eq("clientId", args.clientId))
+      .withIndex("by_user_and_client_id", (q) =>
+        q.eq("userId", userId).eq("clientId", args.clientId)
+      )
       .first();
 
     if (!existing) throw new Error("Not found");
-    if (existing.userId !== userId) throw new Error("Forbidden");
 
     const { clientId, ...updates } = args;
     await ctx.db.patch(existing._id, updates);
@@ -85,11 +90,12 @@ export const remove = mutation({
 
     const existing = await ctx.db
       .query("matchupRecords")
-      .withIndex("by_client_id", (q) => q.eq("clientId", args.clientId))
+      .withIndex("by_user_and_client_id", (q) =>
+        q.eq("userId", userId).eq("clientId", args.clientId)
+      )
       .first();
 
     if (!existing) return;
-    if (existing.userId !== userId) throw new Error("Forbidden");
 
     await ctx.db.delete(existing._id);
   }
