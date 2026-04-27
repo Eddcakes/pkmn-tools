@@ -19,15 +19,17 @@ export function useMatchupSettings() {
 
   const convexUpsert = useMutation(api.matchupSettings.upsert);
 
-  const [mounted, setMounted] = useState(false);
+  const [localSettingsFallback, setLocalSettingsFallback] =
+    useState<MatchupSettings | null>(null);
+
   useEffect(() => {
-    setMounted(true);
+    // Load localStorage as a fallback/placeholder for all users
+    setLocalSettingsFallback(lsGet());
   }, []);
 
-  const localSettings = mounted ? lsGet() : null;
-
   const settings: MatchupSettings =
-    isAuthenticated && convexSettings
+    // For authenticated users: prefer Convex data, fall back to localStorage while loading
+    isAuthenticated && convexSettings !== undefined && convexSettings !== null
       ? {
           useRecentArchetypes: convexSettings.useRecentArchetypes,
           useFavouriteArchetypes: convexSettings.useFavouriteArchetypes,
@@ -35,7 +37,8 @@ export function useMatchupSettings() {
           favouriteArchetypes: convexSettings.favouriteArchetypes,
           customArchetypes: convexSettings.customArchetypes
         }
-      : (localSettings ?? lsGet());
+      : // For unauthenticated users or while Convex is loading: use localStorage
+        (localSettingsFallback ?? lsGet());
 
   const saveSettings = useCallback(
     async (newSettings: MatchupSettings) => {
@@ -50,6 +53,6 @@ export function useMatchupSettings() {
   return {
     settings,
     saveSettings,
-    isLoading: !mounted || (isAuthenticated && convexSettings === undefined)
+    isLoading: isAuthenticated && convexSettings === undefined
   };
 }

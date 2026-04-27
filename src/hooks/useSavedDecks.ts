@@ -23,23 +23,28 @@ export function useSavedDecks() {
   const convexUpdate = useMutation(api.savedDecks.update);
   const convexRemove = useMutation(api.savedDecks.remove);
 
-  const [mounted, setMounted] = useState(false);
+  const [localDecksFallback, setLocalDecksFallback] = useState<
+    SavedDeck[] | null
+  >(null);
+
   useEffect(() => {
-    setMounted(true);
+    // Load localStorage as a fallback/placeholder for all users
+    setLocalDecksFallback(lsGet());
   }, []);
 
-  const localDecks = mounted && !isAuthenticated ? lsGet() : null;
-
-  const decks: SavedDeck[] = isAuthenticated
-    ? (convexDecks ?? []).map((d) => ({
-        id: d.clientId,
-        label: d.label,
-        deckList: d.deckList,
-        archetype: d.archetype,
-        createdAt: d.createdAt,
-        updatedAt: d.updatedAt
-      }))
-    : (localDecks ?? []);
+  const decks: SavedDeck[] =
+    // For authenticated users: prefer Convex data, fall back to localStorage while loading
+    isAuthenticated && convexDecks !== undefined
+      ? convexDecks.map((d) => ({
+          id: d.clientId,
+          label: d.label,
+          deckList: d.deckList,
+          archetype: d.archetype,
+          createdAt: d.createdAt,
+          updatedAt: d.updatedAt
+        }))
+      : // For unauthenticated users or while Convex is loading: use localStorage
+        (localDecksFallback ?? []);
 
   const saveDeck = useCallback(
     async (label: string, deckList: string, archetype?: string[]) => {
@@ -103,6 +108,6 @@ export function useSavedDecks() {
     saveDeck,
     updateDeck,
     deleteDeck,
-    isLoading: !mounted || (isAuthenticated && convexDecks === undefined)
+    isLoading: isAuthenticated && convexDecks === undefined
   };
 }

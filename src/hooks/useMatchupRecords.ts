@@ -23,24 +23,29 @@ export function useMatchupRecords() {
   const convexUpdate = useMutation(api.matchupRecords.update);
   const convexRemove = useMutation(api.matchupRecords.remove);
 
-  const [mounted, setMounted] = useState(false);
+  const [localRecordsFallback, setLocalRecordsFallback] = useState<
+    MatchupRecord[] | null
+  >(null);
+
   useEffect(() => {
-    setMounted(true);
+    // Load localStorage as a fallback/placeholder for all users
+    setLocalRecordsFallback(lsGet());
   }, []);
 
-  const localRecords = mounted && !isAuthenticated ? lsGet() : null;
-
-  const records: MatchupRecord[] = isAuthenticated
-    ? (convexRecords ?? []).map((r) => ({
-        id: r.clientId,
-        userArchetype: r.userArchetype,
-        opponentArchetype: r.opponentArchetype,
-        result: r.result,
-        notes: r.notes,
-        createdAt: r.createdAt,
-        updatedAt: r.updatedAt
-      }))
-    : (localRecords ?? []);
+  const records: MatchupRecord[] =
+    // For authenticated users: prefer Convex data, fall back to localStorage while loading
+    isAuthenticated && convexRecords !== undefined
+      ? convexRecords.map((r) => ({
+          id: r.clientId,
+          userArchetype: r.userArchetype,
+          opponentArchetype: r.opponentArchetype,
+          result: r.result,
+          notes: r.notes,
+          createdAt: r.createdAt,
+          updatedAt: r.updatedAt
+        }))
+      : // For unauthenticated users or while Convex is loading: use localStorage
+        (localRecordsFallback ?? []);
 
   const saveRecord = useCallback(
     async (
@@ -104,6 +109,7 @@ export function useMatchupRecords() {
     saveRecord,
     updateRecord,
     deleteRecord,
-    isLoading: !mounted || (isAuthenticated && convexRecords === undefined)
+    // Show loading state only while Convex is still fetching for authenticated users
+    isLoading: isAuthenticated && convexRecords === undefined
   };
 }
