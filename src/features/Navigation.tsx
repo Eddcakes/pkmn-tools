@@ -134,6 +134,9 @@ export function Navigation() {
                   </Link>
                 );
               })}
+              <div className="px-3 pt-2">
+                <AuthButton />
+              </div>
             </div>
           </div>
         )}
