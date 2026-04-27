@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { Alert } from "@/components/Alert";
 import { Tag } from "@/components/Tag";
 import { archetypeToTagType } from "@/utils/archetype";
@@ -8,41 +8,28 @@ import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
 import { EditDeckModal } from "../../features/EditDeckModal";
 import { ImportDeckModal } from "../../features/ImportDeckModal";
-import {
-  deleteSavedDeck,
-  exportDeckToClipboard,
-  getSavedDecks,
-  type SavedDeck
-} from "../../utils/savedDecks";
+import { useSavedDecks } from "../../hooks/useSavedDecks";
+import { exportDeckToClipboard, type SavedDeck } from "../../utils/savedDecks";
 
 export default function SavedDecksPage() {
-  const [savedDecks, setSavedDecks] = useState<SavedDeck[]>([]);
+  const {
+    decks: savedDecks,
+    saveDeck,
+    updateDeck,
+    deleteDeck,
+    isLoading
+  } = useSavedDecks();
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingDeck, setEditingDeck] = useState<SavedDeck | null>(null);
-  const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
-
-  const loadSavedDecks = useCallback(() => {
-    setLoading(true);
-    const decks = getSavedDecks();
-    setSavedDecks(decks);
-    setLoading(false);
-  }, []);
-
-  useEffect(() => {
-    loadSavedDecks();
-  }, [loadSavedDecks]);
 
   const handleDeleteDeck = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this deck?")) {
       try {
-        const success = deleteSavedDeck(id);
-        if (success) {
-          loadSavedDecks();
-          setMessage("Deck deleted successfully");
-          setTimeout(() => setMessage(""), 3000);
-        }
+        await deleteDeck(id);
+        setMessage("Deck deleted successfully");
+        setTimeout(() => setMessage(""), 3000);
       } catch {
         setMessage("Failed to delete deck");
         setTimeout(() => setMessage(""), 3000);
@@ -67,13 +54,11 @@ export default function SavedDecksPage() {
   };
 
   const handleImportComplete = () => {
-    loadSavedDecks();
     setMessage("Deck imported successfully!");
     setTimeout(() => setMessage(""), 3000);
   };
 
   const handleEditComplete = () => {
-    loadSavedDecks();
     setMessage("Deck updated successfully!");
     setTimeout(() => setMessage(""), 3000);
   };
@@ -83,7 +68,7 @@ export default function SavedDecksPage() {
     setEditingDeck(null);
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="p-8 max-w-7xl mx-auto">
         <div className="text-center">Loading saved decks...</div>
@@ -214,6 +199,7 @@ export default function SavedDecksPage() {
         isOpen={importModalOpen}
         onClose={() => setImportModalOpen(false)}
         onImported={handleImportComplete}
+        onSaveDeck={saveDeck}
       />
 
       {/* Edit Modal */}
@@ -222,6 +208,7 @@ export default function SavedDecksPage() {
         onClose={handleEditModalClose}
         onUpdated={handleEditComplete}
         deck={editingDeck}
+        onUpdateDeck={updateDeck}
       />
     </div>
   );

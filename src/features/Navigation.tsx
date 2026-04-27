@@ -4,6 +4,8 @@ import { usePathname } from "next/navigation";
 import { type ComponentType, useState } from "react";
 import { CrossIcon, MenuIcon } from "../components/Icons";
 import { Link } from "../components/Link";
+import { useSyncOnLogin } from "../hooks/useSyncOnLogin";
+import { AuthButton } from "./AuthButton";
 
 interface NavigationItem {
   href: string;
@@ -27,6 +29,7 @@ const navigationItems: NavigationItem[] = [
 ];
 
 export function Navigation() {
+  useSyncOnLogin();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
@@ -74,6 +77,9 @@ export function Navigation() {
                   );
                 })}
               </div>
+            </div>
+            <div className="flex items-center">
+              <AuthButton />
             </div>
           </div>
         </div>

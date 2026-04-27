@@ -15,6 +15,10 @@ interface EditMatchupRecordModalProps {
   onUpdated: () => void;
   record: MatchupRecord | null;
   archetypeGroups: SelectGroup[];
+  onUpdateRecord?: (
+    id: string,
+    updates: Partial<Omit<MatchupRecord, "id" | "createdAt">>
+  ) => Promise<unknown>;
 }
 
 export function EditMatchupRecordModal({
@@ -22,7 +26,8 @@ export function EditMatchupRecordModal({
   onClose,
   onUpdated,
   record,
-  archetypeGroups
+  archetypeGroups,
+  onUpdateRecord
 }: EditMatchupRecordModalProps) {
   const [userArchetype, setUserArchetype] = useState("");
   const [opponentArchetype, setOpponentArchetype] = useState("");
@@ -75,12 +80,19 @@ export function EditMatchupRecordModal({
     setError("");
 
     try {
-      const updatedRecord = updateMatchupRecord(record.id, {
+      const updates = {
         userArchetype: userArchetype.trim(),
         opponentArchetype: opponentArchetype.trim(),
         result: result as "win" | "loss" | "tie",
         notes: notes.trim() || undefined
-      });
+      };
+      let updatedRecord: MatchupRecord | boolean | null;
+      if (onUpdateRecord) {
+        await onUpdateRecord(record.id, updates);
+        updatedRecord = true;
+      } else {
+        updatedRecord = updateMatchupRecord(record.id, updates);
+      }
 
       if (updatedRecord) {
         onUpdated();

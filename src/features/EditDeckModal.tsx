@@ -10,13 +10,20 @@ interface EditDeckModalProps {
   onClose: () => void;
   onUpdated: () => void;
   deck: SavedDeck | null;
+  onUpdateDeck?: (
+    id: string,
+    label: string,
+    deckList: string,
+    archetype?: string[]
+  ) => Promise<unknown>;
 }
 
 export function EditDeckModal({
   isOpen,
   onClose,
   onUpdated,
-  deck
+  deck,
+  onUpdateDeck
 }: EditDeckModalProps) {
   const [label, setLabel] = useState("");
   const [archetype, setArchetype] = useState("");
@@ -59,12 +66,23 @@ export function EditDeckModal({
     try {
       // for now havent created a custom tag selector so seperate tags with a # in a string
       const archetypeList = archetype.trim().split("#").filter(Boolean);
-      const updatedDeck = updateSavedDeck(
-        deck.id,
-        label.trim(),
-        deckList.trim(),
-        archetypeList
-      );
+      let updatedDeck: SavedDeck | boolean | null;
+      if (onUpdateDeck) {
+        await onUpdateDeck(
+          deck.id,
+          label.trim(),
+          deckList.trim(),
+          archetypeList
+        );
+        updatedDeck = true;
+      } else {
+        updatedDeck = updateSavedDeck(
+          deck.id,
+          label.trim(),
+          deckList.trim(),
+          archetypeList
+        );
+      }
       if (updatedDeck) {
         onUpdated();
         onClose();

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ConvexClientProvider } from "../components/ConvexClientProvider";
 import { Navigation } from "../features/Navigation";
 import "./globals.css";
 
@@ -22,8 +23,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-gray-50 min-h-screen">
-        <Navigation />
-        <main>{children}</main>
+        <ConvexClientProvider>
+          <Navigation />
+          <main>{children}</main>
+        </ConvexClientProvider>
       </body>
     </html>
   );

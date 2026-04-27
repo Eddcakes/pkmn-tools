@@ -22,6 +22,37 @@ npm install
 npm run dev
 ```
 
+## Google Login Setup
+
+1. Create a Google OAuth 2.0 Client ID (Web application) in Google Cloud Console.
+2. Add this redirect URI:
+	- `<NEXT_PUBLIC_CONVEX_SITE_URL>/api/auth/callback/google`
+3. Add these variables to `.env.local`:
+
+```bash
+CONVEX_SITE_URL=https://your-project.convex.site
+NEXT_PUBLIC_CONVEX_SITE_URL=https://your-project.convex.site
+SITE_URL=http://localhost:3000
+AUTH_GOOGLE_ID=your-google-client-id
+AUTH_GOOGLE_SECRET=your-google-client-secret
+```
+
+4. Restart your local servers after updating env vars:
+
+```bash
+npm run dev
+```
+
+If your Convex functions run against a hosted deployment, set the same auth vars in Convex too:
+
+```bash
+npx convex env set AUTH_GOOGLE_ID your-google-client-id
+npx convex env set AUTH_GOOGLE_SECRET your-google-client-secret
+npx convex env set SITE_URL http://localhost:3000
+```
+
+`CONVEX_SITE_URL` is a built-in Convex variable and is not set manually via `convex env set`.
+
 ### experimental 
 
 Recording gameplay for review, using shareX it's easy to setup automatic naming of the files:
