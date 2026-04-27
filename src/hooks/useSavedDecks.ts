@@ -1,7 +1,7 @@
 "use client";
 
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { api } from "../../convex/_generated/api";
 import {
   deleteSavedDeck as lsDelete,
@@ -23,7 +23,10 @@ export function useSavedDecks() {
   const convexUpdate = useMutation(api.savedDecks.update);
   const convexRemove = useMutation(api.savedDecks.remove);
 
-  const localDecks = isAuthenticated ? null : lsGet();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
+  const localDecks = mounted && !isAuthenticated ? lsGet() : null;
 
   const decks: SavedDeck[] = isAuthenticated
     ? (convexDecks ?? []).map((d) => ({
@@ -98,6 +101,6 @@ export function useSavedDecks() {
     saveDeck,
     updateDeck,
     deleteDeck,
-    isLoading: isAuthenticated && convexDecks === undefined
+    isLoading: !mounted || (isAuthenticated && convexDecks === undefined)
   };
 }

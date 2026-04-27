@@ -1,7 +1,7 @@
 "use client";
 
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { api } from "../../convex/_generated/api";
 import {
   deleteMatchupRecord as lsDelete,
@@ -23,7 +23,10 @@ export function useMatchupRecords() {
   const convexUpdate = useMutation(api.matchupRecords.update);
   const convexRemove = useMutation(api.matchupRecords.remove);
 
-  const localRecords = isAuthenticated ? null : lsGet();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
+  const localRecords = mounted && !isAuthenticated ? lsGet() : null;
 
   const records: MatchupRecord[] = isAuthenticated
     ? (convexRecords ?? []).map((r) => ({
@@ -99,6 +102,6 @@ export function useMatchupRecords() {
     saveRecord,
     updateRecord,
     deleteRecord,
-    isLoading: isAuthenticated && convexRecords === undefined
+    isLoading: !mounted || (isAuthenticated && convexRecords === undefined)
   };
 }

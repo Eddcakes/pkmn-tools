@@ -1,7 +1,7 @@
 "use client";
 
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { api } from "../../convex/_generated/api";
 import {
   getMatchupSettings as lsGet,
@@ -19,7 +19,10 @@ export function useMatchupSettings() {
 
   const convexUpsert = useMutation(api.matchupSettings.upsert);
 
-  const localSettings = lsGet();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
+  const localSettings = mounted ? lsGet() : null;
 
   const settings: MatchupSettings =
     isAuthenticated && convexSettings
@@ -30,7 +33,7 @@ export function useMatchupSettings() {
           favouriteArchetypes: convexSettings.favouriteArchetypes,
           customArchetypes: convexSettings.customArchetypes
         }
-      : localSettings;
+      : (localSettings ?? lsGet());
 
   const saveSettings = useCallback(
     async (newSettings: MatchupSettings) => {
@@ -45,6 +48,6 @@ export function useMatchupSettings() {
   return {
     settings,
     saveSettings,
-    isLoading: isAuthenticated && convexSettings === undefined
+    isLoading: !mounted || (isAuthenticated && convexSettings === undefined)
   };
 }
