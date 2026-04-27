@@ -196,9 +196,9 @@ export interface MatchupChartData {
   >; // userArchetype -> opponentArchetype -> counts
 }
 
-export function getMatchupChartData(): MatchupChartData {
-  const records = getMatchupRecords();
-
+export function getMatchupChartData(
+  records: MatchupRecord[]
+): MatchupChartData {
   // Get archetypes the user has played (userArchetype in records)
   const userArchetypesSet = new Set<string>();
   // Get archetypes opponents have played (opponentArchetype in records)

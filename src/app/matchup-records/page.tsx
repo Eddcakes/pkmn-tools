@@ -125,19 +125,14 @@ export default function MatchupRecordsPage() {
   );
 
   const updateChartData = useCallback(() => {
-    const data = getMatchupChartData();
+    const data = getMatchupChartData(records);
     setChartData(data);
-  }, []);
+  }, [records]);
 
   useEffect(() => {
     loadArchetypeOptions();
     updateChartData();
   }, [loadArchetypeOptions, updateChartData]);
-
-  // Recompute chart whenever hook records change
-  useEffect(() => {
-    updateChartData();
-  }, [updateChartData]);
 
   const resultOptions = [
     { value: "win", label: "Win" },
