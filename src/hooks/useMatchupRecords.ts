@@ -24,7 +24,9 @@ export function useMatchupRecords() {
   const convexRemove = useMutation(api.matchupRecords.remove);
 
   const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const localRecords = mounted && !isAuthenticated ? lsGet() : null;
 

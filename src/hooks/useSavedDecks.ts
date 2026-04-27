@@ -24,7 +24,9 @@ export function useSavedDecks() {
   const convexRemove = useMutation(api.savedDecks.remove);
 
   const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const localDecks = mounted && !isAuthenticated ? lsGet() : null;
 
