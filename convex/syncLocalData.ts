@@ -147,10 +147,51 @@ export const syncOnLogin = mutation({
       settingsSynced = true;
     }
 
+    const finalDecks = await ctx.db
+      .query("savedDecks")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .take(500);
+
+    const finalRecords = await ctx.db
+      .query("matchupRecords")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .take(1000);
+
+    const finalSettings = await ctx.db
+      .query("matchupSettings")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+
     return {
       decksSynced: deckIds.length,
       recordsSynced: recordIds.length,
-      settingsSynced
+      settingsSynced,
+      decks: finalDecks.map((deck) => ({
+        id: deck.clientId,
+        label: deck.label,
+        deckList: deck.deckList,
+        archetype: deck.archetype,
+        createdAt: deck.createdAt,
+        updatedAt: deck.updatedAt
+      })),
+      records: finalRecords.map((record) => ({
+        id: record.clientId,
+        userArchetype: record.userArchetype,
+        opponentArchetype: record.opponentArchetype,
+        result: record.result,
+        notes: record.notes,
+        createdAt: record.createdAt,
+        updatedAt: record.updatedAt
+      })),
+      settings: finalSettings
+        ? {
+            useRecentArchetypes: finalSettings.useRecentArchetypes,
+            useFavouriteArchetypes: finalSettings.useFavouriteArchetypes,
+            recentArchetypes: finalSettings.recentArchetypes,
+            favouriteArchetypes: finalSettings.favouriteArchetypes,
+            customArchetypes: finalSettings.customArchetypes
+          }
+        : args.localSettings
     };
   }
 });

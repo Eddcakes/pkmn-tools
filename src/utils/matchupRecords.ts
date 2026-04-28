@@ -51,6 +51,25 @@ export function getMatchupRecords(): MatchupRecord[] {
   }
 }
 
+export function replaceMatchupRecords(records: MatchupRecord[]): void {
+  try {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(
+        migrateRecordsToIncludeUpdatedAt(
+          records.map((record) => ({
+            ...record,
+            updatedAt: record.updatedAt ?? record.createdAt
+          }))
+        )
+      )
+    );
+  } catch (error) {
+    console.error("Error replacing matchup records:", error);
+    throw new Error("Failed to replace matchup records in local storage");
+  }
+}
+
 export function saveMatchupRecord(
   userArchetype: string,
   opponentArchetype: string,

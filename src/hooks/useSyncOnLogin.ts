@@ -3,9 +3,15 @@
 import { useConvexAuth, useMutation } from "convex/react";
 import { useEffect, useRef } from "react";
 import { api } from "../../convex/_generated/api";
-import { getMatchupRecords } from "../utils/matchupRecords";
-import { getMatchupSettings } from "../utils/matchupSettings";
-import { getSavedDecks } from "../utils/savedDecks";
+import {
+  getMatchupRecords,
+  replaceMatchupRecords
+} from "../utils/matchupRecords";
+import {
+  getMatchupSettings,
+  saveMatchupSettings
+} from "../utils/matchupSettings";
+import { getSavedDecks, replaceSavedDecks } from "../utils/savedDecks";
 
 /**
  * Runs once when the user logs in. Merges localStorage data into Convex via a single server-side action.
@@ -45,10 +51,16 @@ export function useSyncOnLogin() {
         updatedAt: r.updatedAt ?? r.createdAt
       })),
       localSettings: localSettingsData
-    }).catch((error) => {
-      console.error("Sync on login failed:", error);
-      // Reset hasSynced to allow retry on next authentication attempt
-      hasSynced.current = false;
-    });
+    })
+      .then((result) => {
+        replaceSavedDecks(result.decks);
+        replaceMatchupRecords(result.records);
+        saveMatchupSettings(result.settings);
+      })
+      .catch((error) => {
+        console.error("Sync on login failed:", error);
+        // Reset hasSynced to allow retry on next authentication attempt
+        hasSynced.current = false;
+      });
   }, [isAuthenticated, syncMutation]);
 }

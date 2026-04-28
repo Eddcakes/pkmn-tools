@@ -79,6 +79,18 @@ export function getSavedDecks(): SavedDeck[] {
   }
 }
 
+export function replaceSavedDecks(decks: SavedDeck[]): void {
+  try {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(normalizeSavedDecks(decks))
+    );
+  } catch (error) {
+    console.error("Error replacing saved decks:", error);
+    throw new Error("Failed to replace saved decks in local storage");
+  }
+}
+
 export function saveDeck(
   label: string,
   deckList: string,
