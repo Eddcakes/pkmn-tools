@@ -9,30 +9,30 @@ import { MatchupChart } from "@/features/MatchupChart";
 import { MatchupSettingsModal } from "@/features/MatchupSettingsModal";
 import {
   addRecentArchetype,
-  getCustomArchetypesArray,
-  getMatchupSettings
+  getCustomArchetypesArray
 } from "@/utils/matchupSettings";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
 import { Select, type SelectGroup } from "../../components/Select";
 import { Tag } from "../../components/Tag";
+import { useMatchupRecords } from "../../hooks/useMatchupRecords";
+import { useMatchupSettings } from "../../hooks/useMatchupSettings";
 import { archetypeMapping, archetypeToTagType } from "../../utils/archetype";
 import { formatDate, formatFileNameFromDateString } from "../../utils/date";
 import {
-  deleteMatchupRecord,
   getMatchupChartData,
-  getMatchupRecords,
   type MatchupChartData,
-  type MatchupRecord,
-  saveMatchupRecord
+  type MatchupRecord
 } from "../../utils/matchupRecords";
 
 export default function MatchupRecordsPage() {
+  const { records, saveRecord, updateRecord, deleteRecord } =
+    useMatchupRecords();
+  const { settings } = useMatchupSettings();
   const [userArchetype, setUserArchetype] = useState("");
   const [opponentArchetype, setOpponentArchetype] = useState("");
   const [result, setResult] = useState<"win" | "loss" | "tie" | "">("");
   const [notes, setNotes] = useState("");
-  const [records, setRecords] = useState<MatchupRecord[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -53,7 +53,6 @@ export default function MatchupRecordsPage() {
   const recordsListRef = useRef<HTMLDivElement>(null);
 
   const loadArchetypeOptions = useCallback(() => {
-    const settings = getMatchupSettings();
     const customArchetypes = getCustomArchetypesArray();
 
     // Determine base archetypes (custom or default)
@@ -118,28 +117,22 @@ export default function MatchupRecordsPage() {
     });
 
     setArchetypeGroups(groups);
-  }, []);
+  }, [settings]);
 
-  const loadRecords = useCallback(() => {
-    const loadedRecords = getMatchupRecords();
-    // Sort by most recent first
-    loadedRecords.sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-    setRecords(loadedRecords);
-  }, []);
+  // Sort records by most recent first
+  const sortedRecords = [...records].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
 
   const updateChartData = useCallback(() => {
-    const data = getMatchupChartData();
+    const data = getMatchupChartData(records);
     setChartData(data);
-  }, []);
+  }, [records]);
 
   useEffect(() => {
-    loadRecords();
     loadArchetypeOptions();
     updateChartData();
-  }, [loadRecords, loadArchetypeOptions, updateChartData]);
+  }, [loadArchetypeOptions, updateChartData]);
 
   const resultOptions = [
     { value: "win", label: "Win" },
@@ -170,7 +163,7 @@ export default function MatchupRecordsPage() {
     setSuccessMessage("");
 
     try {
-      saveMatchupRecord(
+      await saveRecord(
         userArchetype,
         opponentArchetype,
         result as "win" | "loss" | "tie",
@@ -189,9 +182,7 @@ export default function MatchupRecordsPage() {
       setResult("");
       setNotes("");
 
-      // Reload records and archetype options
-      loadRecords();
-      updateChartData();
+      // Reload archetype options (recent archetypes may have changed)
       loadArchetypeOptions();
 
       // Scroll the records list to the top
@@ -206,12 +197,10 @@ export default function MatchupRecordsPage() {
     }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this record?")) {
       try {
-        deleteMatchupRecord(id);
-        loadRecords();
-        updateChartData();
+        await deleteRecord(id);
         setSuccessMessage("Record deleted successfully!");
         setTimeout(() => setSuccessMessage(""), 3000);
       } catch (err) {
@@ -228,8 +217,6 @@ export default function MatchupRecordsPage() {
   };
 
   const handleEditUpdated = () => {
-    loadRecords();
-    updateChartData();
     loadArchetypeOptions();
     setSuccessMessage("Record updated successfully!");
     setTimeout(() => setSuccessMessage(""), 3000);
@@ -249,7 +236,7 @@ export default function MatchupRecordsPage() {
   };
 
   // Filter records based on selected filters
-  const filteredRecords = records.filter((record) => {
+  const filteredRecords = sortedRecords.filter((record) => {
     const matchesUserArchetype =
       !userArchetypeFilter ||
       record.userArchetype.toLowerCase() === userArchetypeFilter.toLowerCase();
@@ -611,6 +598,7 @@ export default function MatchupRecordsPage() {
         onUpdated={handleEditUpdated}
         record={recordToEdit}
         archetypeGroups={archetypeGroups}
+        onUpdateRecord={updateRecord}
       />
     </div>
   );

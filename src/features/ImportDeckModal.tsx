@@ -8,12 +8,18 @@ interface ImportDeckModalProps {
   isOpen: boolean;
   onClose: () => void;
   onImported?: () => void;
+  onSaveDeck?: (
+    label: string,
+    deckList: string,
+    archetype?: string[]
+  ) => Promise<unknown>;
 }
 
 export function ImportDeckModal({
   isOpen,
   onClose,
-  onImported
+  onImported,
+  onSaveDeck
 }: ImportDeckModalProps) {
   const [label, setLabel] = useState("");
   const [deckList, setDeckList] = useState("");
@@ -44,7 +50,11 @@ export function ImportDeckModal({
     setError("");
 
     try {
-      saveDeck(label.trim(), deckList.trim());
+      if (onSaveDeck) {
+        await onSaveDeck(label.trim(), deckList.trim());
+      } else {
+        saveDeck(label.trim(), deckList.trim());
+      }
       onImported?.();
       onClose();
     } catch (err) {

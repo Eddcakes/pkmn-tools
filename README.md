@@ -22,6 +22,12 @@ npm install
 npm run dev
 ```
 
+## Auth Setup
+
+Follow the official Convex guide for Google OAuth setup:
+
+https://labs.convex.dev/auth/config/oauth/google
+
 ### experimental 
 
 Recording gameplay for review, using shareX it's easy to setup automatic naming of the files:
@@ -29,3 +35,7 @@ Recording gameplay for review, using shareX it's easy to setup automatic naming 
 file name: `%y-%mo-%d__T%h%mi%s.mp4`
 
 We then can link up with the notes from Matchup Records pretty loosly as it is unlikely we will save at the same second/even minute, but should be easy to find from there.
+
+### Look into expanding localstorage
+
+We might need to start using a real database or convex 

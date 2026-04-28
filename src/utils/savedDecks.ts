@@ -9,12 +9,65 @@ export interface SavedDeck {
 
 const STORAGE_KEY = "pokemon-saved-decks";
 
+function normalizeSavedDeck(rawDeck: unknown): SavedDeck | null {
+  if (!rawDeck || typeof rawDeck !== "object") {
+    return null;
+  }
+
+  const deck = rawDeck as Record<string, unknown>;
+
+  if (
+    typeof deck.id !== "string" ||
+    typeof deck.label !== "string" ||
+    typeof deck.deckList !== "string" ||
+    typeof deck.createdAt !== "string"
+  ) {
+    return null;
+  }
+
+  const updatedAt =
+    typeof deck.updatedAt === "string" ? deck.updatedAt : deck.createdAt;
+  const rawArchetype = Array.isArray(deck.archetype)
+    ? deck.archetype
+    : Array.isArray(deck.archetypes)
+      ? deck.archetypes
+      : undefined;
+  const archetype = rawArchetype?.filter(
+    (value): value is string => typeof value === "string"
+  );
+
+  return {
+    id: deck.id,
+    label: deck.label,
+    deckList: deck.deckList,
+    ...(archetype && archetype.length > 0 ? { archetype } : {}),
+    createdAt: deck.createdAt,
+    updatedAt
+  };
+}
+
+function normalizeSavedDecks(rawDecks: unknown): SavedDeck[] {
+  if (!Array.isArray(rawDecks)) {
+    return [];
+  }
+
+  return rawDecks
+    .map(normalizeSavedDeck)
+    .filter((deck): deck is SavedDeck => deck !== null);
+}
+
 export function getSavedDecks(): SavedDeck[] {
   if (typeof window === "undefined") return [];
 
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    const decks: SavedDeck[] = stored ? JSON.parse(stored) : [];
+    const parsedDecks = stored ? JSON.parse(stored) : [];
+    const decks = normalizeSavedDecks(parsedDecks);
+
+    if (stored && JSON.stringify(parsedDecks) !== JSON.stringify(decks)) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(decks));
+    }
+
     // Sort by updatedAt descending (most recently updated first)
     return decks.sort(
       (a, b) =>
@@ -23,6 +76,18 @@ export function getSavedDecks(): SavedDeck[] {
   } catch (error) {
     console.error("Error loading saved decks:", error);
     return [];
+  }
+}
+
+export function replaceSavedDecks(decks: SavedDeck[]): void {
+  try {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(normalizeSavedDecks(decks))
+    );
+  } catch (error) {
+    console.error("Error replacing saved decks:", error);
+    throw new Error("Failed to replace saved decks in local storage");
   }
 }
 

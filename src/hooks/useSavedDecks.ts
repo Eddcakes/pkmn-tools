@@ -1,0 +1,113 @@
+"use client";
+
+import { useConvexAuth, useMutation, useQuery } from "convex/react";
+import { useCallback, useEffect, useState } from "react";
+import { api } from "../../convex/_generated/api";
+import {
+  deleteSavedDeck as lsDelete,
+  getSavedDecks as lsGet,
+  saveDeck as lsSave,
+  updateSavedDeck as lsUpdate,
+  type SavedDeck
+} from "../utils/savedDecks";
+
+export function useSavedDecks() {
+  const { isAuthenticated } = useConvexAuth();
+
+  const convexDecks = useQuery(
+    api.savedDecks.list,
+    isAuthenticated ? {} : "skip"
+  );
+
+  const convexUpsert = useMutation(api.savedDecks.upsert);
+  const convexUpdate = useMutation(api.savedDecks.update);
+  const convexRemove = useMutation(api.savedDecks.remove);
+
+  const [localDecksFallback, setLocalDecksFallback] = useState<
+    SavedDeck[] | null
+  >(null);
+
+  useEffect(() => {
+    // Load localStorage as a fallback/placeholder for all users
+    setLocalDecksFallback(lsGet());
+  }, []);
+
+  const decks: SavedDeck[] =
+    // For authenticated users: prefer Convex data, fall back to localStorage while loading
+    isAuthenticated && convexDecks !== undefined
+      ? convexDecks.map((d) => ({
+          id: d.clientId,
+          label: d.label,
+          deckList: d.deckList,
+          archetype: d.archetype,
+          createdAt: d.createdAt,
+          updatedAt: d.updatedAt
+        }))
+      : // For unauthenticated users or while Convex is loading: use localStorage
+        (localDecksFallback ?? []);
+
+  const saveDeck = useCallback(
+    async (label: string, deckList: string, archetype?: string[]) => {
+      // Always write to localStorage
+      const deck = lsSave(label, deckList, archetype);
+
+      if (isAuthenticated) {
+        await convexUpsert({
+          clientId: deck.id,
+          label: deck.label,
+          deckList: deck.deckList,
+          archetype: deck.archetype,
+          createdAt: deck.createdAt,
+          updatedAt: deck.updatedAt
+        });
+      }
+
+      return deck;
+    },
+    [isAuthenticated, convexUpsert]
+  );
+
+  const updateDeck = useCallback(
+    async (
+      id: string,
+      label: string,
+      deckList: string,
+      archetype?: string[]
+    ) => {
+      const updated = lsUpdate(id, label, deckList, archetype);
+      if (!updated) return null;
+
+      if (isAuthenticated) {
+        await convexUpdate({
+          clientId: id,
+          label,
+          deckList,
+          archetype,
+          updatedAt: updated.updatedAt
+        });
+      }
+
+      return updated;
+    },
+    [isAuthenticated, convexUpdate]
+  );
+
+  const deleteDeck = useCallback(
+    async (id: string) => {
+      lsDelete(id);
+
+      if (isAuthenticated) {
+        await convexRemove({ clientId: id });
+      }
+    },
+    [isAuthenticated, convexRemove]
+  );
+
+  return {
+    decks,
+    saveDeck,
+    updateDeck,
+    deleteDeck,
+    isLoading: isAuthenticated && convexDecks === undefined
+  };
+}
