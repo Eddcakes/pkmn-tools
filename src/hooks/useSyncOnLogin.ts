@@ -34,9 +34,14 @@ export function useSyncOnLogin() {
   const upsertSettings = useMutation(api.matchupSettings.upsert);
 
   useEffect(() => {
+    // Reset sync flag on logout so it can re-sync on next login
+    if (!isAuthenticated) {
+      hasSynced.current = false;
+      return;
+    }
+
     // Wait until authenticated and all queries have resolved
     if (
-      !isAuthenticated ||
       hasSynced.current ||
       convexDecks === undefined ||
       convexRecords === undefined ||
