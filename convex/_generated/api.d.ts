@@ -13,6 +13,7 @@ import type * as http from "../http.js";
 import type * as matchupRecords from "../matchupRecords.js";
 import type * as matchupSettings from "../matchupSettings.js";
 import type * as savedDecks from "../savedDecks.js";
+import type * as syncLocalData from "../syncLocalData.js";
 
 import type {
   ApiFromModules,
@@ -26,6 +27,7 @@ declare const fullApi: ApiFromModules<{
   matchupRecords: typeof matchupRecords;
   matchupSettings: typeof matchupSettings;
   savedDecks: typeof savedDecks;
+  syncLocalData: typeof syncLocalData;
 }>;
 
 /**
