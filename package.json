@@ -7,7 +7,8 @@
     "build": "next build --turbopack",
     "start": "npx serve@latest out",
     "lint": "biome lint .",
-    "check": "biome check .",
+    "lint:hooks": "eslint src --max-warnings=0",
+    "check": "biome check . && npm run lint:hooks",
     "format": "biome format --write ."
   },
   "dependencies": {
@@ -25,7 +26,10 @@
     "@types/node": "^25.0.3",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "@typescript-eslint/parser": "^8.59.1",
     "babel-plugin-react-compiler": "^1.0.0",
+    "eslint": "^10.2.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "typescript": "^5"
   }
 }
