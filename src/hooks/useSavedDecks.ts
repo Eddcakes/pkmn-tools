@@ -1,7 +1,7 @@
 "use client";
 
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { api } from "../../convex/_generated/api";
 import {
   deleteSavedDeck as lsDelete,
@@ -23,14 +23,7 @@ export function useSavedDecks() {
   const convexUpdate = useMutation(api.savedDecks.update);
   const convexRemove = useMutation(api.savedDecks.remove);
 
-  const [localDecksFallback, setLocalDecksFallback] = useState<
-    SavedDeck[] | null
-  >(null);
-
-  useEffect(() => {
-    // Load localStorage as a fallback/placeholder for all users
-    setLocalDecksFallback(lsGet());
-  }, []);
+  const [localDecksFallback] = useState<SavedDeck[]>(() => lsGet());
 
   const decks: SavedDeck[] =
     // For authenticated users: prefer Convex data, fall back to localStorage while loading
@@ -44,7 +37,7 @@ export function useSavedDecks() {
           updatedAt: d.updatedAt
         }))
       : // For unauthenticated users or while Convex is loading: use localStorage
-        (localDecksFallback ?? []);
+        localDecksFallback;
 
   const saveDeck = useCallback(
     async (label: string, deckList: string, archetype?: string[]) => {

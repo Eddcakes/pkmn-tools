@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "../components/Button";
 import { Modal } from "../components/Modal";
 import { ModalFooter } from "../components/ModalFooter";
@@ -16,13 +16,7 @@ export function LoadDeckModal({
   onClose,
   onLoadDeck
 }: LoadDeckModalProps) {
-  const [savedDecks, setSavedDecks] = useState<SavedDeck[]>([]);
-
-  React.useEffect(() => {
-    if (isOpen) {
-      setSavedDecks(getSavedDecks());
-    }
-  }, [isOpen]);
+  const savedDecks = isOpen ? getSavedDecks() : [];
 
   return (
     <Modal

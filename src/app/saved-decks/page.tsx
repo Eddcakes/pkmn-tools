@@ -196,6 +196,7 @@ export default function SavedDecksPage() {
 
       {/* Import Modal */}
       <ImportDeckModal
+        key={importModalOpen ? "import-open" : "import-closed"}
         isOpen={importModalOpen}
         onClose={() => setImportModalOpen(false)}
         onImported={handleImportComplete}
@@ -204,6 +205,11 @@ export default function SavedDecksPage() {
 
       {/* Edit Modal */}
       <EditDeckModal
+        key={
+          editModalOpen
+            ? `edit-deck-${editingDeck?.id ?? "none"}`
+            : "edit-deck-closed"
+        }
         isOpen={editModalOpen}
         onClose={handleEditModalClose}
         onUpdated={handleEditComplete}

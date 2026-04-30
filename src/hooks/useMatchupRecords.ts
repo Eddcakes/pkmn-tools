@@ -1,7 +1,7 @@
 "use client";
 
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { api } from "../../convex/_generated/api";
 import {
   deleteMatchupRecord as lsDelete,
@@ -23,14 +23,7 @@ export function useMatchupRecords() {
   const convexUpdate = useMutation(api.matchupRecords.update);
   const convexRemove = useMutation(api.matchupRecords.remove);
 
-  const [localRecordsFallback, setLocalRecordsFallback] = useState<
-    MatchupRecord[] | null
-  >(null);
-
-  useEffect(() => {
-    // Load localStorage as a fallback/placeholder for all users
-    setLocalRecordsFallback(lsGet());
-  }, []);
+  const [localRecordsFallback] = useState<MatchupRecord[]>(() => lsGet());
 
   const records: MatchupRecord[] =
     // For authenticated users: prefer Convex data, fall back to localStorage while loading
@@ -45,7 +38,7 @@ export function useMatchupRecords() {
           updatedAt: r.updatedAt
         }))
       : // For unauthenticated users or while Convex is loading: use localStorage
-        (localRecordsFallback ?? []);
+        localRecordsFallback;
 
   const saveRecord = useCallback(
     async (

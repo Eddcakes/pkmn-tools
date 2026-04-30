@@ -370,12 +370,22 @@ Energy: 11
 
       {/* Modals */}
       <LoadDeckModal
+        key={
+          loadModalOpen
+            ? `load-deck-${activeDeckId ?? "none"}`
+            : "load-deck-closed"
+        }
         isOpen={loadModalOpen}
         onClose={() => setLoadModalOpen(false)}
         onLoadDeck={handleLoadDeck}
       />
 
       <SaveDeckModal
+        key={
+          saveModalOpen
+            ? `save-deck-${activeDeckId ?? "none"}`
+            : "save-deck-closed"
+        }
         isOpen={saveModalOpen}
         onClose={() => setSaveModalOpen(false)}
         deckList={
