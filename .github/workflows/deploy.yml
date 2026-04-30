@@ -23,6 +23,8 @@ concurrency:
 
 jobs:
   deploy-convex:
+    environment:
+      name: github-pages
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -62,6 +64,8 @@ jobs:
 
   build:
     needs: deploy-convex
+    environment:
+      name: github-pages
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
