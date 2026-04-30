@@ -1,5 +1,5 @@
 import type { FormEvent } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "../components/Button";
 import { Modal } from "../components/Modal";
 import { ModalFooter } from "../components/ModalFooter";
@@ -25,26 +25,13 @@ export function EditDeckModal({
   deck,
   onUpdateDeck
 }: EditDeckModalProps) {
-  const [label, setLabel] = useState("");
-  const [archetype, setArchetype] = useState("");
-  const [deckList, setDeckList] = useState("");
+  const [label, setLabel] = useState(() => deck?.label ?? "");
+  const [archetype, setArchetype] = useState(() =>
+    deck?.archetype ? deck.archetype.map((tag) => `#${tag}`).join(" ") : ""
+  );
+  const [deckList, setDeckList] = useState(() => deck?.deckList ?? "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (deck) {
-      setLabel(deck.label);
-      setArchetype(
-        deck.archetype ? deck.archetype.map((tag) => `#${tag}`).join(" ") : ""
-      );
-      setDeckList(deck.deckList);
-    } else {
-      setLabel("");
-      setArchetype("");
-      setDeckList("");
-    }
-    setError("");
-  }, [deck]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();

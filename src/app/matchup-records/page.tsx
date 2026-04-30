@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Alert } from "@/components/Alert";
 import { IconButton } from "@/components/IconButton";
 import { CogIcon } from "@/components/Icons";
@@ -21,7 +21,6 @@ import { archetypeMapping, archetypeToTagType } from "../../utils/archetype";
 import { formatDate, formatFileNameFromDateString } from "../../utils/date";
 import {
   getMatchupChartData,
-  type MatchupChartData,
   type MatchupRecord
 } from "../../utils/matchupRecords";
 
@@ -37,13 +36,6 @@ export default function MatchupRecordsPage() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
-  const [archetypeGroups, setArchetypeGroups] = useState<SelectGroup[]>([]);
-  const [chartData, setChartData] = useState<MatchupChartData>({
-    userArchetypes: [],
-    opponentArchetypes: [],
-    matrix: new Map(),
-    counts: new Map()
-  });
   const [showAllRecords, setShowAllRecords] = useState(false);
   const [userArchetypeFilter, setUserArchetypeFilter] = useState("");
   const [opponentArchetypeFilter, setOpponentArchetypeFilter] = useState("");
@@ -52,7 +44,7 @@ export default function MatchupRecordsPage() {
   const [recordToEdit, setRecordToEdit] = useState<MatchupRecord | null>(null);
   const recordsListRef = useRef<HTMLDivElement>(null);
 
-  const loadArchetypeOptions = useCallback(() => {
+  const archetypeGroups = useMemo<SelectGroup[]>(() => {
     const customArchetypes = getCustomArchetypesArray();
 
     // Determine base archetypes (custom or default)
@@ -116,7 +108,7 @@ export default function MatchupRecordsPage() {
       options: allOptions
     });
 
-    setArchetypeGroups(groups);
+    return groups;
   }, [settings]);
 
   // Sort records by most recent first
@@ -124,15 +116,7 @@ export default function MatchupRecordsPage() {
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 
-  const updateChartData = useCallback(() => {
-    const data = getMatchupChartData(records);
-    setChartData(data);
-  }, [records]);
-
-  useEffect(() => {
-    loadArchetypeOptions();
-    updateChartData();
-  }, [loadArchetypeOptions, updateChartData]);
+  const chartData = useMemo(() => getMatchupChartData(records), [records]);
 
   const resultOptions = [
     { value: "win", label: "Win" },
@@ -182,9 +166,6 @@ export default function MatchupRecordsPage() {
       setResult("");
       setNotes("");
 
-      // Reload archetype options (recent archetypes may have changed)
-      loadArchetypeOptions();
-
       // Scroll the records list to the top
       recordsListRef.current?.scrollTo({ top: 0, behavior: "smooth" });
 
@@ -217,7 +198,6 @@ export default function MatchupRecordsPage() {
   };
 
   const handleEditUpdated = () => {
-    loadArchetypeOptions();
     setSuccessMessage("Record updated successfully!");
     setTimeout(() => setSuccessMessage(""), 3000);
   };
@@ -580,16 +560,18 @@ export default function MatchupRecordsPage() {
 
       {/* Settings Modal */}
       <MatchupSettingsModal
+        key={settingsModalOpen ? "settings-open" : "settings-closed"}
         isOpen={settingsModalOpen}
         onClose={() => setSettingsModalOpen(false)}
-        onUpdated={() => {
-          // Reload archetype options when settings are updated
-          loadArchetypeOptions();
-        }}
       />
 
       {/* Edit Record Modal */}
       <EditMatchupRecordModal
+        key={
+          editModalOpen
+            ? `edit-record-${recordToEdit?.id ?? "none"}`
+            : "edit-record-closed"
+        }
         isOpen={editModalOpen}
         onClose={() => {
           setEditModalOpen(false);

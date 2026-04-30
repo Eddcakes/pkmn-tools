@@ -27,14 +27,6 @@ export function ImportDeckModal({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  React.useEffect(() => {
-    if (isOpen) {
-      setLabel("");
-      setDeckList("");
-      setError("");
-    }
-  }, [isOpen]);
-
   const handleImport = async () => {
     if (!label.trim()) {
       setError("Please enter a label for the deck");

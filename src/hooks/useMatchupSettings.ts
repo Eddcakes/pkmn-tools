@@ -1,7 +1,7 @@
 "use client";
 
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { api } from "../../convex/_generated/api";
 import {
   getMatchupSettings as lsGet,
@@ -19,13 +19,7 @@ export function useMatchupSettings() {
 
   const convexUpsert = useMutation(api.matchupSettings.upsert);
 
-  const [localSettingsFallback, setLocalSettingsFallback] =
-    useState<MatchupSettings | null>(null);
-
-  useEffect(() => {
-    // Load localStorage as a fallback/placeholder for all users
-    setLocalSettingsFallback(lsGet());
-  }, []);
+  const [localSettingsFallback] = useState<MatchupSettings>(() => lsGet());
 
   const settings: MatchupSettings =
     // For authenticated users: prefer Convex data, fall back to localStorage while loading
@@ -38,7 +32,7 @@ export function useMatchupSettings() {
           customArchetypes: convexSettings.customArchetypes
         }
       : // For unauthenticated users or while Convex is loading: use localStorage
-        (localSettingsFallback ?? lsGet());
+        localSettingsFallback;
 
   const saveSettings = useCallback(
     async (newSettings: MatchupSettings) => {

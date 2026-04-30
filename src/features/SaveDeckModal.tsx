@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Tag } from "@/components/Tag";
 import { archetypeToTagType } from "@/utils/archetype";
 import { Button } from "../components/Button";
@@ -26,13 +26,6 @@ export function SaveDeckModal({
   const [label, setLabel] = useState(initialLabel);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (isOpen) {
-      setLabel(initialLabel);
-      setError("");
-    }
-  }, [isOpen, initialLabel]);
 
   const handleSave = async () => {
     if (!label.trim()) {

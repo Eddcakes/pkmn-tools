@@ -85,4 +85,4 @@ const MenuIcon = ({ className }: IconProps) => {
   );
 };
 
-export { CrossIcon, CogIcon, ChevronIcon, MenuIcon };
+export { ChevronIcon, CogIcon, CrossIcon, MenuIcon };
