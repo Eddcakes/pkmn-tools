@@ -1,5 +1,5 @@
 import type { FormEvent } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "../components/Button";
 import { Modal } from "../components/Modal";
 import { ModalFooter } from "../components/ModalFooter";
@@ -31,30 +31,19 @@ export function EditMatchupRecordModal({
   setOptions,
   onUpdateRecord
 }: EditMatchupRecordModalProps) {
-  const [userArchetype, setUserArchetype] = useState("");
-  const [opponentArchetype, setOpponentArchetype] = useState("");
-  const [result, setResult] = useState<"win" | "loss" | "tie" | "">("");
-  const [setValue, setSetValue] = useState("");
-  const [notes, setNotes] = useState("");
+  const [userArchetype, setUserArchetype] = useState(
+    () => record?.userArchetype ?? ""
+  );
+  const [opponentArchetype, setOpponentArchetype] = useState(
+    () => record?.opponentArchetype ?? ""
+  );
+  const [result, setResult] = useState<"win" | "loss" | "tie" | "">(
+    () => record?.result ?? ""
+  );
+  const [setValue, setSetValue] = useState(() => record?.set ?? "");
+  const [notes, setNotes] = useState(() => record?.notes || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (record) {
-      setUserArchetype(record.userArchetype);
-      setOpponentArchetype(record.opponentArchetype);
-      setResult(record.result);
-      setSetValue(record.set ?? "");
-      setNotes(record.notes || "");
-    } else {
-      setUserArchetype("");
-      setOpponentArchetype("");
-      setResult("");
-      setSetValue("");
-      setNotes("");
-    }
-    setError("");
-  }, [record]);
   const resultOptions = [
     { value: "win", label: "Win" },
     { value: "loss", label: "Loss" },

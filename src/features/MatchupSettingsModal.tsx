@@ -1,5 +1,5 @@
 import type { FormEvent } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Alert } from "@/components/Alert";
 import { Button } from "../components/Button";
 import { IconButton } from "../components/IconButton";
@@ -26,30 +26,12 @@ export function MatchupSettingsModal({
   onSaveSettings,
   onUpdated
 }: MatchupSettingsModalProps) {
-  const [settings, setSettings] = useState<MatchupSettings>({
-    useRecentArchetypes: true,
-    useFavouriteArchetypes: false,
-    recentArchetypes: [],
-    favouriteArchetypes: [],
-    customArchetypes: "",
-    defaultSet: undefined,
-    availableSets: ["MEG", "PFL", "ASC", "POR"]
-  });
+  const [settings, setSettings] = useState<MatchupSettings>(initialSettings);
   const [newFavourite, setNewFavourite] = useState("");
   const [newSetOption, setNewSetOption] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-
-  useEffect(() => {
-    if (isOpen) {
-      setSettings(initialSettings);
-      setNewFavourite("");
-      setNewSetOption("");
-      setError("");
-      setSuccessMessage("");
-    }
-  }, [isOpen, initialSettings]);
   const handleAddFavourite = () => {
     if (!newFavourite) return;
 

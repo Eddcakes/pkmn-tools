@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Alert } from "@/components/Alert";
 import { IconButton } from "@/components/IconButton";
 import { CogIcon } from "@/components/Icons";
@@ -118,16 +118,11 @@ export default function MatchupRecordsPage() {
   );
 
   const chartData = useMemo(() => getMatchupChartData(records), [records]);
-
-  useEffect(() => {
-    setSetValue((current) => {
-      const availableSets = settings.availableSets ?? [];
-      if (current && availableSets.includes(current)) {
-        return current;
-      }
-      return settings.defaultSet ?? "";
-    });
-  }, [settings.availableSets, settings.defaultSet]);
+  const availableSets = settings.availableSets ?? [];
+  const selectedSetValue =
+    setValue && availableSets.includes(setValue)
+      ? setValue
+      : (settings.defaultSet ?? "");
 
   const resultOptions = [
     { value: "win", label: "Win" },
@@ -163,7 +158,7 @@ export default function MatchupRecordsPage() {
         opponentArchetype,
         result as "win" | "loss" | "tie",
         notes.trim() || undefined,
-        setValue.trim() || undefined
+        selectedSetValue.trim() || undefined
       );
 
       // Track recently used archetypes
@@ -176,7 +171,7 @@ export default function MatchupRecordsPage() {
       setUserArchetype("");
       setOpponentArchetype("");
       setResult("");
-      setSetValue(settings.defaultSet ?? "");
+      setSetValue("");
       setNotes("");
 
       // Scroll the records list to the top
@@ -336,9 +331,9 @@ export default function MatchupRecordsPage() {
                 </label>
                 <Select
                   id="set"
-                  value={setValue}
+                  value={selectedSetValue}
                   onChange={setSetValue}
-                  options={(settings.availableSets ?? []).map((setOption) => ({
+                  options={availableSets.map((setOption) => ({
                     value: setOption,
                     label: setOption
                   }))}

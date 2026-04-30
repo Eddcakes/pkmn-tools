@@ -19,7 +19,8 @@ export function useMatchupSettings() {
 
   const convexUpsert = useMutation(api.matchupSettings.upsert);
 
-  const [localSettingsFallback] = useState<MatchupSettings>(() => lsGet());
+  const [localSettingsFallback, setLocalSettingsFallback] =
+    useState<MatchupSettings>(() => lsGet());
 
   const settings: MatchupSettings =
     // For authenticated users: prefer Convex data, fall back to localStorage while loading
