@@ -40,6 +40,7 @@ export default function MatchupRecordsPage() {
   const [showAllRecords, setShowAllRecords] = useState(false);
   const [userArchetypeFilter, setUserArchetypeFilter] = useState("");
   const [opponentArchetypeFilter, setOpponentArchetypeFilter] = useState("");
+  const [setFilter, setSetFilter] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [recordToEdit, setRecordToEdit] = useState<MatchupRecord | null>(null);
@@ -118,7 +119,23 @@ export default function MatchupRecordsPage() {
   );
 
   const chartData = useMemo(() => getMatchupChartData(records), [records]);
-  const availableSets = settings.availableSets ?? [];
+  const availableSets = useMemo(
+    () => settings.availableSets ?? [],
+    [settings.availableSets]
+  );
+  const filterSetOptions = useMemo(() => {
+    const setValues = records
+      .map((record) => record.set?.trim())
+      .filter((value): value is string => Boolean(value));
+
+    return Array.from(new Set([...availableSets, ...setValues]))
+      .sort((a, b) => a.localeCompare(b))
+      .map((setOption) => ({
+        value: setOption,
+        label: setOption
+      }));
+  }, [availableSets, records]);
+
   const selectedSetValue =
     setValue && availableSets.includes(setValue)
       ? setValue
@@ -232,7 +249,9 @@ export default function MatchupRecordsPage() {
       !opponentArchetypeFilter ||
       record.opponentArchetype.toLowerCase() ===
         opponentArchetypeFilter.toLowerCase();
-    return matchesUserArchetype && matchesOpponentArchetype;
+    const matchesSet =
+      !setFilter || record.set?.toLowerCase() === setFilter.toLowerCase();
+    return matchesUserArchetype && matchesOpponentArchetype && matchesSet;
   });
 
   // Get records to display (limited to 5 or all)
@@ -441,7 +460,25 @@ export default function MatchupRecordsPage() {
                   />
                 </div>
 
-                {(userArchetypeFilter || opponentArchetypeFilter) && (
+                <div>
+                  <label
+                    htmlFor="filter-set"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Filter Set
+                  </label>
+                  <Select
+                    id="filter-set"
+                    value={setFilter}
+                    onChange={setSetFilter}
+                    options={filterSetOptions}
+                    placeholder="Select Set"
+                  />
+                </div>
+
+                {(userArchetypeFilter ||
+                  opponentArchetypeFilter ||
+                  setFilter) && (
                   <div className="col-span-full">
                     <Button
                       size="sm"
@@ -449,6 +486,7 @@ export default function MatchupRecordsPage() {
                       onClick={() => {
                         setUserArchetypeFilter("");
                         setOpponentArchetypeFilter("");
+                        setSetFilter("");
                       }}
                     >
                       Clear Filters
