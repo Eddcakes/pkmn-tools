@@ -22,7 +22,46 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  deploy-convex:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate Convex environment
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+          CONVEX_SITE_URL: ${{ vars.CONVEX_SITE_URL }}
+          NEXT_PUBLIC_CONVEX_URL: ${{ vars.NEXT_PUBLIC_CONVEX_URL }}
+          AUTH_GOOGLE_ID: ${{ secrets.AUTH_GOOGLE_ID }}
+          AUTH_GOOGLE_SECRET: ${{ secrets.AUTH_GOOGLE_SECRET }}
+        run: |
+          test -n "$CONVEX_DEPLOY_KEY" || (echo "Missing secret: CONVEX_DEPLOY_KEY" && exit 1)
+          test -n "$CONVEX_SITE_URL" || (echo "Missing variable: CONVEX_SITE_URL" && exit 1)
+          test -n "$NEXT_PUBLIC_CONVEX_URL" || (echo "Missing variable: NEXT_PUBLIC_CONVEX_URL" && exit 1)
+          test -n "$AUTH_GOOGLE_ID" || (echo "Missing secret: AUTH_GOOGLE_ID" && exit 1)
+          test -n "$AUTH_GOOGLE_SECRET" || (echo "Missing secret: AUTH_GOOGLE_SECRET" && exit 1)
+
+      - name: Deploy Convex backend
+        run: npx convex deploy --yes
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+          CONVEX_SITE_URL: ${{ vars.CONVEX_SITE_URL }}
+          NEXT_PUBLIC_CONVEX_URL: ${{ vars.NEXT_PUBLIC_CONVEX_URL }}
+          AUTH_GOOGLE_ID: ${{ secrets.AUTH_GOOGLE_ID }}
+          AUTH_GOOGLE_SECRET: ${{ secrets.AUTH_GOOGLE_SECRET }}
+
   build:
+    needs: deploy-convex
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -56,6 +95,7 @@ jobs:
         run: npm run build
         env:
           PAGES_BASE_PATH: ${{ steps.setup_pages.outputs.base_path }}
+          NEXT_PUBLIC_CONVEX_URL: ${{ vars.NEXT_PUBLIC_CONVEX_URL }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
