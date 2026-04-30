@@ -6,8 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "npx serve@latest out",
-    "lint": "biome check",
-    "format": "biome format --write"
+    "lint": "biome lint .",
+    "check": "biome check .",
+    "format": "biome format --write ."
   },
   "dependencies": {
     "@convex-dev/auth": "^0.0.91",
