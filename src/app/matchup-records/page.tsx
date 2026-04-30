@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert } from "@/components/Alert";
 import { IconButton } from "@/components/IconButton";
 import { CogIcon } from "@/components/Icons";
@@ -27,10 +27,11 @@ import {
 export default function MatchupRecordsPage() {
   const { records, saveRecord, updateRecord, deleteRecord } =
     useMatchupRecords();
-  const { settings } = useMatchupSettings();
+  const { settings, saveSettings } = useMatchupSettings();
   const [userArchetype, setUserArchetype] = useState("");
   const [opponentArchetype, setOpponentArchetype] = useState("");
   const [result, setResult] = useState<"win" | "loss" | "tie" | "">("");
+  const [setValue, setSetValue] = useState("");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -118,6 +119,16 @@ export default function MatchupRecordsPage() {
 
   const chartData = useMemo(() => getMatchupChartData(records), [records]);
 
+  useEffect(() => {
+    setSetValue((current) => {
+      const availableSets = settings.availableSets ?? [];
+      if (current && availableSets.includes(current)) {
+        return current;
+      }
+      return settings.defaultSet ?? "";
+    });
+  }, [settings.availableSets, settings.defaultSet]);
+
   const resultOptions = [
     { value: "win", label: "Win" },
     { value: "loss", label: "Loss" },
@@ -151,7 +162,8 @@ export default function MatchupRecordsPage() {
         userArchetype,
         opponentArchetype,
         result as "win" | "loss" | "tie",
-        notes.trim() || undefined
+        notes.trim() || undefined,
+        setValue.trim() || undefined
       );
 
       // Track recently used archetypes
@@ -164,6 +176,7 @@ export default function MatchupRecordsPage() {
       setUserArchetype("");
       setOpponentArchetype("");
       setResult("");
+      setSetValue(settings.defaultSet ?? "");
       setNotes("");
 
       // Scroll the records list to the top
@@ -316,6 +329,26 @@ export default function MatchupRecordsPage() {
 
               <div>
                 <label
+                  htmlFor="set"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Set (Optional)
+                </label>
+                <Select
+                  id="set"
+                  value={setValue}
+                  onChange={setSetValue}
+                  options={(settings.availableSets ?? []).map((setOption) => ({
+                    value: setOption,
+                    label: setOption
+                  }))}
+                  placeholder="Select set..."
+                  disabled={saving}
+                />
+              </div>
+
+              <div>
+                <label
                   htmlFor="notes"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
@@ -457,7 +490,7 @@ export default function MatchupRecordsPage() {
               <>
                 <div
                   ref={recordsListRef}
-                  className="space-y-4 max-h-[600px] overflow-y-auto pr-2"
+                  className="space-y-4 max-h-150 overflow-y-auto pr-2"
                 >
                   {displayedRecords.map((record) => (
                     <div
@@ -505,6 +538,11 @@ export default function MatchupRecordsPage() {
                         <span className="text-xs text-gray-500">
                           {formatDate(record.createdAt)}
                         </span>
+                        {record.set && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium uppercase bg-gray-100 text-gray-800">
+                            {record.set}
+                          </span>
+                        )}
                         <span
                           data-file-name-for-syncing
                           className="text-xs text-white"
@@ -563,6 +601,8 @@ export default function MatchupRecordsPage() {
         key={settingsModalOpen ? "settings-open" : "settings-closed"}
         isOpen={settingsModalOpen}
         onClose={() => setSettingsModalOpen(false)}
+        settings={settings}
+        onSaveSettings={saveSettings}
       />
 
       {/* Edit Record Modal */}
@@ -580,6 +620,7 @@ export default function MatchupRecordsPage() {
         onUpdated={handleEditUpdated}
         record={recordToEdit}
         archetypeGroups={archetypeGroups}
+        setOptions={settings.availableSets ?? []}
         onUpdateRecord={updateRecord}
       />
     </div>

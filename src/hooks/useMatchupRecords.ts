@@ -32,6 +32,7 @@ export function useMatchupRecords() {
           id: r.clientId,
           userArchetype: r.userArchetype,
           opponentArchetype: r.opponentArchetype,
+          set: r.set,
           result: r.result,
           notes: r.notes,
           createdAt: r.createdAt,
@@ -45,15 +46,23 @@ export function useMatchupRecords() {
       userArchetype: string,
       opponentArchetype: string,
       result: "win" | "loss" | "tie",
-      notes?: string
+      notes?: string,
+      set?: string
     ) => {
-      const record = lsSave(userArchetype, opponentArchetype, result, notes);
+      const record = lsSave(
+        userArchetype,
+        opponentArchetype,
+        result,
+        notes,
+        set
+      );
 
       if (isAuthenticated) {
         await convexUpsert({
           clientId: record.id,
           userArchetype: record.userArchetype,
           opponentArchetype: record.opponentArchetype,
+          set: record.set,
           result: record.result,
           notes: record.notes,
           createdAt: record.createdAt,

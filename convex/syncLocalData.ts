@@ -19,6 +19,7 @@ export const syncOnLogin = mutation({
         id: v.string(),
         userArchetype: v.string(),
         opponentArchetype: v.string(),
+        set: v.optional(v.string()),
         result: v.union(v.literal("win"), v.literal("loss"), v.literal("tie")),
         notes: v.optional(v.string()),
         createdAt: v.string(),
@@ -30,7 +31,9 @@ export const syncOnLogin = mutation({
       useFavouriteArchetypes: v.boolean(),
       recentArchetypes: v.array(v.string()),
       favouriteArchetypes: v.array(v.string()),
-      customArchetypes: v.string()
+      customArchetypes: v.string(),
+      defaultSet: v.optional(v.string()),
+      availableSets: v.optional(v.array(v.string()))
     })
   },
   handler: async (ctx, args) => {
@@ -117,6 +120,7 @@ export const syncOnLogin = mutation({
         await ctx.db.patch(existing._id, {
           userArchetype: recordArg.userArchetype,
           opponentArchetype: recordArg.opponentArchetype,
+          set: recordArg.set,
           result: recordArg.result,
           notes: recordArg.notes,
           updatedAt: recordArg.updatedAt
@@ -128,6 +132,7 @@ export const syncOnLogin = mutation({
           clientId: recordArg.id,
           userArchetype: recordArg.userArchetype,
           opponentArchetype: recordArg.opponentArchetype,
+          set: recordArg.set,
           result: recordArg.result,
           notes: recordArg.notes,
           createdAt: recordArg.createdAt,
@@ -178,6 +183,7 @@ export const syncOnLogin = mutation({
         id: record.clientId,
         userArchetype: record.userArchetype,
         opponentArchetype: record.opponentArchetype,
+        set: record.set,
         result: record.result,
         notes: record.notes,
         createdAt: record.createdAt,
@@ -189,7 +195,9 @@ export const syncOnLogin = mutation({
             useFavouriteArchetypes: finalSettings.useFavouriteArchetypes,
             recentArchetypes: finalSettings.recentArchetypes,
             favouriteArchetypes: finalSettings.favouriteArchetypes,
-            customArchetypes: finalSettings.customArchetypes
+            customArchetypes: finalSettings.customArchetypes,
+            defaultSet: finalSettings.defaultSet,
+            availableSets: finalSettings.availableSets
           }
         : args.localSettings
     };

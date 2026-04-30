@@ -29,7 +29,12 @@ export function useMatchupSettings() {
           useFavouriteArchetypes: convexSettings.useFavouriteArchetypes,
           recentArchetypes: convexSettings.recentArchetypes,
           favouriteArchetypes: convexSettings.favouriteArchetypes,
-          customArchetypes: convexSettings.customArchetypes
+          customArchetypes: convexSettings.customArchetypes,
+          defaultSet: convexSettings.defaultSet,
+          availableSets:
+            convexSettings.availableSets ??
+            localSettingsFallback?.availableSets ??
+            lsGet().availableSets
         }
       : // For unauthenticated users or while Convex is loading: use localStorage
         localSettingsFallback;
@@ -37,6 +42,7 @@ export function useMatchupSettings() {
   const saveSettings = useCallback(
     async (newSettings: MatchupSettings) => {
       lsSave(newSettings);
+      setLocalSettingsFallback(newSettings);
       if (isAuthenticated) {
         await convexUpsert(newSettings);
       }

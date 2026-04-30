@@ -1,5 +1,5 @@
 import type { FormEvent } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../components/Button";
 import { Modal } from "../components/Modal";
 import { ModalFooter } from "../components/ModalFooter";
@@ -15,6 +15,7 @@ interface EditMatchupRecordModalProps {
   onUpdated: () => void;
   record: MatchupRecord | null;
   archetypeGroups: SelectGroup[];
+  setOptions: string[];
   onUpdateRecord?: (
     id: string,
     updates: Partial<Omit<MatchupRecord, "id" | "createdAt">>
@@ -27,21 +28,33 @@ export function EditMatchupRecordModal({
   onUpdated,
   record,
   archetypeGroups,
+  setOptions,
   onUpdateRecord
 }: EditMatchupRecordModalProps) {
-  const [userArchetype, setUserArchetype] = useState(
-    () => record?.userArchetype ?? ""
-  );
-  const [opponentArchetype, setOpponentArchetype] = useState(
-    () => record?.opponentArchetype ?? ""
-  );
-  const [result, setResult] = useState<"win" | "loss" | "tie" | "">(
-    () => record?.result ?? ""
-  );
-  const [notes, setNotes] = useState(() => record?.notes || "");
+  const [userArchetype, setUserArchetype] = useState("");
+  const [opponentArchetype, setOpponentArchetype] = useState("");
+  const [result, setResult] = useState<"win" | "loss" | "tie" | "">("");
+  const [setValue, setSetValue] = useState("");
+  const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    if (record) {
+      setUserArchetype(record.userArchetype);
+      setOpponentArchetype(record.opponentArchetype);
+      setResult(record.result);
+      setSetValue(record.set ?? "");
+      setNotes(record.notes || "");
+    } else {
+      setUserArchetype("");
+      setOpponentArchetype("");
+      setResult("");
+      setSetValue("");
+      setNotes("");
+    }
+    setError("");
+  }, [record]);
   const resultOptions = [
     { value: "win", label: "Win" },
     { value: "loss", label: "Loss" },
@@ -74,6 +87,7 @@ export function EditMatchupRecordModal({
       const updates = {
         userArchetype: userArchetype.trim(),
         opponentArchetype: opponentArchetype.trim(),
+        set: setValue.trim() || undefined,
         result: result as "win" | "loss" | "tie",
         notes: notes.trim() || undefined
       };
@@ -176,6 +190,26 @@ export function EditMatchupRecordModal({
             placeholder="Select result..."
             disabled={isSubmitting}
             required
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="edit-set"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Set (Optional)
+          </label>
+          <Select
+            id="edit-set"
+            value={setValue}
+            onChange={setSetValue}
+            options={setOptions.map((setOption) => ({
+              value: setOption,
+              label: setOption
+            }))}
+            placeholder="Select set..."
+            disabled={isSubmitting}
           />
         </div>
 

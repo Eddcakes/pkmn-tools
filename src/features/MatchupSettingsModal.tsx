@@ -1,5 +1,5 @@
 import type { FormEvent } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert } from "@/components/Alert";
 import { Button } from "../components/Button";
 import { IconButton } from "../components/IconButton";
@@ -9,31 +9,47 @@ import { ModalFooter } from "../components/ModalFooter";
 import { Select } from "../components/Select";
 import { Tag } from "../components/Tag";
 import { archetypeMapping, archetypeToTagType } from "../utils/archetype";
-import {
-  getMatchupSettings,
-  type MatchupSettings,
-  saveMatchupSettings
-} from "../utils/matchupSettings";
+import type { MatchupSettings } from "../utils/matchupSettings";
 
 interface MatchupSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  settings: MatchupSettings;
+  onSaveSettings: (settings: MatchupSettings) => Promise<void>;
   onUpdated?: () => void;
 }
 
 export function MatchupSettingsModal({
   isOpen,
   onClose,
+  settings: initialSettings,
+  onSaveSettings,
   onUpdated
 }: MatchupSettingsModalProps) {
-  const [settings, setSettings] = useState<MatchupSettings>(() =>
-    getMatchupSettings()
-  );
+  const [settings, setSettings] = useState<MatchupSettings>({
+    useRecentArchetypes: true,
+    useFavouriteArchetypes: false,
+    recentArchetypes: [],
+    favouriteArchetypes: [],
+    customArchetypes: "",
+    defaultSet: undefined,
+    availableSets: ["MEG", "PFL", "ASC", "POR"]
+  });
   const [newFavourite, setNewFavourite] = useState("");
+  const [newSetOption, setNewSetOption] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+  useEffect(() => {
+    if (isOpen) {
+      setSettings(initialSettings);
+      setNewFavourite("");
+      setNewSetOption("");
+      setError("");
+      setSuccessMessage("");
+    }
+  }, [isOpen, initialSettings]);
   const handleAddFavourite = () => {
     if (!newFavourite) return;
 
@@ -77,6 +93,39 @@ export function MatchupSettingsModal({
     }
   };
 
+  const handleAddSetOption = () => {
+    const normalizedSet = newSetOption.trim().toUpperCase();
+    if (!normalizedSet) return;
+
+    if (
+      settings.availableSets?.some(
+        (setOption) => setOption.toLowerCase() === normalizedSet.toLowerCase()
+      )
+    ) {
+      setError("This set already exists in your options");
+      return;
+    }
+
+    setSettings({
+      ...settings,
+      availableSets: [...(settings.availableSets ?? []), normalizedSet]
+    });
+    setNewSetOption("");
+    setError("");
+  };
+
+  const handleRemoveSetOption = (setOption: string) => {
+    const updatedSets = (settings.availableSets ?? []).filter(
+      (existing) => existing !== setOption
+    );
+    setSettings({
+      ...settings,
+      availableSets: updatedSets,
+      defaultSet:
+        settings.defaultSet === setOption ? undefined : settings.defaultSet
+    });
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
@@ -85,7 +134,7 @@ export function MatchupSettingsModal({
     setSuccessMessage("");
 
     try {
-      saveMatchupSettings(settings);
+      await onSaveSettings(settings);
       setSuccessMessage("Settings saved successfully!");
       setTimeout(() => {
         onUpdated?.();
@@ -186,6 +235,102 @@ export function MatchupSettingsModal({
               ))}
             </div>
           )}
+        </div>
+
+        {/* Matchup Set Options */}
+        <div>
+          <span className="block text-sm font-medium text-gray-700 mb-2">
+            Available Matchup Sets
+          </span>
+          <p className="text-xs text-gray-500 mb-3">
+            Configure the set options shown when adding or editing matchup
+            records
+          </p>
+
+          {(settings.availableSets?.length ?? 0) > 0 && (
+            <div className="flex flex-wrap gap-2 mb-3">
+              {(settings.availableSets ?? []).map((setOption) => (
+                <div key={setOption} className="flex items-center gap-1">
+                  <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium inset-ring bg-gray-100 text-gray-800 inset-ring-gray-300/50 uppercase">
+                    {setOption}
+                  </span>
+                  <IconButton
+                    variant="ghost"
+                    size="xs"
+                    onClick={() => handleRemoveSetOption(setOption)}
+                    aria-label={`Remove ${setOption}`}
+                    disabled={isSubmitting}
+                    icon={<CrossIcon />}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={newSetOption}
+              onChange={(e) => setNewSetOption(e.target.value)}
+              placeholder="Add set code (e.g. POR)"
+              disabled={isSubmitting}
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={handleAddSetOption}
+              disabled={isSubmitting || !newSetOption.trim()}
+            >
+              Add
+            </Button>
+          </div>
+        </div>
+
+        {/* Default Set */}
+        <div>
+          <label
+            htmlFor="default-set"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Default Set For New Records
+          </label>
+          <p className="text-xs text-gray-500 mb-3">
+            Optional. Leave blank if you do not want a default.
+          </p>
+          <div className="flex gap-2">
+            <Select
+              id="default-set"
+              value={settings.defaultSet ?? ""}
+              onChange={(value) =>
+                setSettings({
+                  ...settings,
+                  defaultSet: value || undefined
+                })
+              }
+              options={(settings.availableSets ?? []).map((setOption) => ({
+                value: setOption,
+                label: setOption
+              }))}
+              placeholder="No default set"
+              disabled={isSubmitting}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() =>
+                setSettings({
+                  ...settings,
+                  defaultSet: undefined
+                })
+              }
+              disabled={isSubmitting || !settings.defaultSet}
+            >
+              Clear
+            </Button>
+          </div>
         </div>
 
         {/* Favourite Archetypes Section */}
