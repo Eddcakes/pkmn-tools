@@ -397,7 +397,7 @@ export default function MatchupRecordsPage() {
                   htmlFor="latest-set"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  Latest Set (Optional)
+                  Latest Set
                 </label>
                 <Select
                   id="latest-set"
