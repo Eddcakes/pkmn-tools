@@ -1,7 +1,7 @@
 "use client";
 
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useSyncExternalStore } from "react";
 import { api } from "../../convex/_generated/api";
 import {
   deleteMatchupRecord as lsDelete,
@@ -10,6 +10,31 @@ import {
   updateMatchupRecord as lsUpdate,
   type MatchupRecord
 } from "../utils/matchupRecords";
+
+const EMPTY_RECORDS_SNAPSHOT: MatchupRecord[] = [];
+const MATCHUP_RECORDS_STORAGE_KEY = "pokemon-matchup-records";
+
+let cachedLocalRecordsRaw: string | null | undefined;
+let cachedLocalRecordsSnapshot: MatchupRecord[] = EMPTY_RECORDS_SNAPSHOT;
+
+const getLocalRecordsSnapshot = (): MatchupRecord[] => {
+  if (typeof window === "undefined") {
+    return EMPTY_RECORDS_SNAPSHOT;
+  }
+
+  const raw = window.localStorage.getItem(MATCHUP_RECORDS_STORAGE_KEY);
+  if (raw === cachedLocalRecordsRaw) {
+    return cachedLocalRecordsSnapshot;
+  }
+
+  cachedLocalRecordsRaw = raw;
+  cachedLocalRecordsSnapshot = lsGet();
+  return cachedLocalRecordsSnapshot;
+};
+
+const getServerRecordsSnapshot = () => EMPTY_RECORDS_SNAPSHOT;
+
+const subscribeToRecordsStore = () => () => {};
 
 export function useMatchupRecords() {
   const { isAuthenticated } = useConvexAuth();
@@ -23,9 +48,15 @@ export function useMatchupRecords() {
   const convexUpdate = useMutation(api.matchupRecords.update);
   const convexRemove = useMutation(api.matchupRecords.remove);
 
-  const [localRecordsFallback, setLocalRecordsFallback] = useState<
-    MatchupRecord[]
-  >(() => lsGet());
+  const localRecordsSnapshot = useSyncExternalStore(
+    subscribeToRecordsStore,
+    getLocalRecordsSnapshot,
+    getServerRecordsSnapshot
+  );
+  const [localRecordsOverride, setLocalRecordsOverride] = useState<
+    MatchupRecord[] | null
+  >(null);
+  const localRecordsFallback = localRecordsOverride ?? localRecordsSnapshot;
 
   const records: MatchupRecord[] =
     // For authenticated users: prefer Convex data, fall back to localStorage while loading
@@ -61,7 +92,10 @@ export function useMatchupRecords() {
         notes,
         format
       );
-      setLocalRecordsFallback((prev) => [...prev, record]);
+      setLocalRecordsOverride((prev) => [
+        ...(prev ?? localRecordsFallback),
+        record
+      ]);
 
       if (isAuthenticated) {
         await convexUpsert({
@@ -79,7 +113,7 @@ export function useMatchupRecords() {
 
       return record;
     },
-    [isAuthenticated, convexUpsert]
+    [isAuthenticated, convexUpsert, localRecordsFallback]
   );
 
   const updateRecord = useCallback(
@@ -89,8 +123,10 @@ export function useMatchupRecords() {
     ) => {
       const updated = lsUpdate(id, updates);
       if (!updated) return null;
-      setLocalRecordsFallback((prev) =>
-        prev.map((record) => (record.id === id ? updated : record))
+      setLocalRecordsOverride((prev) =>
+        (prev ?? localRecordsFallback).map((record) =>
+          record.id === id ? updated : record
+        )
       );
 
       if (isAuthenticated) {
@@ -103,20 +139,20 @@ export function useMatchupRecords() {
 
       return updated;
     },
-    [isAuthenticated, convexUpdate]
+    [isAuthenticated, convexUpdate, localRecordsFallback]
   );
 
   const deleteRecord = useCallback(
     async (id: string) => {
       lsDelete(id);
-      setLocalRecordsFallback((prev) =>
-        prev.filter((record) => record.id !== id)
+      setLocalRecordsOverride((prev) =>
+        (prev ?? localRecordsFallback).filter((record) => record.id !== id)
       );
       if (isAuthenticated) {
         await convexRemove({ clientId: id });
       }
     },
-    [isAuthenticated, convexRemove]
+    [isAuthenticated, convexRemove, localRecordsFallback]
   );
 
   return {

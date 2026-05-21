@@ -32,8 +32,12 @@ export default function MatchupRecordsPage() {
   const [userArchetype, setUserArchetype] = useState("");
   const [opponentArchetype, setOpponentArchetype] = useState("");
   const [result, setResult] = useState<"win" | "loss" | "tie" | "">("");
-  const [formatValue, setFormatValue] = useState("");
-  const [latestSetValue, setLatestSetValue] = useState("");
+  const [formatOverrideValue, setFormatOverrideValue] = useState<string | null>(
+    null
+  );
+  const [latestSetOverrideValue, setLatestSetOverrideValue] = useState<
+    string | null
+  >(null);
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -141,9 +145,14 @@ export default function MatchupRecordsPage() {
     []
   );
 
-  const selectedFormatValue = formatValue || (settings.defaultFormat ?? "");
+  const selectedFormatValue =
+    formatOverrideValue === null
+      ? (settings.defaultFormat ?? "")
+      : formatOverrideValue;
   const selectedLatestSetValue =
-    latestSetValue || (settings.defaultLatestSet ?? "");
+    latestSetOverrideValue === null
+      ? (settings.defaultLatestSet ?? "")
+      : latestSetOverrideValue;
 
   const resultOptions = [
     { value: "win", label: "Win" },
@@ -198,8 +207,8 @@ export default function MatchupRecordsPage() {
       setUserArchetype("");
       setOpponentArchetype("");
       setResult("");
-      setFormatValue("");
-      setLatestSetValue("");
+      setFormatOverrideValue(null);
+      setLatestSetOverrideValue(null);
       setNotes("");
 
       // Scroll the records list to the top
@@ -376,7 +385,7 @@ export default function MatchupRecordsPage() {
                 <Select
                   id="format"
                   value={selectedFormatValue}
-                  onChange={setFormatValue}
+                  onChange={setFormatOverrideValue}
                   options={formatOptions}
                   placeholder="Select format..."
                   disabled={saving}
@@ -393,7 +402,7 @@ export default function MatchupRecordsPage() {
                 <Select
                   id="latest-set"
                   value={selectedLatestSetValue}
-                  onChange={setLatestSetValue}
+                  onChange={setLatestSetOverrideValue}
                   options={latestSetOptions}
                   placeholder="Select latest set..."
                   disabled={saving}
