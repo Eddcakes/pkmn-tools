@@ -29,15 +29,32 @@ export const upsert = mutation({
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
+    const normalizedSettings = {
+      useRecentArchetypes: args.useRecentArchetypes,
+      useFavouriteArchetypes: args.useFavouriteArchetypes,
+      recentArchetypes: args.recentArchetypes,
+      favouriteArchetypes: args.favouriteArchetypes,
+      customArchetypes: args.customArchetypes,
+      ...(args.availableSets !== undefined
+        ? { availableSets: args.availableSets }
+        : {}),
+      ...(args.defaultFormat !== undefined
+        ? { defaultFormat: args.defaultFormat }
+        : {}),
+      ...(args.defaultLatestSet !== undefined
+        ? { defaultLatestSet: args.defaultLatestSet }
+        : {})
+    };
+
     const existing = await ctx.db
       .query("matchupSettings")
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .first();
 
     if (existing) {
-      await ctx.db.patch(existing._id, args);
+      await ctx.db.replace(existing._id, { userId, ...normalizedSettings });
     } else {
-      await ctx.db.insert("matchupSettings", { userId, ...args });
+      await ctx.db.insert("matchupSettings", { userId, ...normalizedSettings });
     }
   }
 });
