@@ -9,31 +9,32 @@ import { ModalFooter } from "../components/ModalFooter";
 import { Select } from "../components/Select";
 import { Tag } from "../components/Tag";
 import { archetypeMapping, archetypeToTagType } from "../utils/archetype";
+import type { MatchupSettings } from "../utils/matchupSettings";
 import {
-  getMatchupSettings,
-  type MatchupSettings,
-  saveMatchupSettings
+  AVAILABLE_FORMATS,
+  AVAILABLE_LATEST_SETS
 } from "../utils/matchupSettings";
 
 interface MatchupSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  settings: MatchupSettings;
+  onSaveSettings: (settings: MatchupSettings) => Promise<void>;
   onUpdated?: () => void;
 }
 
 export function MatchupSettingsModal({
   isOpen,
   onClose,
+  settings: initialSettings,
+  onSaveSettings,
   onUpdated
 }: MatchupSettingsModalProps) {
-  const [settings, setSettings] = useState<MatchupSettings>(() =>
-    getMatchupSettings()
-  );
+  const [settings, setSettings] = useState<MatchupSettings>(initialSettings);
   const [newFavourite, setNewFavourite] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-
   const handleAddFavourite = () => {
     if (!newFavourite) return;
 
@@ -85,7 +86,7 @@ export function MatchupSettingsModal({
     setSuccessMessage("");
 
     try {
-      saveMatchupSettings(settings);
+      await onSaveSettings(settings);
       setSuccessMessage("Settings saved successfully!");
       setTimeout(() => {
         onUpdated?.();
@@ -186,6 +187,96 @@ export function MatchupSettingsModal({
               ))}
             </div>
           )}
+        </div>
+
+        {/* Format Default */}
+        <div>
+          <label
+            htmlFor="default-format"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Default Format For New Records
+          </label>
+          <p className="text-xs text-gray-500 mb-3">
+            Optional. Leave blank if you do not want a default.
+          </p>
+          <div className="flex gap-2">
+            <Select
+              id="default-format"
+              value={settings.defaultFormat ?? ""}
+              onChange={(value) =>
+                setSettings({
+                  ...settings,
+                  defaultFormat: value || undefined
+                })
+              }
+              options={AVAILABLE_FORMATS.map((formatOption) => ({
+                value: formatOption,
+                label: formatOption
+              }))}
+              placeholder="No default format"
+              disabled={isSubmitting}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() =>
+                setSettings({
+                  ...settings,
+                  defaultFormat: undefined
+                })
+              }
+              disabled={isSubmitting || !settings.defaultFormat}
+            >
+              Clear
+            </Button>
+          </div>
+        </div>
+
+        {/* Latest Set Default */}
+        <div>
+          <label
+            htmlFor="default-latest-set"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Default Latest Set For New Records
+          </label>
+          <p className="text-xs text-gray-500 mb-3">
+            Optional. Leave blank if you do not want a default.
+          </p>
+          <div className="flex gap-2">
+            <Select
+              id="default-latest-set"
+              value={settings.defaultLatestSet ?? ""}
+              onChange={(value) =>
+                setSettings({
+                  ...settings,
+                  defaultLatestSet: value || undefined
+                })
+              }
+              options={AVAILABLE_LATEST_SETS.map((setOption) => ({
+                value: setOption,
+                label: setOption
+              }))}
+              placeholder="No default latest set"
+              disabled={isSubmitting}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() =>
+                setSettings({
+                  ...settings,
+                  defaultLatestSet: undefined
+                })
+              }
+              disabled={isSubmitting || !settings.defaultLatestSet}
+            >
+              Clear
+            </Button>
+          </div>
         </div>
 
         {/* Favourite Archetypes Section */}

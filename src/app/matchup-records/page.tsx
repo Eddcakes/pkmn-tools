@@ -7,10 +7,7 @@ import { CogIcon } from "@/components/Icons";
 import { EditMatchupRecordModal } from "@/features/EditMatchupRecordModal";
 import { MatchupChart } from "@/features/MatchupChart";
 import { MatchupSettingsModal } from "@/features/MatchupSettingsModal";
-import {
-  addRecentArchetype,
-  getCustomArchetypesArray
-} from "@/utils/matchupSettings";
+import { addRecentArchetype } from "@/utils/matchupSettings";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
 import { Select, type SelectGroup } from "../../components/Select";
@@ -23,14 +20,24 @@ import {
   getMatchupChartData,
   type MatchupRecord
 } from "../../utils/matchupRecords";
+import {
+  AVAILABLE_FORMATS,
+  AVAILABLE_LATEST_SETS
+} from "../../utils/matchupSettings";
 
 export default function MatchupRecordsPage() {
   const { records, saveRecord, updateRecord, deleteRecord } =
     useMatchupRecords();
-  const { settings } = useMatchupSettings();
+  const { settings, saveSettings } = useMatchupSettings();
   const [userArchetype, setUserArchetype] = useState("");
   const [opponentArchetype, setOpponentArchetype] = useState("");
   const [result, setResult] = useState<"win" | "loss" | "tie" | "">("");
+  const [formatOverrideValue, setFormatOverrideValue] = useState<string | null>(
+    null
+  );
+  const [latestSetOverrideValue, setLatestSetOverrideValue] = useState<
+    string | null
+  >(null);
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -39,13 +46,18 @@ export default function MatchupRecordsPage() {
   const [showAllRecords, setShowAllRecords] = useState(false);
   const [userArchetypeFilter, setUserArchetypeFilter] = useState("");
   const [opponentArchetypeFilter, setOpponentArchetypeFilter] = useState("");
+  const [formatFilter, setFormatFilter] = useState("");
+  const [latestSetFilter, setLatestSetFilter] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [recordToEdit, setRecordToEdit] = useState<MatchupRecord | null>(null);
   const recordsListRef = useRef<HTMLDivElement>(null);
 
   const archetypeGroups = useMemo<SelectGroup[]>(() => {
-    const customArchetypes = getCustomArchetypesArray();
+    const customArchetypes = settings.customArchetypes
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
 
     // Determine base archetypes (custom or default)
     const baseArchetypes =
@@ -116,7 +128,31 @@ export default function MatchupRecordsPage() {
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 
-  const chartData = useMemo(() => getMatchupChartData(records), [records]);
+  const formatOptions = useMemo(
+    () =>
+      AVAILABLE_FORMATS.map((formatOption) => ({
+        value: formatOption,
+        label: formatOption
+      })),
+    []
+  );
+  const latestSetOptions = useMemo(
+    () =>
+      AVAILABLE_LATEST_SETS.map((setOption) => ({
+        value: setOption,
+        label: setOption
+      })),
+    []
+  );
+
+  const selectedFormatValue =
+    formatOverrideValue === null
+      ? (settings.defaultFormat ?? "")
+      : formatOverrideValue;
+  const selectedLatestSetValue =
+    latestSetOverrideValue === null
+      ? (settings.defaultLatestSet ?? "")
+      : latestSetOverrideValue;
 
   const resultOptions = [
     { value: "win", label: "Win" },
@@ -142,6 +178,11 @@ export default function MatchupRecordsPage() {
       return;
     }
 
+    if (selectedFormatValue.trim() && !selectedLatestSetValue.trim()) {
+      setError("Please select latest set when format is selected");
+      return;
+    }
+
     setSaving(true);
     setError("");
     setSuccessMessage("");
@@ -151,7 +192,9 @@ export default function MatchupRecordsPage() {
         userArchetype,
         opponentArchetype,
         result as "win" | "loss" | "tie",
-        notes.trim() || undefined
+        selectedLatestSetValue.trim() || undefined,
+        notes.trim() || undefined,
+        selectedFormatValue.trim() || undefined
       );
 
       // Track recently used archetypes
@@ -164,6 +207,8 @@ export default function MatchupRecordsPage() {
       setUserArchetype("");
       setOpponentArchetype("");
       setResult("");
+      setFormatOverrideValue(null);
+      setLatestSetOverrideValue(null);
       setNotes("");
 
       // Scroll the records list to the top
@@ -224,8 +269,24 @@ export default function MatchupRecordsPage() {
       !opponentArchetypeFilter ||
       record.opponentArchetype.toLowerCase() ===
         opponentArchetypeFilter.toLowerCase();
-    return matchesUserArchetype && matchesOpponentArchetype;
+    const matchesFormat =
+      !formatFilter ||
+      record.format?.toLowerCase() === formatFilter.toLowerCase();
+    const matchesLatestSet =
+      !latestSetFilter ||
+      record.latestSet?.toLowerCase() === latestSetFilter.toLowerCase();
+    return (
+      matchesUserArchetype &&
+      matchesOpponentArchetype &&
+      matchesFormat &&
+      matchesLatestSet
+    );
   });
+
+  const chartData = useMemo(
+    () => getMatchupChartData(filteredRecords),
+    [filteredRecords]
+  );
 
   // Get records to display (limited to 5 or all)
   const displayedRecords = showAllRecords
@@ -311,6 +372,40 @@ export default function MatchupRecordsPage() {
                   placeholder="Select result..."
                   disabled={saving}
                   required
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="format"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Format (Optional)
+                </label>
+                <Select
+                  id="format"
+                  value={selectedFormatValue}
+                  onChange={setFormatOverrideValue}
+                  options={formatOptions}
+                  placeholder="Select format..."
+                  disabled={saving}
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="latest-set"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Latest Set
+                </label>
+                <Select
+                  id="latest-set"
+                  value={selectedLatestSetValue}
+                  onChange={setLatestSetOverrideValue}
+                  options={latestSetOptions}
+                  placeholder="Select latest set..."
+                  disabled={saving}
                 />
               </div>
 
@@ -413,7 +508,42 @@ export default function MatchupRecordsPage() {
                   />
                 </div>
 
-                {(userArchetypeFilter || opponentArchetypeFilter) && (
+                <div>
+                  <label
+                    htmlFor="filter-format"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Filter Format
+                  </label>
+                  <Select
+                    id="filter-format"
+                    value={formatFilter}
+                    onChange={setFormatFilter}
+                    options={formatOptions}
+                    placeholder="Select Format"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="filter-latest-set"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Filter Latest Set
+                  </label>
+                  <Select
+                    id="filter-latest-set"
+                    value={latestSetFilter}
+                    onChange={setLatestSetFilter}
+                    options={latestSetOptions}
+                    placeholder="Select Latest Set"
+                  />
+                </div>
+
+                {(userArchetypeFilter ||
+                  opponentArchetypeFilter ||
+                  formatFilter ||
+                  latestSetFilter) && (
                   <div className="col-span-full">
                     <Button
                       size="sm"
@@ -421,6 +551,8 @@ export default function MatchupRecordsPage() {
                       onClick={() => {
                         setUserArchetypeFilter("");
                         setOpponentArchetypeFilter("");
+                        setFormatFilter("");
+                        setLatestSetFilter("");
                       }}
                     >
                       Clear Filters
@@ -448,6 +580,8 @@ export default function MatchupRecordsPage() {
                   onClick={() => {
                     setUserArchetypeFilter("");
                     setOpponentArchetypeFilter("");
+                    setFormatFilter("");
+                    setLatestSetFilter("");
                   }}
                 >
                   Clear Filters
@@ -457,7 +591,7 @@ export default function MatchupRecordsPage() {
               <>
                 <div
                   ref={recordsListRef}
-                  className="space-y-4 max-h-[600px] overflow-y-auto pr-2"
+                  className="space-y-4 max-h-150 overflow-y-auto pr-2"
                 >
                   {displayedRecords.map((record) => (
                     <div
@@ -505,6 +639,16 @@ export default function MatchupRecordsPage() {
                         <span className="text-xs text-gray-500">
                           {formatDate(record.createdAt)}
                         </span>
+                        {record.format && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                            {record.format}
+                          </span>
+                        )}
+                        {record.latestSet && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium uppercase bg-gray-100 text-gray-800">
+                            {record.latestSet}
+                          </span>
+                        )}
                         <span
                           data-file-name-for-syncing
                           className="text-xs text-white"
@@ -552,7 +696,7 @@ export default function MatchupRecordsPage() {
       </div>
 
       {/* Matchup Chart Section */}
-      {records.length > 0 && (
+      {filteredRecords.length > 0 && (
         <div className="mt-8">
           <MatchupChart data={chartData} />
         </div>
@@ -563,6 +707,8 @@ export default function MatchupRecordsPage() {
         key={settingsModalOpen ? "settings-open" : "settings-closed"}
         isOpen={settingsModalOpen}
         onClose={() => setSettingsModalOpen(false)}
+        settings={settings}
+        onSaveSettings={saveSettings}
       />
 
       {/* Edit Record Modal */}
@@ -580,6 +726,8 @@ export default function MatchupRecordsPage() {
         onUpdated={handleEditUpdated}
         record={recordToEdit}
         archetypeGroups={archetypeGroups}
+        formatOptions={AVAILABLE_FORMATS}
+        latestSetOptions={AVAILABLE_LATEST_SETS}
         onUpdateRecord={updateRecord}
       />
     </div>

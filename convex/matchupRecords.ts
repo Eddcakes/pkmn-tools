@@ -22,6 +22,8 @@ export const upsert = mutation({
     clientId: v.string(),
     userArchetype: v.string(),
     opponentArchetype: v.string(),
+    format: v.optional(v.string()),
+    latestSet: v.optional(v.string()),
     result: v.union(v.literal("win"), v.literal("loss"), v.literal("tie")),
     notes: v.optional(v.string()),
     createdAt: v.string(),
@@ -42,6 +44,8 @@ export const upsert = mutation({
       await ctx.db.patch(existing._id, {
         userArchetype: args.userArchetype,
         opponentArchetype: args.opponentArchetype,
+        format: args.format,
+        latestSet: args.latestSet,
         result: args.result,
         notes: args.notes,
         updatedAt: args.updatedAt
@@ -60,6 +64,8 @@ export const batchUpsert = mutation({
         clientId: v.string(),
         userArchetype: v.string(),
         opponentArchetype: v.string(),
+        format: v.optional(v.string()),
+        latestSet: v.optional(v.string()),
         result: v.union(v.literal("win"), v.literal("loss"), v.literal("tie")),
         notes: v.optional(v.string()),
         createdAt: v.string(),
@@ -85,6 +91,8 @@ export const batchUpsert = mutation({
         await ctx.db.patch(existing._id, {
           userArchetype: recordArg.userArchetype,
           opponentArchetype: recordArg.opponentArchetype,
+          format: recordArg.format,
+          latestSet: recordArg.latestSet,
           result: recordArg.result,
           notes: recordArg.notes,
           updatedAt: recordArg.updatedAt
@@ -108,6 +116,8 @@ export const update = mutation({
     clientId: v.string(),
     userArchetype: v.optional(v.string()),
     opponentArchetype: v.optional(v.string()),
+    format: v.optional(v.string()),
+    latestSet: v.optional(v.string()),
     result: v.optional(
       v.union(v.literal("win"), v.literal("loss"), v.literal("tie"))
     ),

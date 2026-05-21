@@ -15,6 +15,8 @@ interface EditMatchupRecordModalProps {
   onUpdated: () => void;
   record: MatchupRecord | null;
   archetypeGroups: SelectGroup[];
+  formatOptions: string[];
+  latestSetOptions: string[];
   onUpdateRecord?: (
     id: string,
     updates: Partial<Omit<MatchupRecord, "id" | "createdAt">>
@@ -27,6 +29,8 @@ export function EditMatchupRecordModal({
   onUpdated,
   record,
   archetypeGroups,
+  formatOptions,
+  latestSetOptions,
   onUpdateRecord
 }: EditMatchupRecordModalProps) {
   const [userArchetype, setUserArchetype] = useState(
@@ -38,10 +42,13 @@ export function EditMatchupRecordModal({
   const [result, setResult] = useState<"win" | "loss" | "tie" | "">(
     () => record?.result ?? ""
   );
+  const [formatValue, setFormatValue] = useState(() => record?.format ?? "");
+  const [latestSetValue, setLatestSetValue] = useState(
+    () => record?.latestSet ?? ""
+  );
   const [notes, setNotes] = useState(() => record?.notes || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-
   const resultOptions = [
     { value: "win", label: "Win" },
     { value: "loss", label: "Loss" },
@@ -74,6 +81,8 @@ export function EditMatchupRecordModal({
       const updates = {
         userArchetype: userArchetype.trim(),
         opponentArchetype: opponentArchetype.trim(),
+        format: formatValue.trim() || undefined,
+        latestSet: latestSetValue.trim() || undefined,
         result: result as "win" | "loss" | "tie",
         notes: notes.trim() || undefined
       };
@@ -176,6 +185,46 @@ export function EditMatchupRecordModal({
             placeholder="Select result..."
             disabled={isSubmitting}
             required
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="edit-format"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Format (Optional)
+          </label>
+          <Select
+            id="edit-format"
+            value={formatValue}
+            onChange={setFormatValue}
+            options={formatOptions.map((formatOption) => ({
+              value: formatOption,
+              label: formatOption
+            }))}
+            placeholder="Select format..."
+            disabled={isSubmitting}
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="edit-latest-set"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Latest Set
+          </label>
+          <Select
+            id="edit-latest-set"
+            value={latestSetValue}
+            onChange={setLatestSetValue}
+            options={latestSetOptions.map((setOption) => ({
+              value: setOption,
+              label: setOption
+            }))}
+            placeholder="Select latest set..."
+            disabled={isSubmitting}
           />
         </div>
 
