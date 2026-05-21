@@ -22,7 +22,8 @@ export default defineSchema({
     userId: v.string(),
     userArchetype: v.string(),
     opponentArchetype: v.string(),
-    set: v.optional(v.string()),
+    format: v.optional(v.string()),
+    latestSet: v.optional(v.string()),
     result: v.union(v.literal("win"), v.literal("loss"), v.literal("tie")),
     notes: v.optional(v.string()),
     createdAt: v.string(),
@@ -38,8 +39,9 @@ export default defineSchema({
     useFavouriteArchetypes: v.boolean(),
     recentArchetypes: v.array(v.string()),
     favouriteArchetypes: v.array(v.string()),
+    availableSets: v.optional(v.array(v.string())),
     customArchetypes: v.string(),
-    defaultSet: v.optional(v.string()),
-    availableSets: v.optional(v.array(v.string()))
+    defaultFormat: v.optional(v.string()),
+    defaultLatestSet: v.optional(v.string())
   }).index("by_user", ["userId"])
 });

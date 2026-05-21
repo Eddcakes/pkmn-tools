@@ -31,11 +31,8 @@ export function useMatchupSettings() {
           recentArchetypes: convexSettings.recentArchetypes,
           favouriteArchetypes: convexSettings.favouriteArchetypes,
           customArchetypes: convexSettings.customArchetypes,
-          defaultSet: convexSettings.defaultSet,
-          availableSets:
-            convexSettings.availableSets ??
-            localSettingsFallback?.availableSets ??
-            lsGet().availableSets
+          defaultFormat: convexSettings.defaultFormat,
+          defaultLatestSet: convexSettings.defaultLatestSet
         }
       : // For unauthenticated users or while Convex is loading: use localStorage
         localSettingsFallback;

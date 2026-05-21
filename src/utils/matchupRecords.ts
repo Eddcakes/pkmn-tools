@@ -2,7 +2,8 @@ export interface MatchupRecord {
   id: string;
   userArchetype: string;
   opponentArchetype: string;
-  set?: string;
+  format?: string;
+  latestSet?: string;
   result: "win" | "loss" | "tie";
   notes?: string;
   createdAt: string;
@@ -74,15 +75,17 @@ export function saveMatchupRecord(
   userArchetype: string,
   opponentArchetype: string,
   result: "win" | "loss" | "tie",
+  latestSet?: string,
   notes?: string,
-  set?: string
+  format?: string
 ): MatchupRecord {
   const now = new Date().toISOString();
   const record: MatchupRecord = {
     id: generateId(),
     userArchetype,
     opponentArchetype,
-    set,
+    format,
+    latestSet,
     result,
     notes,
     createdAt: now,
@@ -124,7 +127,8 @@ export function updateMatchupRecord(
   updates: {
     userArchetype?: string;
     opponentArchetype?: string;
-    set?: string;
+    format?: string;
+    latestSet?: string;
     result?: "win" | "loss" | "tie";
     notes?: string;
   }

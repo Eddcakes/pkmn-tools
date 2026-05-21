@@ -7,10 +7,7 @@ import { CogIcon } from "@/components/Icons";
 import { EditMatchupRecordModal } from "@/features/EditMatchupRecordModal";
 import { MatchupChart } from "@/features/MatchupChart";
 import { MatchupSettingsModal } from "@/features/MatchupSettingsModal";
-import {
-  addRecentArchetype,
-  getCustomArchetypesArray
-} from "@/utils/matchupSettings";
+import { addRecentArchetype } from "@/utils/matchupSettings";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
 import { Select, type SelectGroup } from "../../components/Select";
@@ -23,6 +20,10 @@ import {
   getMatchupChartData,
   type MatchupRecord
 } from "../../utils/matchupRecords";
+import {
+  AVAILABLE_FORMATS,
+  AVAILABLE_LATEST_SETS
+} from "../../utils/matchupSettings";
 
 export default function MatchupRecordsPage() {
   const { records, saveRecord, updateRecord, deleteRecord } =
@@ -31,7 +32,8 @@ export default function MatchupRecordsPage() {
   const [userArchetype, setUserArchetype] = useState("");
   const [opponentArchetype, setOpponentArchetype] = useState("");
   const [result, setResult] = useState<"win" | "loss" | "tie" | "">("");
-  const [setValue, setSetValue] = useState("");
+  const [formatValue, setFormatValue] = useState("");
+  const [latestSetValue, setLatestSetValue] = useState("");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -40,14 +42,18 @@ export default function MatchupRecordsPage() {
   const [showAllRecords, setShowAllRecords] = useState(false);
   const [userArchetypeFilter, setUserArchetypeFilter] = useState("");
   const [opponentArchetypeFilter, setOpponentArchetypeFilter] = useState("");
-  const [setFilter, setSetFilter] = useState("");
+  const [formatFilter, setFormatFilter] = useState("");
+  const [latestSetFilter, setLatestSetFilter] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [recordToEdit, setRecordToEdit] = useState<MatchupRecord | null>(null);
   const recordsListRef = useRef<HTMLDivElement>(null);
 
   const archetypeGroups = useMemo<SelectGroup[]>(() => {
-    const customArchetypes = getCustomArchetypesArray();
+    const customArchetypes = settings.customArchetypes
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
 
     // Determine base archetypes (custom or default)
     const baseArchetypes =
@@ -118,28 +124,26 @@ export default function MatchupRecordsPage() {
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 
-  const chartData = useMemo(() => getMatchupChartData(records), [records]);
-  const availableSets = useMemo(
-    () => settings.availableSets ?? [],
-    [settings.availableSets]
+  const formatOptions = useMemo(
+    () =>
+      AVAILABLE_FORMATS.map((formatOption) => ({
+        value: formatOption,
+        label: formatOption
+      })),
+    []
   );
-  const filterSetOptions = useMemo(() => {
-    const setValues = records
-      .map((record) => record.set?.trim())
-      .filter((value): value is string => Boolean(value));
-
-    return Array.from(new Set([...availableSets, ...setValues]))
-      .sort((a, b) => a.localeCompare(b))
-      .map((setOption) => ({
+  const latestSetOptions = useMemo(
+    () =>
+      AVAILABLE_LATEST_SETS.map((setOption) => ({
         value: setOption,
         label: setOption
-      }));
-  }, [availableSets, records]);
+      })),
+    []
+  );
 
-  const selectedSetValue =
-    setValue && availableSets.includes(setValue)
-      ? setValue
-      : (settings.defaultSet ?? "");
+  const selectedFormatValue = formatValue || (settings.defaultFormat ?? "");
+  const selectedLatestSetValue =
+    latestSetValue || (settings.defaultLatestSet ?? "");
 
   const resultOptions = [
     { value: "win", label: "Win" },
@@ -165,6 +169,11 @@ export default function MatchupRecordsPage() {
       return;
     }
 
+    if (selectedFormatValue.trim() && !selectedLatestSetValue.trim()) {
+      setError("Please select latest set when format is selected");
+      return;
+    }
+
     setSaving(true);
     setError("");
     setSuccessMessage("");
@@ -174,8 +183,9 @@ export default function MatchupRecordsPage() {
         userArchetype,
         opponentArchetype,
         result as "win" | "loss" | "tie",
+        selectedLatestSetValue.trim() || undefined,
         notes.trim() || undefined,
-        selectedSetValue.trim() || undefined
+        selectedFormatValue.trim() || undefined
       );
 
       // Track recently used archetypes
@@ -188,7 +198,8 @@ export default function MatchupRecordsPage() {
       setUserArchetype("");
       setOpponentArchetype("");
       setResult("");
-      setSetValue("");
+      setFormatValue("");
+      setLatestSetValue("");
       setNotes("");
 
       // Scroll the records list to the top
@@ -249,10 +260,24 @@ export default function MatchupRecordsPage() {
       !opponentArchetypeFilter ||
       record.opponentArchetype.toLowerCase() ===
         opponentArchetypeFilter.toLowerCase();
-    const matchesSet =
-      !setFilter || record.set?.toLowerCase() === setFilter.toLowerCase();
-    return matchesUserArchetype && matchesOpponentArchetype && matchesSet;
+    const matchesFormat =
+      !formatFilter ||
+      record.format?.toLowerCase() === formatFilter.toLowerCase();
+    const matchesLatestSet =
+      !latestSetFilter ||
+      record.latestSet?.toLowerCase() === latestSetFilter.toLowerCase();
+    return (
+      matchesUserArchetype &&
+      matchesOpponentArchetype &&
+      matchesFormat &&
+      matchesLatestSet
+    );
   });
+
+  const chartData = useMemo(
+    () => getMatchupChartData(filteredRecords),
+    [filteredRecords]
+  );
 
   // Get records to display (limited to 5 or all)
   const displayedRecords = showAllRecords
@@ -343,20 +368,34 @@ export default function MatchupRecordsPage() {
 
               <div>
                 <label
-                  htmlFor="set"
+                  htmlFor="format"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  Set (Optional)
+                  Format (Optional)
                 </label>
                 <Select
-                  id="set"
-                  value={selectedSetValue}
-                  onChange={setSetValue}
-                  options={availableSets.map((setOption) => ({
-                    value: setOption,
-                    label: setOption
-                  }))}
-                  placeholder="Select set..."
+                  id="format"
+                  value={selectedFormatValue}
+                  onChange={setFormatValue}
+                  options={formatOptions}
+                  placeholder="Select format..."
+                  disabled={saving}
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="latest-set"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Latest Set (Optional)
+                </label>
+                <Select
+                  id="latest-set"
+                  value={selectedLatestSetValue}
+                  onChange={setLatestSetValue}
+                  options={latestSetOptions}
+                  placeholder="Select latest set..."
                   disabled={saving}
                 />
               </div>
@@ -462,23 +501,40 @@ export default function MatchupRecordsPage() {
 
                 <div>
                   <label
-                    htmlFor="filter-set"
+                    htmlFor="filter-format"
                     className="block text-sm font-medium text-gray-700 mb-2"
                   >
-                    Filter Set
+                    Filter Format
                   </label>
                   <Select
-                    id="filter-set"
-                    value={setFilter}
-                    onChange={setSetFilter}
-                    options={filterSetOptions}
-                    placeholder="Select Set"
+                    id="filter-format"
+                    value={formatFilter}
+                    onChange={setFormatFilter}
+                    options={formatOptions}
+                    placeholder="Select Format"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="filter-latest-set"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Filter Latest Set
+                  </label>
+                  <Select
+                    id="filter-latest-set"
+                    value={latestSetFilter}
+                    onChange={setLatestSetFilter}
+                    options={latestSetOptions}
+                    placeholder="Select Latest Set"
                   />
                 </div>
 
                 {(userArchetypeFilter ||
                   opponentArchetypeFilter ||
-                  setFilter) && (
+                  formatFilter ||
+                  latestSetFilter) && (
                   <div className="col-span-full">
                     <Button
                       size="sm"
@@ -486,7 +542,8 @@ export default function MatchupRecordsPage() {
                       onClick={() => {
                         setUserArchetypeFilter("");
                         setOpponentArchetypeFilter("");
-                        setSetFilter("");
+                        setFormatFilter("");
+                        setLatestSetFilter("");
                       }}
                     >
                       Clear Filters
@@ -514,6 +571,8 @@ export default function MatchupRecordsPage() {
                   onClick={() => {
                     setUserArchetypeFilter("");
                     setOpponentArchetypeFilter("");
+                    setFormatFilter("");
+                    setLatestSetFilter("");
                   }}
                 >
                   Clear Filters
@@ -571,9 +630,14 @@ export default function MatchupRecordsPage() {
                         <span className="text-xs text-gray-500">
                           {formatDate(record.createdAt)}
                         </span>
-                        {record.set && (
+                        {record.format && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                            {record.format}
+                          </span>
+                        )}
+                        {record.latestSet && (
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium uppercase bg-gray-100 text-gray-800">
-                            {record.set}
+                            {record.latestSet}
                           </span>
                         )}
                         <span
@@ -623,7 +687,7 @@ export default function MatchupRecordsPage() {
       </div>
 
       {/* Matchup Chart Section */}
-      {records.length > 0 && (
+      {filteredRecords.length > 0 && (
         <div className="mt-8">
           <MatchupChart data={chartData} />
         </div>
@@ -653,7 +717,8 @@ export default function MatchupRecordsPage() {
         onUpdated={handleEditUpdated}
         record={recordToEdit}
         archetypeGroups={archetypeGroups}
-        setOptions={settings.availableSets ?? []}
+        formatOptions={AVAILABLE_FORMATS}
+        latestSetOptions={AVAILABLE_LATEST_SETS}
         onUpdateRecord={updateRecord}
       />
     </div>

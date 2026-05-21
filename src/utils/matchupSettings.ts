@@ -4,21 +4,29 @@ export interface MatchupSettings {
   recentArchetypes: string[]; // Last 5 recently used archetypes
   favouriteArchetypes: string[]; // Up to 5 favourite archetypes from existing list
   customArchetypes: string; // Custom archetype list as newline-separated text
-  defaultSet?: string; // Default set used when adding records
-  availableSets?: string[]; // Editable set options shown in record forms
+  defaultFormat?: string; // Default format used when adding records
+  defaultLatestSet?: string; // Default latest set used when adding records
 }
 
 const STORAGE_KEY = "pokemon-matchup-settings";
 const MAX_RECENT = 5;
 const MAX_FAVOURITES = 5;
-const DEFAULT_AVAILABLE_SETS = ["MEG", "PFL", "ASC", "POR"];
 
-function normalizeSets(sets?: string[]): string[] {
-  if (!sets || !Array.isArray(sets)) return DEFAULT_AVAILABLE_SETS;
-  const unique = Array.from(
-    new Set(sets.map((set) => set.trim().toUpperCase()).filter(Boolean))
-  );
-  return unique.length > 0 ? unique : DEFAULT_AVAILABLE_SETS;
+// Keep these newest -> oldest so dropdowns render in the desired order.
+// Add newly released values at the start of each array.
+export const AVAILABLE_FORMATS = ["H-on", "G-on", "F-on", "E-on", "D-on"];
+export const AVAILABLE_LATEST_SETS = ["CRI", "POR", "ASC", "PFL", "MEG"];
+
+function normalizeFormat(format?: string): string | undefined {
+  if (!format) return undefined;
+  const normalized = format.trim();
+  return AVAILABLE_FORMATS.includes(normalized) ? normalized : undefined;
+}
+
+function normalizeLatestSet(latestSet?: string): string | undefined {
+  if (!latestSet) return undefined;
+  const normalized = latestSet.trim().toUpperCase();
+  return AVAILABLE_LATEST_SETS.includes(normalized) ? normalized : undefined;
 }
 
 function getDefaultSettings(): MatchupSettings {
@@ -28,8 +36,8 @@ function getDefaultSettings(): MatchupSettings {
     recentArchetypes: [],
     favouriteArchetypes: [],
     customArchetypes: "",
-    defaultSet: undefined,
-    availableSets: DEFAULT_AVAILABLE_SETS
+    defaultFormat: undefined,
+    defaultLatestSet: undefined
   };
 }
 
@@ -48,16 +56,9 @@ export function getMatchupSettings(): MatchupSettings {
     const settings: MatchupSettings = {
       ...getDefaultSettings(),
       ...parsed,
-      defaultSet: parsed.defaultSet?.trim().toUpperCase() || undefined,
-      availableSets: normalizeSets(parsed.availableSets)
+      defaultFormat: normalizeFormat(parsed.defaultFormat),
+      defaultLatestSet: normalizeLatestSet(parsed.defaultLatestSet)
     };
-
-    if (
-      settings.defaultSet &&
-      !settings.availableSets?.includes(settings.defaultSet)
-    ) {
-      settings.defaultSet = undefined;
-    }
 
     return settings;
   } catch (error) {
@@ -70,16 +71,9 @@ export function saveMatchupSettings(settings: MatchupSettings): void {
   try {
     const normalized: MatchupSettings = {
       ...settings,
-      defaultSet: settings.defaultSet?.trim().toUpperCase() || undefined,
-      availableSets: normalizeSets(settings.availableSets)
+      defaultFormat: normalizeFormat(settings.defaultFormat),
+      defaultLatestSet: normalizeLatestSet(settings.defaultLatestSet)
     };
-
-    if (
-      normalized.defaultSet &&
-      !normalized.availableSets?.includes(normalized.defaultSet)
-    ) {
-      normalized.defaultSet = undefined;
-    }
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
   } catch (error) {

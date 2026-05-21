@@ -20,9 +20,10 @@ export const upsert = mutation({
     useFavouriteArchetypes: v.boolean(),
     recentArchetypes: v.array(v.string()),
     favouriteArchetypes: v.array(v.string()),
+    availableSets: v.optional(v.array(v.string())),
     customArchetypes: v.string(),
-    defaultSet: v.optional(v.string()),
-    availableSets: v.optional(v.array(v.string()))
+    defaultFormat: v.optional(v.string()),
+    defaultLatestSet: v.optional(v.string())
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
