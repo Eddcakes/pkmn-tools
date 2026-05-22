@@ -318,6 +318,7 @@ export default function MatchupRecordsPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
+                {/* replace with the new pkmn selector */}
                 <label
                   htmlFor="user-archetype"
                   className="block text-sm font-medium text-gray-700 mb-2"
@@ -337,6 +338,7 @@ export default function MatchupRecordsPage() {
               </div>
 
               <div>
+                {/* replace with the new pkmn selector */}
                 <label
                   htmlFor="opponent-archetype"
                   className="block text-sm font-medium text-gray-700 mb-2"
@@ -356,6 +358,7 @@ export default function MatchupRecordsPage() {
               </div>
 
               <div>
+                {/* replace with a toggle button group */}
                 <label
                   htmlFor="result"
                   className="block text-sm font-medium text-gray-700 mb-2"
