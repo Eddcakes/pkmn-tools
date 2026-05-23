@@ -34,9 +34,6 @@ import {
   AVAILABLE_LATEST_SETS
 } from "../../utils/matchupSettings";
 
-// TODO review component as it is very big
-// we may want to look at a new state management solution if this component needs to manage this much state and logic
-
 const RESULT_BUTTON_OPTIONS: ButtonGroupOption<MatchupResult>[] = [
   { value: "win", label: "W", ariaLabel: "Win" },
   { value: "loss", label: "L", ariaLabel: "Loss" },
