@@ -1,4 +1,4 @@
-import { resolvePokemonSlots } from "./archetypePokemon";
+import { type PokemonSlots, resolvePokemonSlots } from "./archetypePokemon";
 
 export interface SavedDeck {
   id: string;
@@ -37,6 +37,73 @@ export function subscribeSavedDecks(onStoreChange: () => void): () => void {
   };
 }
 
+function getLegacyArchetypeLabels(deck: Record<string, unknown>): string[] {
+  const rawArchetype = Array.isArray(deck.archetype)
+    ? deck.archetype
+    : Array.isArray(deck.archetypes)
+      ? deck.archetypes
+      : undefined;
+
+  if (!rawArchetype) {
+    return [];
+  }
+
+  return rawArchetype
+    .filter((value): value is string => typeof value === "string")
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0);
+}
+
+function resolveLegacyArchetypeSlots(
+  legacyArchetypeLabels: string[]
+): PokemonSlots | undefined {
+  if (legacyArchetypeLabels.length === 0) {
+    return undefined;
+  }
+
+  // Prefer a single composite label so mappings like "gholdengo joltik box" match.
+  const compositeLabel = legacyArchetypeLabels.join(" ");
+  const compositeSlots = resolvePokemonSlots(compositeLabel);
+
+  let primaryPokemon = compositeSlots.primaryPokemon;
+  let secondaryPokemon = compositeSlots.secondaryPokemon;
+
+  // If composite mapping is partial/missing, progressively fill from each entry.
+  if (!primaryPokemon || !secondaryPokemon) {
+    for (const label of legacyArchetypeLabels) {
+      const entrySlots = resolvePokemonSlots(label);
+
+      if (!primaryPokemon && entrySlots.primaryPokemon) {
+        primaryPokemon = entrySlots.primaryPokemon;
+      }
+
+      if (!secondaryPokemon && entrySlots.secondaryPokemon) {
+        secondaryPokemon = entrySlots.secondaryPokemon;
+      }
+
+      if (primaryPokemon && secondaryPokemon) {
+        break;
+      }
+    }
+  }
+
+  // Final safety fallback to keep first-entry behavior compatible.
+  if ((!primaryPokemon || !secondaryPokemon) && legacyArchetypeLabels[0]) {
+    const firstEntrySlots = resolvePokemonSlots(legacyArchetypeLabels[0]);
+    primaryPokemon ??= firstEntrySlots.primaryPokemon;
+    secondaryPokemon ??= firstEntrySlots.secondaryPokemon;
+  }
+
+  if (!primaryPokemon && !secondaryPokemon) {
+    return undefined;
+  }
+
+  return {
+    ...(primaryPokemon ? { primaryPokemon } : {}),
+    ...(secondaryPokemon ? { secondaryPokemon } : {})
+  };
+}
+
 function normalizeSavedDeck(rawDeck: unknown): SavedDeck | null {
   if (!rawDeck || typeof rawDeck !== "object") {
     return null;
@@ -63,17 +130,8 @@ function normalizeSavedDeck(rawDeck: unknown): SavedDeck | null {
       ? deck.secondaryPokemon
       : undefined;
 
-  const rawArchetype = Array.isArray(deck.archetype)
-    ? deck.archetype
-    : Array.isArray(deck.archetypes)
-      ? deck.archetypes
-      : undefined;
-  const firstArchetype = rawArchetype?.find(
-    (value): value is string => typeof value === "string"
-  );
-  const fallbackSlots = firstArchetype
-    ? resolvePokemonSlots(firstArchetype)
-    : undefined;
+  const legacyArchetypeLabels = getLegacyArchetypeLabels(deck);
+  const fallbackSlots = resolveLegacyArchetypeSlots(legacyArchetypeLabels);
 
   const primaryPokemon = directPrimaryPokemon ?? fallbackSlots?.primaryPokemon;
   const secondaryPokemon =
