@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { Alert } from "@/components/Alert";
+import { ButtonGroup, type ButtonGroupOption } from "@/components/ButtonGroup";
 import { IconButton } from "@/components/IconButton";
 import { CogIcon } from "@/components/Icons";
 import { PkmnSelector } from "@/components/PkmnSelector";
@@ -20,12 +21,22 @@ import { archetypeMapping, archetypeToTagType } from "../../utils/archetype";
 import { formatDate, formatFileNameFromDateString } from "../../utils/date";
 import {
   getMatchupChartData,
+  type MatchupResult,
   type MatchupRecord
 } from "../../utils/matchupRecords";
 import {
   AVAILABLE_FORMATS,
   AVAILABLE_LATEST_SETS
 } from "../../utils/matchupSettings";
+
+// TODO review component as it is very big
+// we may want to look at a new state management solution if this component needs to manage this much state and logic
+
+const RESULT_BUTTON_OPTIONS: ButtonGroupOption<MatchupResult>[] = [
+  { value: "win", label: "W", ariaLabel: "Win" },
+  { value: "loss", label: "L", ariaLabel: "Loss" },
+  { value: "tie", label: "T", ariaLabel: "Tie" }
+];
 
 export default function MatchupRecordsPage() {
   const { records, saveRecord, updateRecord, deleteRecord } =
@@ -35,7 +46,7 @@ export default function MatchupRecordsPage() {
   const [userSecondaryPokemon, setUserSecondaryPokemon] = useState("");
   const [opponentPrimaryPokemon, setOpponentPrimaryPokemon] = useState("");
   const [opponentSecondaryPokemon, setOpponentSecondaryPokemon] = useState("");
-  const [result, setResult] = useState<"win" | "loss" | "tie" | "">("");
+  const [result, setResult] = useState<MatchupResult | "">("");
   const [formatOverrideValue, setFormatOverrideValue] = useState<string | null>(
     null
   );
@@ -208,12 +219,6 @@ export default function MatchupRecordsPage() {
       ? (settings.defaultLatestSet ?? "")
       : latestSetOverrideValue;
 
-  const resultOptions = [
-    { value: "win", label: "Win" },
-    { value: "loss", label: "Loss" },
-    { value: "tie", label: "Tie" }
-  ];
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -254,7 +259,7 @@ export default function MatchupRecordsPage() {
       await saveRecord(
         userArchetype,
         opponentArchetype,
-        result as "win" | "loss" | "tie",
+        result as MatchupResult,
         selectedLatestSetValue.trim() || undefined,
         notes.trim() || undefined,
         selectedFormatValue.trim() || undefined
@@ -440,23 +445,22 @@ export default function MatchupRecordsPage() {
               </div>
 
               <div>
-                {/* replace with a toggle button group */}
-                <label
-                  htmlFor="result"
+                <p
+                  id="result-label"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
                   Result
-                </label>
-                <Select
+                </p>
+                <ButtonGroup
                   id="result"
+                  name="result"
+                  ariaLabelledBy="result-label"
+                  ariaLabel="Match result"
+                  className="mt-2"
                   value={result}
-                  onChange={(value) =>
-                    setResult(value as "win" | "loss" | "tie" | "")
-                  }
-                  options={resultOptions}
-                  placeholder="Select result..."
+                  onChange={setResult}
+                  options={RESULT_BUTTON_OPTIONS}
                   disabled={saving}
-                  required
                 />
               </div>
 
@@ -572,7 +576,6 @@ export default function MatchupRecordsPage() {
                     onChange={setUserArchetypeFilter}
                     groups={archetypeGroups}
                     placeholder="Select Archetype"
-                    allowCustom={true}
                   />
                 </div>
 
@@ -589,7 +592,6 @@ export default function MatchupRecordsPage() {
                     onChange={setOpponentArchetypeFilter}
                     groups={archetypeGroups}
                     placeholder="Select Archetype"
-                    allowCustom={true}
                   />
                 </div>
 

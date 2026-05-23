@@ -1,10 +1,21 @@
+export type MatchupResult = "win" | "loss" | "tie";
+
+export const MATCHUP_RESULT_OPTIONS: Array<{
+  value: MatchupResult;
+  label: string;
+}> = [
+  { value: "win", label: "Win" },
+  { value: "loss", label: "Loss" },
+  { value: "tie", label: "Tie" }
+];
+
 export interface MatchupRecord {
   id: string;
   userArchetype: string;
   opponentArchetype: string;
   format?: string;
   latestSet?: string;
-  result: "win" | "loss" | "tie";
+  result: MatchupResult;
   notes?: string;
   createdAt: string;
   updatedAt?: string;
@@ -74,7 +85,7 @@ export function replaceMatchupRecords(records: MatchupRecord[]): void {
 export function saveMatchupRecord(
   userArchetype: string,
   opponentArchetype: string,
-  result: "win" | "loss" | "tie",
+  result: MatchupResult,
   latestSet?: string,
   notes?: string,
   format?: string
@@ -129,7 +140,7 @@ export function updateMatchupRecord(
     opponentArchetype?: string;
     format?: string;
     latestSet?: string;
-    result?: "win" | "loss" | "tie";
+    result?: MatchupResult;
     notes?: string;
   }
 ): MatchupRecord | null {
