@@ -110,21 +110,21 @@ export function MatchupSettingsModal({
         {/* Latest Set Default */}
         <div>
           <Select
-            id="default-latest-set"
-            label="Default Latest Set For New Records"
+            id="default-set"
+            label="Default Set For New Records"
             description="Optional. Leave blank if you do not want a default."
-            value={settings.defaultLatestSet ?? ""}
+            value={settings.defaultSet ?? ""}
             onChange={(value) =>
               setSettings({
                 ...settings,
-                defaultLatestSet: value || undefined
+                defaultSet: value || undefined
               })
             }
             options={AVAILABLE_LATEST_SETS.map((setOption) => ({
               value: setOption,
               label: setOption
             }))}
-            placeholder="No default latest set"
+            placeholder="No default set"
             disabled={isSubmitting}
           />
         </div>

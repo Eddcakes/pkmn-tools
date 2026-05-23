@@ -16,7 +16,11 @@ const DEFAULT_SETTINGS_SNAPSHOT: MatchupSettings = {
   favouriteArchetypes: [],
   customArchetypes: "",
   defaultFormat: undefined,
-  defaultLatestSet: undefined
+  defaultSet: undefined,
+  recentUserPrimary: [],
+  recentUserSecondary: [],
+  recentOpponentPrimary: [],
+  recentOpponentSecondary: []
 };
 
 let cachedLocalSettingsRaw: string | null | undefined;
@@ -64,13 +68,22 @@ export function useMatchupSettings() {
     // For authenticated users: prefer Convex data, fall back to localStorage while loading
     isAuthenticated && convexSettings !== undefined && convexSettings !== null
       ? {
-          useRecentArchetypes: convexSettings.useRecentArchetypes,
-          useFavouriteArchetypes: convexSettings.useFavouriteArchetypes,
-          recentArchetypes: convexSettings.recentArchetypes,
-          favouriteArchetypes: convexSettings.favouriteArchetypes,
-          customArchetypes: convexSettings.customArchetypes,
-          defaultFormat: convexSettings.defaultFormat,
-          defaultLatestSet: convexSettings.defaultLatestSet
+          ...localSettingsFallback,
+          defaultFormat:
+            convexSettings.defaultFormat ?? localSettingsFallback.defaultFormat,
+          defaultSet: convexSettings.defaultSet ?? localSettingsFallback.defaultSet,
+          recentUserPrimary:
+            convexSettings.recentUserPrimary ??
+            localSettingsFallback.recentUserPrimary,
+          recentUserSecondary:
+            convexSettings.recentUserSecondary ??
+            localSettingsFallback.recentUserSecondary,
+          recentOpponentPrimary:
+            convexSettings.recentOpponentPrimary ??
+            localSettingsFallback.recentOpponentPrimary,
+          recentOpponentSecondary:
+            convexSettings.recentOpponentSecondary ??
+            localSettingsFallback.recentOpponentSecondary
         }
       : // For unauthenticated users or while Convex is loading: use localStorage
         localSettingsFallback;
@@ -80,7 +93,14 @@ export function useMatchupSettings() {
       lsSave(newSettings);
       setLocalSettingsOverride(newSettings);
       if (isAuthenticated) {
-        await convexUpsert(newSettings);
+        await convexUpsert({
+          defaultFormat: newSettings.defaultFormat,
+          defaultSet: newSettings.defaultSet,
+          recentUserPrimary: newSettings.recentUserPrimary,
+          recentUserSecondary: newSettings.recentUserSecondary,
+          recentOpponentPrimary: newSettings.recentOpponentPrimary,
+          recentOpponentSecondary: newSettings.recentOpponentSecondary
+        });
       }
     },
     [isAuthenticated, convexUpsert]

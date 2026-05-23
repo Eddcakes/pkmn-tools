@@ -35,13 +35,19 @@ export default defineSchema({
 
   matchupSettings: defineTable({
     userId: v.string(),
-    useRecentArchetypes: v.boolean(),
-    useFavouriteArchetypes: v.boolean(),
-    recentArchetypes: v.array(v.string()),
-    favouriteArchetypes: v.array(v.string()),
-    availableSets: v.optional(v.array(v.string())),
-    customArchetypes: v.string(),
     defaultFormat: v.optional(v.string()),
-    defaultLatestSet: v.optional(v.string())
+    defaultSet: v.optional(v.string()),
+    // Legacy fields retained as optional for migration compatibility.
+    defaultLatestSet: v.optional(v.string()),
+    useRecentArchetypes: v.optional(v.boolean()),
+    useFavouriteArchetypes: v.optional(v.boolean()),
+    recentArchetypes: v.optional(v.array(v.string())),
+    favouriteArchetypes: v.optional(v.array(v.string())),
+    customArchetypes: v.optional(v.string()),
+    availableSets: v.optional(v.array(v.string())),
+    recentUserPrimary: v.optional(v.array(v.string())),
+    recentUserSecondary: v.optional(v.array(v.string())),
+    recentOpponentPrimary: v.optional(v.array(v.string())),
+    recentOpponentSecondary: v.optional(v.array(v.string()))
   }).index("by_user", ["userId"])
 });

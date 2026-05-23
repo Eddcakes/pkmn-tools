@@ -5,12 +5,17 @@ export interface MatchupSettings {
   favouriteArchetypes: string[]; // Up to 5 favourite archetypes from existing list
   customArchetypes: string; // Custom archetype list as newline-separated text
   defaultFormat?: string; // Default format used when adding records
-  defaultLatestSet?: string; // Default latest set used when adding records
+  defaultSet?: string; // Default set used when adding records
+  recentUserPrimary: string[]; // Last 5 unique user primary Pokemon
+  recentUserSecondary: string[]; // Last 5 unique user secondary Pokemon
+  recentOpponentPrimary: string[]; // Last 5 unique opponent primary Pokemon
+  recentOpponentSecondary: string[]; // Last 5 unique opponent secondary Pokemon
 }
 
 const STORAGE_KEY = "pokemon-matchup-settings";
 const MAX_RECENT = 5;
 const MAX_FAVOURITES = 5;
+const MAX_RECENT_POKEMON = 5;
 
 // Keep these newest -> oldest so dropdowns render in the desired order.
 // Add newly released values at the start of each array.
@@ -23,10 +28,60 @@ function normalizeFormat(format?: string): string | undefined {
   return AVAILABLE_FORMATS.includes(normalized) ? normalized : undefined;
 }
 
-function normalizeLatestSet(latestSet?: string): string | undefined {
-  if (!latestSet) return undefined;
-  const normalized = latestSet.trim().toUpperCase();
+function normalizeSet(setValue?: string): string | undefined {
+  if (!setValue) return undefined;
+  const normalized = setValue.trim().toUpperCase();
   return AVAILABLE_LATEST_SETS.includes(normalized) ? normalized : undefined;
+}
+
+function normalizeRecentPokemonList(values: unknown): string[] {
+  if (!Array.isArray(values)) {
+    return [];
+  }
+
+  const seen = new Set<string>();
+  const normalized: string[] = [];
+
+  for (const value of values) {
+    if (typeof value !== "string") {
+      continue;
+    }
+
+    const trimmed = value.trim();
+    if (!trimmed) {
+      continue;
+    }
+
+    const dedupeKey = trimmed.toLowerCase();
+    if (seen.has(dedupeKey)) {
+      continue;
+    }
+
+    seen.add(dedupeKey);
+    normalized.push(trimmed);
+
+    if (normalized.length >= MAX_RECENT_POKEMON) {
+      break;
+    }
+  }
+
+  return normalized;
+}
+
+function prependRecentPokemon(existing: string[], nextValue?: string): string[] {
+  if (!nextValue) {
+    return existing;
+  }
+
+  const trimmed = nextValue.trim();
+  if (!trimmed) {
+    return existing;
+  }
+
+  const dedupeKey = trimmed.toLowerCase();
+  const filtered = existing.filter((value) => value.toLowerCase() !== dedupeKey);
+
+  return [trimmed, ...filtered].slice(0, MAX_RECENT_POKEMON);
 }
 
 function getDefaultSettings(): MatchupSettings {
@@ -37,7 +92,11 @@ function getDefaultSettings(): MatchupSettings {
     favouriteArchetypes: [],
     customArchetypes: "",
     defaultFormat: undefined,
-    defaultLatestSet: undefined
+    defaultSet: undefined,
+    recentUserPrimary: [],
+    recentUserSecondary: [],
+    recentOpponentPrimary: [],
+    recentOpponentSecondary: []
   };
 }
 
@@ -52,12 +111,20 @@ export function getMatchupSettings(): MatchupSettings {
       return getDefaultSettings();
     }
 
-    const parsed = JSON.parse(stored) as Partial<MatchupSettings>;
+    const parsed = JSON.parse(stored) as Partial<MatchupSettings> & {
+      defaultLatestSet?: string;
+    };
     const settings: MatchupSettings = {
       ...getDefaultSettings(),
       ...parsed,
       defaultFormat: normalizeFormat(parsed.defaultFormat),
-      defaultLatestSet: normalizeLatestSet(parsed.defaultLatestSet)
+      defaultSet: normalizeSet(parsed.defaultSet ?? parsed.defaultLatestSet),
+      recentUserPrimary: normalizeRecentPokemonList(parsed.recentUserPrimary),
+      recentUserSecondary: normalizeRecentPokemonList(parsed.recentUserSecondary),
+      recentOpponentPrimary: normalizeRecentPokemonList(parsed.recentOpponentPrimary),
+      recentOpponentSecondary: normalizeRecentPokemonList(
+        parsed.recentOpponentSecondary
+      )
     };
 
     return settings;
@@ -72,7 +139,15 @@ export function saveMatchupSettings(settings: MatchupSettings): void {
     const normalized: MatchupSettings = {
       ...settings,
       defaultFormat: normalizeFormat(settings.defaultFormat),
-      defaultLatestSet: normalizeLatestSet(settings.defaultLatestSet)
+      defaultSet: normalizeSet(settings.defaultSet),
+      recentUserPrimary: normalizeRecentPokemonList(settings.recentUserPrimary),
+      recentUserSecondary: normalizeRecentPokemonList(settings.recentUserSecondary),
+      recentOpponentPrimary: normalizeRecentPokemonList(
+        settings.recentOpponentPrimary
+      ),
+      recentOpponentSecondary: normalizeRecentPokemonList(
+        settings.recentOpponentSecondary
+      )
     };
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
@@ -151,4 +226,36 @@ export function clearRecentArchetypes(): void {
     ...settings,
     recentArchetypes: []
   });
+}
+
+interface RecentPokemonSelections {
+  userPrimary?: string;
+  userSecondary?: string;
+  opponentPrimary?: string;
+  opponentSecondary?: string;
+}
+
+export function updateRecentPokemonSettings(
+  settings: MatchupSettings,
+  selections: RecentPokemonSelections
+): MatchupSettings {
+  return {
+    ...settings,
+    recentUserPrimary: prependRecentPokemon(
+      settings.recentUserPrimary,
+      selections.userPrimary
+    ),
+    recentUserSecondary: prependRecentPokemon(
+      settings.recentUserSecondary,
+      selections.userSecondary
+    ),
+    recentOpponentPrimary: prependRecentPokemon(
+      settings.recentOpponentPrimary,
+      selections.opponentPrimary
+    ),
+    recentOpponentSecondary: prependRecentPokemon(
+      settings.recentOpponentSecondary,
+      selections.opponentSecondary
+    )
+  };
 }

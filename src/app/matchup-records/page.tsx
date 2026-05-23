@@ -5,11 +5,17 @@ import { Alert } from "@/components/Alert";
 import { ButtonGroup, type ButtonGroupOption } from "@/components/ButtonGroup";
 import { IconButton } from "@/components/IconButton";
 import { CogIcon } from "@/components/Icons";
-import { PkmnSelector } from "@/components/PkmnSelector";
+import {
+  PkmnSelector,
+  type PkmnSelectorGroup
+} from "@/components/PkmnSelector";
 import { EditMatchupRecordModal } from "@/features/EditMatchupRecordModal";
 import { MatchupChart } from "@/features/MatchupChart";
 import { MatchupSettingsModal } from "@/features/MatchupSettingsModal";
-import { addRecentArchetype } from "@/utils/matchupSettings";
+import {
+  addRecentArchetype,
+  updateRecentPokemonSettings
+} from "@/utils/matchupSettings";
 import { POKEMON_SEARCH_ENTRIES, POKEMON_SEARCH_SET } from "@/utils/pokemon";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
@@ -216,8 +222,89 @@ export default function MatchupRecordsPage() {
       : formatOverrideValue;
   const selectedLatestSetValue =
     latestSetOverrideValue === null
-      ? (settings.defaultLatestSet ?? "")
+      ? (settings.defaultSet ?? "")
       : latestSetOverrideValue;
+
+  const allPokemonOptions = useMemo(
+    () =>
+      POKEMON_SEARCH_ENTRIES.map((entry) => ({
+        value: entry.value,
+        label: entry.label
+      })),
+    []
+  );
+
+  const pokemonLabelByValue = useMemo(
+    () =>
+      new Map(POKEMON_SEARCH_ENTRIES.map((entry) => [entry.value, entry.label])),
+    []
+  );
+
+  const buildPokemonGroups = useMemo(
+    () =>
+      (recentValues: string[], recentGroupLabel: string): PkmnSelectorGroup[] => {
+        const recentOptions = recentValues
+          .map((value) => {
+            const label = pokemonLabelByValue.get(value);
+            return label ? { value, label } : null;
+          })
+          .filter((option): option is { value: string; label: string } =>
+            Boolean(option)
+          );
+
+        return [
+          ...(recentOptions.length > 0
+            ? [
+                {
+                  label: recentGroupLabel,
+                  options: recentOptions
+                }
+              ]
+            : []),
+          {
+            label: "All Pokemon",
+            options: allPokemonOptions
+          }
+        ];
+      },
+    [allPokemonOptions, pokemonLabelByValue]
+  );
+
+  const userPrimaryGroups = useMemo(
+    () =>
+      buildPokemonGroups(
+        settings.recentUserPrimary,
+        "Recent"
+      ),
+    [buildPokemonGroups, settings.recentUserPrimary]
+  );
+
+  const userSecondaryGroups = useMemo(
+    () =>
+      buildPokemonGroups(
+        settings.recentUserSecondary,
+        "Recent"
+      ),
+    [buildPokemonGroups, settings.recentUserSecondary]
+  );
+
+  const opponentPrimaryGroups = useMemo(
+    () =>
+      buildPokemonGroups(
+        settings.recentOpponentPrimary,
+        "Recent"
+      ),
+    [buildPokemonGroups, settings.recentOpponentPrimary]
+  );
+
+  const opponentSecondaryGroups = useMemo(
+    () =>
+      buildPokemonGroups(
+        settings.recentOpponentSecondary,
+        "Recent"
+      ),
+    [buildPokemonGroups, settings.recentOpponentSecondary]
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -271,10 +358,20 @@ export default function MatchupRecordsPage() {
         addRecentArchetype(opponentArchetype);
       }
 
+      // Track recent Pokemon selections in settings (unique, newest first, max 5)
+      const settingsWithRecentPokemon = updateRecentPokemonSettings(settings, {
+        userPrimary: userPrimaryPokemon,
+        userSecondary: userSecondaryPokemon,
+        opponentPrimary: opponentPrimaryPokemon,
+        opponentSecondary: opponentSecondaryPokemon
+      });
+      try {
+        await saveSettings(settingsWithRecentPokemon);
+      } catch (settingsError) {
+        console.error("Failed to save recent Pokemon settings:", settingsError);
+      }
+
       // Reset form
-      // we should not reset Users deck
-      setUserPrimaryPokemon("");
-      setUserSecondaryPokemon("");
       setOpponentPrimaryPokemon("");
       setOpponentSecondaryPokemon("");
       setResult("");
@@ -397,6 +494,7 @@ export default function MatchupRecordsPage() {
                   name="userPrimaryPokemon"
                   value={userPrimaryPokemon}
                   onChange={handleDeckPokemonChange}
+                  groups={userPrimaryGroups}
                   label="Primary Pokemon"
                   hideLabel
                   placeholder="Choose primary Pokemon..."
@@ -409,6 +507,7 @@ export default function MatchupRecordsPage() {
                   name="userSecondaryPokemon"
                   value={userSecondaryPokemon}
                   onChange={handleDeckPokemonChange}
+                  groups={userSecondaryGroups}
                   label="Secondary Pokemon (Optional)"
                   hideLabel
                   placeholder="Choose secondary Pokemon..."
@@ -425,6 +524,7 @@ export default function MatchupRecordsPage() {
                   name="opponentPrimaryPokemon"
                   value={opponentPrimaryPokemon}
                   onChange={handleDeckPokemonChange}
+                  groups={opponentPrimaryGroups}
                   label="Primary Pokemon"
                   hideLabel
                   placeholder="Choose primary Pokemon..."
@@ -437,6 +537,7 @@ export default function MatchupRecordsPage() {
                   name="opponentSecondaryPokemon"
                   value={opponentSecondaryPokemon}
                   onChange={handleDeckPokemonChange}
+                  groups={opponentSecondaryGroups}
                   label="Secondary Pokemon (Optional)"
                   hideLabel
                   placeholder="Choose secondary Pokemon..."
