@@ -124,7 +124,7 @@ export function Select({
 
         <BaseSelect.Portal>
           <BaseSelect.Positioner
-            className="z-10 mt-1 outline-none"
+            className="z-60 mt-1 outline-none"
             sideOffset={4}
             alignItemWithTrigger={false}
             positionMethod="fixed"
