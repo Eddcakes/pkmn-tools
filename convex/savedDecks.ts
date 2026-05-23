@@ -128,8 +128,12 @@ export const update = mutation({
     await ctx.db.patch(existing._id, {
       label: args.label,
       deckList: args.deckList,
-      primaryPokemon: args.primaryPokemon,
-      secondaryPokemon: args.secondaryPokemon,
+      ...("primaryPokemon" in args
+        ? { primaryPokemon: args.primaryPokemon }
+        : {}),
+      ...("secondaryPokemon" in args
+        ? { secondaryPokemon: args.secondaryPokemon }
+        : {}),
       updatedAt: args.updatedAt
     });
   }

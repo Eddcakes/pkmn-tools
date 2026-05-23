@@ -16,8 +16,8 @@ interface EditDeckModalProps {
     id: string,
     label: string,
     deckList: string,
-    primaryPokemon?: string,
-    secondaryPokemon?: string
+    primaryPokemon?: string | null,
+    secondaryPokemon?: string | null
   ) => Promise<unknown>;
 }
 
@@ -91,7 +91,7 @@ export function EditDeckModal({
           label.trim(),
           deckList.trim(),
           primaryPokemon.trim(),
-          secondaryPokemon.trim() || undefined
+          secondaryPokemon.trim() || null
         );
         updatedDeck = true;
       } else {
@@ -100,7 +100,7 @@ export function EditDeckModal({
           label.trim(),
           deckList.trim(),
           primaryPokemon.trim(),
-          secondaryPokemon.trim() || undefined
+          secondaryPokemon.trim() || null
         );
       }
       if (updatedDeck) {

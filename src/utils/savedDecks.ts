@@ -170,22 +170,33 @@ export function updateSavedDeck(
   id: string,
   label: string,
   deckList: string,
-  primaryPokemon?: string,
-  secondaryPokemon?: string
+  primaryPokemon?: string | null,
+  secondaryPokemon?: string | null
 ): SavedDeck | null {
   const decks = getSavedDecks();
   const deckIndex = decks.findIndex((deck) => deck.id === id);
 
   if (deckIndex === -1) return null;
 
+  const hasPrimaryPokemonUpdate = primaryPokemon !== undefined;
+  const hasSecondaryPokemonUpdate = secondaryPokemon !== undefined;
+  const normalizedPrimaryPokemon = primaryPokemon?.trim()
+    ? primaryPokemon.trim()
+    : undefined;
+  const normalizedSecondaryPokemon = secondaryPokemon?.trim()
+    ? secondaryPokemon.trim()
+    : undefined;
+
   decks[deckIndex] = {
     ...decks[deckIndex],
     label,
     deckList,
-    ...(primaryPokemon ? { primaryPokemon } : {}),
-    ...(secondaryPokemon ? { secondaryPokemon } : {}),
-    ...(!primaryPokemon ? { primaryPokemon: undefined } : {}),
-    ...(!secondaryPokemon ? { secondaryPokemon: undefined } : {}),
+    ...(hasPrimaryPokemonUpdate
+      ? { primaryPokemon: normalizedPrimaryPokemon }
+      : {}),
+    ...(hasSecondaryPokemonUpdate
+      ? { secondaryPokemon: normalizedSecondaryPokemon }
+      : {}),
     updatedAt: new Date().toISOString()
   };
 

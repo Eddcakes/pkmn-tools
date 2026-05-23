@@ -99,8 +99,8 @@ export function useSavedDecks() {
       id: string,
       label: string,
       deckList: string,
-      primaryPokemon?: string,
-      secondaryPokemon?: string
+      primaryPokemon?: string | null,
+      secondaryPokemon?: string | null
     ) => {
       const updated = lsUpdate(
         id,
@@ -112,12 +112,25 @@ export function useSavedDecks() {
       if (!updated) return null;
 
       if (isAuthenticated) {
+        const hasPrimaryPokemonUpdate = primaryPokemon !== undefined;
+        const hasSecondaryPokemonUpdate = secondaryPokemon !== undefined;
+        const normalizedPrimaryPokemon = primaryPokemon?.trim()
+          ? primaryPokemon.trim()
+          : undefined;
+        const normalizedSecondaryPokemon = secondaryPokemon?.trim()
+          ? secondaryPokemon.trim()
+          : undefined;
+
         await convexUpdate({
           clientId: id,
           label,
           deckList,
-          primaryPokemon,
-          secondaryPokemon,
+          ...(hasPrimaryPokemonUpdate
+            ? { primaryPokemon: normalizedPrimaryPokemon }
+            : {}),
+          ...(hasSecondaryPokemonUpdate
+            ? { secondaryPokemon: normalizedSecondaryPokemon }
+            : {}),
           updatedAt: updated.updatedAt
         });
       }
