@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Tag } from "@/components/Tag";
-import { archetypeToTagType } from "@/utils/archetype";
+import { DeckPokemonBadge } from "@/components/DeckPokemonBadge";
 import { Button } from "../components/Button";
 import { Modal } from "../components/Modal";
 import { ModalFooter } from "../components/ModalFooter";
@@ -85,7 +84,7 @@ export function SaveDeckModal({
               .split("#")
               .filter(Boolean)
               .map((tag) => (
-                <Tag key={tag} label={tag} type={archetypeToTagType(tag)} />
+                <DeckPokemonBadge key={tag} label={tag} />
               ))}
           </div>
         )}

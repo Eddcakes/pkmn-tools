@@ -1,8 +1,7 @@
 import type { ReactNode, RefObject } from "react";
 import { Button } from "../components/Button";
 import { Card } from "../components/Card";
-import { Tag } from "../components/Tag";
-import { archetypeToTagType } from "../utils/archetype";
+import { DeckPokemonBadge } from "../components/DeckPokemonBadge";
 import {
   formatDate,
   formatFileNameFromDateString
@@ -105,14 +104,16 @@ export function MatchupRecordsList({
               >
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center gap-2">
-                    <Tag
+                    <DeckPokemonBadge
                       label={record.userArchetype}
-                      type={archetypeToTagType(record.userArchetype)}
+                      primaryPokemon={record.userPrimaryPokemon}
+                      secondaryPokemon={record.userSecondaryPokemon}
                     />
                     <span className="text-gray-400">vs</span>
-                    <Tag
+                    <DeckPokemonBadge
                       label={record.opponentArchetype}
-                      type={archetypeToTagType(record.opponentArchetype)}
+                      primaryPokemon={record.opponentPrimaryPokemon}
+                      secondaryPokemon={record.opponentSecondaryPokemon}
                     />
                   </div>
                   <div className="flex gap-2">

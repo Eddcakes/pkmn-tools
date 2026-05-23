@@ -1,4 +1,5 @@
 export type MatchupResult = "win" | "loss" | "tie";
+import { resolvePokemonSlots } from "./archetypePokemon";
 
 export const MATCHUP_RESULT_OPTIONS: Array<{
   value: MatchupResult;
@@ -25,50 +26,55 @@ export interface MatchupRecord {
   updatedAt?: string;
 }
 
-function splitPokemonSlots(archetype: string): [string?, string?] {
-  const parts = archetype
-    .split("+")
-    .map((part) => part.trim())
-    .filter((part) => part.length > 0);
-
-  return [parts[0], parts[1]];
-}
-
 function ensurePokemonSlotFields(record: MatchupRecord): MatchupRecord {
-  const [userPrimaryPokemon, userSecondaryPokemon] = splitPokemonSlots(
-    record.userArchetype
+  const userSlots = resolvePokemonSlots(
+    record.userArchetype,
+    record.userPrimaryPokemon,
+    record.userSecondaryPokemon
   );
-  const [opponentPrimaryPokemon, opponentSecondaryPokemon] = splitPokemonSlots(
-    record.opponentArchetype
+  const opponentSlots = resolvePokemonSlots(
+    record.opponentArchetype,
+    record.opponentPrimaryPokemon,
+    record.opponentSecondaryPokemon
   );
 
   return {
     ...record,
-    userPrimaryPokemon: record.userPrimaryPokemon ?? userPrimaryPokemon,
-    userSecondaryPokemon: record.userSecondaryPokemon ?? userSecondaryPokemon,
-    opponentPrimaryPokemon:
-      record.opponentPrimaryPokemon ?? opponentPrimaryPokemon,
-    opponentSecondaryPokemon:
-      record.opponentSecondaryPokemon ?? opponentSecondaryPokemon
+    userPrimaryPokemon: userSlots.primaryPokemon,
+    userSecondaryPokemon: userSlots.secondaryPokemon,
+    opponentPrimaryPokemon: opponentSlots.primaryPokemon,
+    opponentSecondaryPokemon: opponentSlots.secondaryPokemon
   };
 }
 
 const STORAGE_KEY = "pokemon-matchup-records";
 
-function migrateRecordsToIncludeUpdatedAt(
-  records: MatchupRecord[]
-): MatchupRecord[] {
+function migrateStoredRecords(records: MatchupRecord[]): MatchupRecord[] {
   let needsMigration = false;
 
   const migratedRecords = records.map((record) => {
+    const withUpdatedAt = !record.updatedAt
+      ? {
+          ...record,
+          updatedAt: record.createdAt
+        }
+      : record;
+
     if (!record.updatedAt) {
       needsMigration = true;
-      return {
-        ...record,
-        updatedAt: record.createdAt
-      };
     }
-    return record;
+
+    const normalized = ensurePokemonSlotFields(withUpdatedAt);
+    if (
+      normalized.userPrimaryPokemon !== withUpdatedAt.userPrimaryPokemon ||
+      normalized.userSecondaryPokemon !== withUpdatedAt.userSecondaryPokemon ||
+      normalized.opponentPrimaryPokemon !== withUpdatedAt.opponentPrimaryPokemon ||
+      normalized.opponentSecondaryPokemon !== withUpdatedAt.opponentSecondaryPokemon
+    ) {
+      needsMigration = true;
+    }
+
+    return normalized;
   });
 
   if (needsMigration) {
@@ -88,9 +94,7 @@ export function getMatchupRecords(): MatchupRecord[] {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     const records = stored ? JSON.parse(stored) : [];
-    return migrateRecordsToIncludeUpdatedAt(records).map(
-      ensurePokemonSlotFields
-    );
+    return migrateStoredRecords(records);
   } catch (error) {
     console.error("Error loading matchup records:", error);
     return [];
@@ -99,16 +103,14 @@ export function getMatchupRecords(): MatchupRecord[] {
 
 export function replaceMatchupRecords(records: MatchupRecord[]): void {
   try {
+    const recordsWithUpdatedAt = records.map((record) => ({
+      ...record,
+      updatedAt: record.updatedAt ?? record.createdAt
+    }));
+
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify(
-        migrateRecordsToIncludeUpdatedAt(
-          records.map((record) => ({
-            ...record,
-            updatedAt: record.updatedAt ?? record.createdAt
-          })).map(ensurePokemonSlotFields)
-        )
-      )
+      JSON.stringify(migrateStoredRecords(recordsWithUpdatedAt))
     );
   } catch (error) {
     console.error("Error replacing matchup records:", error);
@@ -129,18 +131,25 @@ export function saveMatchupRecord(
   format?: string
 ): MatchupRecord {
   const now = new Date().toISOString();
+  const userSlots = resolvePokemonSlots(
+    userArchetype,
+    userPrimaryPokemon,
+    userSecondaryPokemon
+  );
+  const opponentSlots = resolvePokemonSlots(
+    opponentArchetype,
+    opponentPrimaryPokemon,
+    opponentSecondaryPokemon
+  );
+
   const record: MatchupRecord = {
     id: generateId(),
     userArchetype,
     opponentArchetype,
-    userPrimaryPokemon:
-      userPrimaryPokemon ?? splitPokemonSlots(userArchetype)[0],
-    userSecondaryPokemon:
-      userSecondaryPokemon ?? splitPokemonSlots(userArchetype)[1],
-    opponentPrimaryPokemon:
-      opponentPrimaryPokemon ?? splitPokemonSlots(opponentArchetype)[0],
-    opponentSecondaryPokemon:
-      opponentSecondaryPokemon ?? splitPokemonSlots(opponentArchetype)[1],
+    userPrimaryPokemon: userSlots.primaryPokemon,
+    userSecondaryPokemon: userSlots.secondaryPokemon,
+    opponentPrimaryPokemon: opponentSlots.primaryPokemon,
+    opponentSecondaryPokemon: opponentSlots.secondaryPokemon,
     format,
     latestSet,
     result,

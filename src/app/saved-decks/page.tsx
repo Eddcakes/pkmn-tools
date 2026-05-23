@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { Alert } from "@/components/Alert";
-import { Tag } from "@/components/Tag";
-import { archetypeToTagType } from "@/utils/archetype";
+import { DeckPokemonBadge } from "@/components/DeckPokemonBadge";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
 import { EditDeckModal } from "../../features/EditDeckModal";
@@ -138,11 +137,7 @@ export default function SavedDecksPage() {
                   {deck.archetype && (
                     <div className="gap-2 flex flex-wrap">
                       {deck.archetype.map((tag) => (
-                        <Tag
-                          key={tag}
-                          label={tag}
-                          type={archetypeToTagType(tag)}
-                        />
+                        <DeckPokemonBadge key={tag} label={tag} />
                       ))}
                     </div>
                   )}

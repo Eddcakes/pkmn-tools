@@ -1,8 +1,9 @@
 "use client";
 
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
-import { useCallback, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { api } from "../../convex/_generated/api";
+import { resolvePokemonSlots } from "../utils/archetypePokemon";
 import {
   deleteMatchupRecord as lsDelete,
   getMatchupRecords as lsGet,
@@ -11,36 +12,30 @@ import {
   type MatchupRecord
 } from "../utils/matchupRecords";
 
-function splitPokemonSlots(archetype: string): [string?, string?] {
-  const parts = archetype
-    .split("+")
-    .map((part) => part.trim())
-    .filter((part) => part.length > 0);
-
-  return [parts[0], parts[1]];
-}
-
 function ensurePokemonSlotFields(record: MatchupRecord): MatchupRecord {
-  const [userPrimaryPokemon, userSecondaryPokemon] = splitPokemonSlots(
-    record.userArchetype
+  const userSlots = resolvePokemonSlots(
+    record.userArchetype,
+    record.userPrimaryPokemon,
+    record.userSecondaryPokemon
   );
-  const [opponentPrimaryPokemon, opponentSecondaryPokemon] = splitPokemonSlots(
-    record.opponentArchetype
+  const opponentSlots = resolvePokemonSlots(
+    record.opponentArchetype,
+    record.opponentPrimaryPokemon,
+    record.opponentSecondaryPokemon
   );
 
   return {
     ...record,
-    userPrimaryPokemon: record.userPrimaryPokemon ?? userPrimaryPokemon,
-    userSecondaryPokemon: record.userSecondaryPokemon ?? userSecondaryPokemon,
-    opponentPrimaryPokemon:
-      record.opponentPrimaryPokemon ?? opponentPrimaryPokemon,
-    opponentSecondaryPokemon:
-      record.opponentSecondaryPokemon ?? opponentSecondaryPokemon
+    userPrimaryPokemon: userSlots.primaryPokemon,
+    userSecondaryPokemon: userSlots.secondaryPokemon,
+    opponentPrimaryPokemon: opponentSlots.primaryPokemon,
+    opponentSecondaryPokemon: opponentSlots.secondaryPokemon
   };
 }
 
 const EMPTY_RECORDS_SNAPSHOT: MatchupRecord[] = [];
 const MATCHUP_RECORDS_STORAGE_KEY = "pokemon-matchup-records";
+const ARCHETYPE_BACKFILL_FLAG_KEY = "matchup-records-archetype-backfill-v4";
 
 let cachedLocalRecordsRaw: string | null | undefined;
 let cachedLocalRecordsSnapshot: MatchupRecord[] = EMPTY_RECORDS_SNAPSHOT;
@@ -75,6 +70,10 @@ export function useMatchupRecords() {
   const convexUpsert = useMutation(api.matchupRecords.upsert);
   const convexUpdate = useMutation(api.matchupRecords.update);
   const convexRemove = useMutation(api.matchupRecords.remove);
+  const convexBackfillArchetypePokemon = useMutation(
+    api.migrateArchetypePokemon.backfillForCurrentUser
+  );
+  const hasRequestedBackfill = useRef(false);
 
   const localRecordsSnapshot = useSyncExternalStore(
     subscribeToRecordsStore,
@@ -85,6 +84,31 @@ export function useMatchupRecords() {
     MatchupRecord[] | null
   >(null);
   const localRecordsFallback = localRecordsOverride ?? localRecordsSnapshot;
+
+  useEffect(() => {
+    if (!isAuthenticated || convexRecords === undefined || hasRequestedBackfill.current) {
+      return;
+    }
+
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if (window.localStorage.getItem(ARCHETYPE_BACKFILL_FLAG_KEY) === "done") {
+      return;
+    }
+
+    hasRequestedBackfill.current = true;
+
+    void convexBackfillArchetypePokemon({})
+      .then(() => {
+        window.localStorage.setItem(ARCHETYPE_BACKFILL_FLAG_KEY, "done");
+      })
+      .catch((error: unknown) => {
+        console.error("Failed to backfill archetype pokemon slots:", error);
+        hasRequestedBackfill.current = false;
+      });
+  }, [isAuthenticated, convexRecords, convexBackfillArchetypePokemon]);
 
   const records: MatchupRecord[] =
     // For authenticated users: prefer Convex data, fall back to localStorage while loading

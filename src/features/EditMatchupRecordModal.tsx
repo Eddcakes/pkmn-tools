@@ -6,6 +6,7 @@ import { Modal } from "../components/Modal";
 import { ModalFooter } from "../components/ModalFooter";
 import { PkmnSelector, type PkmnSelectorGroup } from "../components/PkmnSelector";
 import { Select } from "../components/Select";
+import { resolvePokemonSlots } from "../utils/archetypePokemon";
 import {
   MATCHUP_RESULT_OPTIONS,
   type MatchupRecord,
@@ -28,15 +29,6 @@ interface EditMatchupRecordModalProps {
     id: string,
     updates: Partial<Omit<MatchupRecord, "id" | "createdAt">>
   ) => Promise<unknown>;
-}
-
-function splitPokemonSlots(archetype: string): [string, string] {
-  const parts = archetype
-    .split("+")
-    .map((part) => part.trim())
-    .filter((part) => part.length > 0);
-
-  return [parts[0] ?? "", parts[1] ?? ""];
 }
 
 function buildDeckLabel(primaryPokemon: string, secondaryPokemon: string) {
@@ -62,23 +54,22 @@ export function EditMatchupRecordModal({
   latestSetOptions,
   onUpdateRecord
 }: EditMatchupRecordModalProps) {
-  const [fallbackUserPrimaryPokemon, fallbackUserSecondaryPokemon] =
-    splitPokemonSlots(record?.userArchetype ?? "");
-  const [fallbackOpponentPrimaryPokemon, fallbackOpponentSecondaryPokemon] =
-    splitPokemonSlots(record?.opponentArchetype ?? "");
+  const fallbackUserSlots = resolvePokemonSlots(record?.userArchetype ?? "");
+  const fallbackOpponentSlots = resolvePokemonSlots(record?.opponentArchetype ?? "");
 
   const [userPrimaryPokemon, setUserPrimaryPokemon] = useState(
-    () => record?.userPrimaryPokemon ?? fallbackUserPrimaryPokemon
+    () => record?.userPrimaryPokemon ?? fallbackUserSlots.primaryPokemon ?? ""
   );
   const [userSecondaryPokemon, setUserSecondaryPokemon] = useState(
-    () => record?.userSecondaryPokemon ?? fallbackUserSecondaryPokemon
+    () => record?.userSecondaryPokemon ?? fallbackUserSlots.secondaryPokemon ?? ""
   );
   const [opponentPrimaryPokemon, setOpponentPrimaryPokemon] = useState(
-    () => record?.opponentPrimaryPokemon ?? fallbackOpponentPrimaryPokemon
+    () =>
+      record?.opponentPrimaryPokemon ?? fallbackOpponentSlots.primaryPokemon ?? ""
   );
   const [opponentSecondaryPokemon, setOpponentSecondaryPokemon] = useState(
     () =>
-      record?.opponentSecondaryPokemon ?? fallbackOpponentSecondaryPokemon
+      record?.opponentSecondaryPokemon ?? fallbackOpponentSlots.secondaryPokemon ?? ""
   );
   const [result, setResult] = useState<MatchupResult | "">(
     () => record?.result ?? ""

@@ -1137,3 +1137,17 @@ export const POKEMON_SEARCH_SET = new Set(
     entry.label.toLowerCase()
   ])
 );
+
+export const POKEMON_LABEL_BY_VALUE: Record<string, string> =
+  POKEMON_SEARCH_ENTRIES.reduce<Record<string, string>>((acc, entry) => {
+    acc[entry.value.toLowerCase()] = entry.label;
+    return acc;
+  }, {});
+
+export function getPokemonLabel(value?: string): string | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  return POKEMON_LABEL_BY_VALUE[value.trim().toLowerCase()];
+}

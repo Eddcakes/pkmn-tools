@@ -8,10 +8,12 @@
  * @module
  */
 
+import type * as archetypePokemon from "../archetypePokemon.js";
 import type * as auth from "../auth.js";
 import type * as http from "../http.js";
 import type * as matchupRecords from "../matchupRecords.js";
 import type * as matchupSettings from "../matchupSettings.js";
+import type * as migrateArchetypePokemon from "../migrateArchetypePokemon.js";
 import type * as savedDecks from "../savedDecks.js";
 import type * as syncLocalData from "../syncLocalData.js";
 
@@ -22,10 +24,12 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  archetypePokemon: typeof archetypePokemon;
   auth: typeof auth;
   http: typeof http;
   matchupRecords: typeof matchupRecords;
   matchupSettings: typeof matchupSettings;
+  migrateArchetypePokemon: typeof migrateArchetypePokemon;
   savedDecks: typeof savedDecks;
   syncLocalData: typeof syncLocalData;
 }>;
