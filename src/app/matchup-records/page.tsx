@@ -648,6 +648,10 @@ export default function MatchupRecordsPage() {
         }}
         onUpdated={handleEditUpdated}
         record={recordToEdit}
+        userPrimaryGroups={userPrimaryGroups}
+        userSecondaryGroups={userSecondaryGroups}
+        opponentPrimaryGroups={opponentPrimaryGroups}
+        opponentSecondaryGroups={opponentSecondaryGroups}
         formatOptions={AVAILABLE_FORMATS}
         latestSetOptions={AVAILABLE_LATEST_SETS}
         onUpdateRecord={updateRecord}

@@ -1,11 +1,15 @@
 import type { FormEvent } from "react";
 import { useState } from "react";
 import { Button } from "../components/Button";
+import { ButtonGroup } from "../components/ButtonGroup";
 import { Modal } from "../components/Modal";
 import { ModalFooter } from "../components/ModalFooter";
-import { Select, type SelectGroup } from "../components/Select";
+import { PkmnSelector, type PkmnSelectorGroup } from "../components/PkmnSelector";
+import { Select } from "../components/Select";
 import {
+  MATCHUP_RESULT_OPTIONS,
   type MatchupRecord,
+  type MatchupResult,
   updateMatchupRecord
 } from "../utils/matchupRecords";
 
@@ -14,7 +18,10 @@ interface EditMatchupRecordModalProps {
   onClose: () => void;
   onUpdated: () => void;
   record: MatchupRecord | null;
-  archetypeGroups: SelectGroup[];
+  userPrimaryGroups: PkmnSelectorGroup[];
+  userSecondaryGroups: PkmnSelectorGroup[];
+  opponentPrimaryGroups: PkmnSelectorGroup[];
+  opponentSecondaryGroups: PkmnSelectorGroup[];
   formatOptions: string[];
   latestSetOptions: string[];
   onUpdateRecord?: (
@@ -23,23 +30,57 @@ interface EditMatchupRecordModalProps {
   ) => Promise<unknown>;
 }
 
+function splitPokemonSlots(archetype: string): [string, string] {
+  const parts = archetype
+    .split("+")
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0);
+
+  return [parts[0] ?? "", parts[1] ?? ""];
+}
+
+function buildDeckLabel(primaryPokemon: string, secondaryPokemon: string) {
+  if (!primaryPokemon) {
+    return "";
+  }
+
+  return secondaryPokemon
+    ? `${primaryPokemon} + ${secondaryPokemon}`
+    : primaryPokemon;
+}
+
 export function EditMatchupRecordModal({
   isOpen,
   onClose,
   onUpdated,
   record,
-  archetypeGroups,
+  userPrimaryGroups,
+  userSecondaryGroups,
+  opponentPrimaryGroups,
+  opponentSecondaryGroups,
   formatOptions,
   latestSetOptions,
   onUpdateRecord
 }: EditMatchupRecordModalProps) {
-  const [userArchetype, setUserArchetype] = useState(
-    () => record?.userArchetype ?? ""
+  const [fallbackUserPrimaryPokemon, fallbackUserSecondaryPokemon] =
+    splitPokemonSlots(record?.userArchetype ?? "");
+  const [fallbackOpponentPrimaryPokemon, fallbackOpponentSecondaryPokemon] =
+    splitPokemonSlots(record?.opponentArchetype ?? "");
+
+  const [userPrimaryPokemon, setUserPrimaryPokemon] = useState(
+    () => record?.userPrimaryPokemon ?? fallbackUserPrimaryPokemon
   );
-  const [opponentArchetype, setOpponentArchetype] = useState(
-    () => record?.opponentArchetype ?? ""
+  const [userSecondaryPokemon, setUserSecondaryPokemon] = useState(
+    () => record?.userSecondaryPokemon ?? fallbackUserSecondaryPokemon
   );
-  const [result, setResult] = useState<"win" | "loss" | "tie" | "">(
+  const [opponentPrimaryPokemon, setOpponentPrimaryPokemon] = useState(
+    () => record?.opponentPrimaryPokemon ?? fallbackOpponentPrimaryPokemon
+  );
+  const [opponentSecondaryPokemon, setOpponentSecondaryPokemon] = useState(
+    () =>
+      record?.opponentSecondaryPokemon ?? fallbackOpponentSecondaryPokemon
+  );
+  const [result, setResult] = useState<MatchupResult | "">(
     () => record?.result ?? ""
   );
   const [formatValue, setFormatValue] = useState(() => record?.format ?? "");
@@ -49,23 +90,37 @@ export function EditMatchupRecordModal({
   const [notes, setNotes] = useState(() => record?.notes || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const resultOptions = [
-    { value: "win", label: "Win" },
-    { value: "loss", label: "Loss" },
-    { value: "tie", label: "Tie" }
-  ];
+
+  const handleDeckPokemonChange = (value: string, name?: string) => {
+    switch (name) {
+      case "editUserPrimaryPokemon":
+        setUserPrimaryPokemon(value);
+        break;
+      case "editUserSecondaryPokemon":
+        setUserSecondaryPokemon(value);
+        break;
+      case "editOpponentPrimaryPokemon":
+        setOpponentPrimaryPokemon(value);
+        break;
+      case "editOpponentSecondaryPokemon":
+        setOpponentSecondaryPokemon(value);
+        break;
+      default:
+        break;
+    }
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!record) return;
 
-    if (!userArchetype.trim()) {
-      setError("Please select your deck archetype");
+    if (!userPrimaryPokemon.trim()) {
+      setError("Please select your deck primary Pokemon");
       return;
     }
 
-    if (!opponentArchetype.trim()) {
-      setError("Please select opponent archetype");
+    if (!opponentPrimaryPokemon.trim()) {
+      setError("Please select opponent primary Pokemon");
       return;
     }
 
@@ -74,6 +129,17 @@ export function EditMatchupRecordModal({
       return;
     }
 
+    if (formatValue.trim() && !latestSetValue.trim()) {
+      setError("Please select latest set when format is selected");
+      return;
+    }
+
+    const userArchetype = buildDeckLabel(userPrimaryPokemon, userSecondaryPokemon);
+    const opponentArchetype = buildDeckLabel(
+      opponentPrimaryPokemon,
+      opponentSecondaryPokemon
+    );
+
     setIsSubmitting(true);
     setError("");
 
@@ -81,9 +147,13 @@ export function EditMatchupRecordModal({
       const updates = {
         userArchetype: userArchetype.trim(),
         opponentArchetype: opponentArchetype.trim(),
+        userPrimaryPokemon: userPrimaryPokemon.trim() || undefined,
+        userSecondaryPokemon: userSecondaryPokemon.trim() || undefined,
+        opponentPrimaryPokemon: opponentPrimaryPokemon.trim() || undefined,
+        opponentSecondaryPokemon: opponentSecondaryPokemon.trim() || undefined,
         format: formatValue.trim() || undefined,
         latestSet: latestSetValue.trim() || undefined,
-        result: result as "win" | "loss" | "tie",
+        result,
         notes: notes.trim() || undefined
       };
       let updatedRecord: MatchupRecord | boolean | null;
@@ -130,44 +200,77 @@ export function EditMatchupRecordModal({
           </div>
         )}
 
-        <div>
-          <Select
-            id="edit-user-archetype"
-            label="Your Deck Archetype"
-            value={userArchetype}
-            onChange={setUserArchetype}
-            groups={archetypeGroups}
-            placeholder="Select your archetype..."
+        <div className="grid gap-2">
+          <p className="block text-sm font-medium text-gray-700">Your Deck</p>
+          <PkmnSelector
+            id="edit-user-primary-pokemon"
+            name="editUserPrimaryPokemon"
+            value={userPrimaryPokemon}
+            onChange={handleDeckPokemonChange}
+            groups={userPrimaryGroups}
+            label="Primary Pokemon"
+            hideLabel
+            placeholder="Choose primary Pokemon..."
             disabled={isSubmitting}
             required
+          />
+          <PkmnSelector
+            id="edit-user-secondary-pokemon"
+            name="editUserSecondaryPokemon"
+            value={userSecondaryPokemon}
+            onChange={handleDeckPokemonChange}
+            groups={userSecondaryGroups}
+            label="Secondary Pokemon (Optional)"
+            hideLabel
+            placeholder="Choose secondary Pokemon..."
+            disabled={isSubmitting}
+          />
+        </div>
+
+        <div className="grid gap-2">
+          <p className="block text-sm font-medium text-gray-700">Opponent Deck</p>
+          <PkmnSelector
+            id="edit-opponent-primary-pokemon"
+            name="editOpponentPrimaryPokemon"
+            value={opponentPrimaryPokemon}
+            onChange={handleDeckPokemonChange}
+            groups={opponentPrimaryGroups}
+            label="Primary Pokemon"
+            hideLabel
+            placeholder="Choose primary Pokemon..."
+            disabled={isSubmitting}
+            required
+          />
+          <PkmnSelector
+            id="edit-opponent-secondary-pokemon"
+            name="editOpponentSecondaryPokemon"
+            value={opponentSecondaryPokemon}
+            onChange={handleDeckPokemonChange}
+            groups={opponentSecondaryGroups}
+            label="Secondary Pokemon (Optional)"
+            hideLabel
+            placeholder="Choose secondary Pokemon..."
+            disabled={isSubmitting}
           />
         </div>
 
         <div>
-          <Select
-            id="edit-opponent-archetype"
-            label="Opponent Archetype"
-            value={opponentArchetype}
-            onChange={setOpponentArchetype}
-            groups={archetypeGroups}
-            placeholder="Select opponent archetype..."
-            disabled={isSubmitting}
-            required
-          />
-        </div>
-
-        <div>
-          <Select
+          <p
+            id="edit-result-label"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Result
+          </p>
+          <ButtonGroup
             id="edit-result"
-            label="Result"
+            name="editResult"
+            ariaLabelledBy="edit-result-label"
+            ariaLabel="Match result"
+            className="mt-2"
             value={result}
-            onChange={(value) =>
-              setResult(value as "win" | "loss" | "tie" | "")
-            }
-            options={resultOptions}
-            placeholder="Select result..."
+            onChange={setResult}
+            options={MATCHUP_RESULT_OPTIONS}
             disabled={isSubmitting}
-            required
           />
         </div>
 
@@ -234,8 +337,8 @@ export function EditMatchupRecordModal({
           onClick={handleSubmit}
           disabled={
             isSubmitting ||
-            !userArchetype.trim() ||
-            !opponentArchetype.trim() ||
+            !userPrimaryPokemon.trim() ||
+            !opponentPrimaryPokemon.trim() ||
             !result
           }
         >

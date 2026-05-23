@@ -208,7 +208,7 @@ export function PkmnSelector({
 
         <Combobox.Portal>
           <Combobox.Positioner
-            className="z-10 mt-1 outline-none"
+            className="z-60 mt-1 outline-none"
             sideOffset={4}
           >
             <Combobox.Popup className="w-(--anchor-width) max-w-(--available-width) bg-white border border-gray-300 rounded-md shadow-lg text-gray-900">
