@@ -11,6 +11,31 @@ export interface SavedDeck {
 }
 
 const STORAGE_KEY = "pokemon-saved-decks";
+const SAVED_DECKS_CHANGED_EVENT = "saved-decks-changed";
+
+function notifySavedDecksChanged(): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.dispatchEvent(new Event(SAVED_DECKS_CHANGED_EVENT));
+}
+
+export function subscribeSavedDecks(onStoreChange: () => void): () => void {
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+
+  const handleChange = () => onStoreChange();
+
+  window.addEventListener("storage", handleChange);
+  window.addEventListener(SAVED_DECKS_CHANGED_EVENT, handleChange);
+
+  return () => {
+    window.removeEventListener("storage", handleChange);
+    window.removeEventListener(SAVED_DECKS_CHANGED_EVENT, handleChange);
+  };
+}
 
 function normalizeSavedDeck(rawDeck: unknown): SavedDeck | null {
   if (!rawDeck || typeof rawDeck !== "object") {
@@ -104,6 +129,7 @@ export function replaceSavedDecks(decks: SavedDeck[]): void {
       STORAGE_KEY,
       JSON.stringify(normalizeSavedDecks(decks))
     );
+    notifySavedDecksChanged();
   } catch (error) {
     console.error("Error replacing saved decks:", error);
     throw new Error("Failed to replace saved decks in local storage");
@@ -131,6 +157,7 @@ export function saveDeck(
 
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(decks));
+    notifySavedDecksChanged();
   } catch (error) {
     console.error("Error saving deck:", error);
     throw new Error("Failed to save deck to local storage");
@@ -164,6 +191,7 @@ export function updateSavedDeck(
 
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(decks));
+    notifySavedDecksChanged();
   } catch (error) {
     console.error("Error updating deck:", error);
     throw new Error("Failed to update deck in local storage");
@@ -182,6 +210,7 @@ export function deleteSavedDeck(id: string): boolean {
 
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(filteredDecks));
+    notifySavedDecksChanged();
     return true;
   } catch (error) {
     console.error("Error deleting deck:", error);

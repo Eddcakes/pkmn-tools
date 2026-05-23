@@ -1,15 +1,38 @@
 "use client";
 
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
-import { useCallback, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import { api } from "../../convex/_generated/api";
 import {
   deleteSavedDeck as lsDelete,
   getSavedDecks as lsGet,
   saveDeck as lsSave,
   updateSavedDeck as lsUpdate,
-  type SavedDeck
+  type SavedDeck,
+  subscribeSavedDecks
 } from "../utils/savedDecks";
+
+const EMPTY_SAVED_DECKS: SavedDeck[] = [];
+
+let cachedLocalDecksSnapshot: SavedDeck[] = EMPTY_SAVED_DECKS;
+let cachedLocalDecksSerialized = "";
+
+function getLocalDecksSnapshot(): SavedDeck[] {
+  const nextDecks = lsGet();
+  const nextSerialized = JSON.stringify(nextDecks);
+
+  if (nextSerialized === cachedLocalDecksSerialized) {
+    return cachedLocalDecksSnapshot;
+  }
+
+  cachedLocalDecksSerialized = nextSerialized;
+  cachedLocalDecksSnapshot = nextDecks;
+  return nextDecks;
+}
+
+function getLocalDecksServerSnapshot(): SavedDeck[] {
+  return EMPTY_SAVED_DECKS;
+}
 
 export function useSavedDecks() {
   const { isAuthenticated } = useConvexAuth();
@@ -23,7 +46,11 @@ export function useSavedDecks() {
   const convexUpdate = useMutation(api.savedDecks.update);
   const convexRemove = useMutation(api.savedDecks.remove);
 
-  const [localDecksFallback] = useState<SavedDeck[]>(() => lsGet());
+  const localDecksFallback = useSyncExternalStore<SavedDeck[]>(
+    subscribeSavedDecks,
+    getLocalDecksSnapshot,
+    getLocalDecksServerSnapshot
+  );
 
   const decks: SavedDeck[] =
     // For authenticated users: prefer Convex data, fall back to localStorage while loading
