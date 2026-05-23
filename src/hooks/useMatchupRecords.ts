@@ -11,6 +11,34 @@ import {
   type MatchupRecord
 } from "../utils/matchupRecords";
 
+function splitPokemonSlots(archetype: string): [string?, string?] {
+  const parts = archetype
+    .split("+")
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0);
+
+  return [parts[0], parts[1]];
+}
+
+function ensurePokemonSlotFields(record: MatchupRecord): MatchupRecord {
+  const [userPrimaryPokemon, userSecondaryPokemon] = splitPokemonSlots(
+    record.userArchetype
+  );
+  const [opponentPrimaryPokemon, opponentSecondaryPokemon] = splitPokemonSlots(
+    record.opponentArchetype
+  );
+
+  return {
+    ...record,
+    userPrimaryPokemon: record.userPrimaryPokemon ?? userPrimaryPokemon,
+    userSecondaryPokemon: record.userSecondaryPokemon ?? userSecondaryPokemon,
+    opponentPrimaryPokemon:
+      record.opponentPrimaryPokemon ?? opponentPrimaryPokemon,
+    opponentSecondaryPokemon:
+      record.opponentSecondaryPokemon ?? opponentSecondaryPokemon
+  };
+}
+
 const EMPTY_RECORDS_SNAPSHOT: MatchupRecord[] = [];
 const MATCHUP_RECORDS_STORAGE_KEY = "pokemon-matchup-records";
 
@@ -65,21 +93,29 @@ export function useMatchupRecords() {
           id: r.clientId,
           userArchetype: r.userArchetype,
           opponentArchetype: r.opponentArchetype,
+          userPrimaryPokemon: r.userPrimaryPokemon,
+          userSecondaryPokemon: r.userSecondaryPokemon,
+          opponentPrimaryPokemon: r.opponentPrimaryPokemon,
+          opponentSecondaryPokemon: r.opponentSecondaryPokemon,
           format: r.format,
           latestSet: r.latestSet,
           result: r.result,
           notes: r.notes,
           createdAt: r.createdAt,
           updatedAt: r.updatedAt
-        }))
+        })).map(ensurePokemonSlotFields)
       : // For unauthenticated users or while Convex is loading: use localStorage
-        localRecordsFallback;
+        localRecordsFallback.map(ensurePokemonSlotFields);
 
   const saveRecord = useCallback(
     async (
       userArchetype: string,
       opponentArchetype: string,
       result: "win" | "loss" | "tie",
+      userPrimaryPokemon?: string,
+      userSecondaryPokemon?: string,
+      opponentPrimaryPokemon?: string,
+      opponentSecondaryPokemon?: string,
       latestSet?: string,
       notes?: string,
       format?: string
@@ -88,6 +124,10 @@ export function useMatchupRecords() {
         userArchetype,
         opponentArchetype,
         result,
+        userPrimaryPokemon,
+        userSecondaryPokemon,
+        opponentPrimaryPokemon,
+        opponentSecondaryPokemon,
         latestSet,
         notes,
         format
@@ -102,6 +142,10 @@ export function useMatchupRecords() {
           clientId: record.id,
           userArchetype: record.userArchetype,
           opponentArchetype: record.opponentArchetype,
+          userPrimaryPokemon: record.userPrimaryPokemon,
+          userSecondaryPokemon: record.userSecondaryPokemon,
+          opponentPrimaryPokemon: record.opponentPrimaryPokemon,
+          opponentSecondaryPokemon: record.opponentSecondaryPokemon,
           format: record.format,
           latestSet: record.latestSet,
           result: record.result,

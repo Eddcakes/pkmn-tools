@@ -65,8 +65,12 @@ export default function MatchupRecordsPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [showAllRecords, setShowAllRecords] = useState(false);
-  const [userArchetypeFilter, setUserArchetypeFilter] = useState("");
-  const [opponentArchetypeFilter, setOpponentArchetypeFilter] = useState("");
+  const [userPrimaryPokemonFilter, setUserPrimaryPokemonFilter] = useState("");
+  const [userSecondaryPokemonFilter, setUserSecondaryPokemonFilter] = useState("");
+  const [opponentPrimaryPokemonFilter, setOpponentPrimaryPokemonFilter] =
+    useState("");
+  const [opponentSecondaryPokemonFilter, setOpponentSecondaryPokemonFilter] =
+    useState("");
   const [formatFilter, setFormatFilter] = useState("");
   const [latestSetFilter, setLatestSetFilter] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -271,38 +275,22 @@ export default function MatchupRecordsPage() {
   );
 
   const userPrimaryGroups = useMemo(
-    () =>
-      buildPokemonGroups(
-        settings.recentUserPrimary,
-        "Recent"
-      ),
+    () => buildPokemonGroups(settings.recentUserPrimary, "Recent"),
     [buildPokemonGroups, settings.recentUserPrimary]
   );
 
   const userSecondaryGroups = useMemo(
-    () =>
-      buildPokemonGroups(
-        settings.recentUserSecondary,
-        "Recent"
-      ),
+    () => buildPokemonGroups(settings.recentUserSecondary, "Recent"),
     [buildPokemonGroups, settings.recentUserSecondary]
   );
 
   const opponentPrimaryGroups = useMemo(
-    () =>
-      buildPokemonGroups(
-        settings.recentOpponentPrimary,
-        "Recent"
-      ),
+    () => buildPokemonGroups(settings.recentOpponentPrimary, "Recent"),
     [buildPokemonGroups, settings.recentOpponentPrimary]
   );
 
   const opponentSecondaryGroups = useMemo(
-    () =>
-      buildPokemonGroups(
-        settings.recentOpponentSecondary,
-        "Recent"
-      ),
+    () => buildPokemonGroups(settings.recentOpponentSecondary, "Recent"),
     [buildPokemonGroups, settings.recentOpponentSecondary]
   );
 
@@ -347,6 +335,10 @@ export default function MatchupRecordsPage() {
         userArchetype,
         opponentArchetype,
         result as MatchupResult,
+        userPrimaryPokemon || undefined,
+        userSecondaryPokemon || undefined,
+        opponentPrimaryPokemon || undefined,
+        opponentSecondaryPokemon || undefined,
         selectedLatestSetValue.trim() || undefined,
         notes.trim() || undefined,
         selectedFormatValue.trim() || undefined
@@ -430,13 +422,22 @@ export default function MatchupRecordsPage() {
 
   // Filter records based on selected filters
   const filteredRecords = sortedRecords.filter((record) => {
-    const matchesUserArchetype =
-      !userArchetypeFilter ||
-      record.userArchetype.toLowerCase() === userArchetypeFilter.toLowerCase();
-    const matchesOpponentArchetype =
-      !opponentArchetypeFilter ||
-      record.opponentArchetype.toLowerCase() ===
-        opponentArchetypeFilter.toLowerCase();
+    const matchesUserPrimaryPokemon =
+      !userPrimaryPokemonFilter ||
+      record.userPrimaryPokemon?.toLowerCase() ===
+        userPrimaryPokemonFilter.toLowerCase();
+    const matchesUserSecondaryPokemon =
+      !userSecondaryPokemonFilter ||
+      record.userSecondaryPokemon?.toLowerCase() ===
+        userSecondaryPokemonFilter.toLowerCase();
+    const matchesOpponentPrimaryPokemon =
+      !opponentPrimaryPokemonFilter ||
+      record.opponentPrimaryPokemon?.toLowerCase() ===
+        opponentPrimaryPokemonFilter.toLowerCase();
+    const matchesOpponentSecondaryPokemon =
+      !opponentSecondaryPokemonFilter ||
+      record.opponentSecondaryPokemon?.toLowerCase() ===
+        opponentSecondaryPokemonFilter.toLowerCase();
     const matchesFormat =
       !formatFilter ||
       record.format?.toLowerCase() === formatFilter.toLowerCase();
@@ -444,8 +445,10 @@ export default function MatchupRecordsPage() {
       !latestSetFilter ||
       record.latestSet?.toLowerCase() === latestSetFilter.toLowerCase();
     return (
-      matchesUserArchetype &&
-      matchesOpponentArchetype &&
+      matchesUserPrimaryPokemon &&
+      matchesUserSecondaryPokemon &&
+      matchesOpponentPrimaryPokemon &&
+      matchesOpponentSecondaryPokemon &&
       matchesFormat &&
       matchesLatestSet
     );
@@ -656,26 +659,78 @@ export default function MatchupRecordsPage() {
 
             {showFilters && records.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 pb-4 border-b border-gray-200">
-                <div>
-                  <Select
-                    id="filter-user-archetype"
-                    label="Filter Your Deck"
-                    value={userArchetypeFilter}
-                    onChange={setUserArchetypeFilter}
-                    groups={archetypeGroups}
-                    placeholder="Select Archetype"
-                  />
+                <div className="col-span-full">
+                  <p className="block text-sm font-medium text-gray-700 mb-2">
+                    Your deck
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <PkmnSelector
+                      id="filter-user-primary-pokemon"
+                      name="filterUserPrimaryPokemon"
+                      label="Filter User Primary Pokemon"
+                      hideLabel
+                      value={userPrimaryPokemonFilter}
+                      onChange={(value, name) => {
+                        if (name === "filterUserPrimaryPokemon") {
+                          setUserPrimaryPokemonFilter(value);
+                        }
+                      }}
+                      groups={userPrimaryGroups}
+                      placeholder="Filter primary Pokemon"
+                    />
+
+                    <PkmnSelector
+                      id="filter-user-secondary-pokemon"
+                      name="filterUserSecondaryPokemon"
+                      label="Filter User Secondary Pokemon"
+                      hideLabel
+                      value={userSecondaryPokemonFilter}
+                      onChange={(value, name) => {
+                        if (name === "filterUserSecondaryPokemon") {
+                          setUserSecondaryPokemonFilter(value);
+                        }
+                      }}
+                      groups={userSecondaryGroups}
+                      placeholder="Filter secondary Pokemon"
+                    />
+                  </div>
                 </div>
 
-                <div>
-                  <Select
-                    id="filter-opponent-archetype"
-                    label="Filter Opponent Deck"
-                    value={opponentArchetypeFilter}
-                    onChange={setOpponentArchetypeFilter}
-                    groups={archetypeGroups}
-                    placeholder="Select Archetype"
-                  />
+                <div className="col-span-full">
+                  <p className="block text-sm font-medium text-gray-700 mb-2">
+                    Opponent Deck
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <PkmnSelector
+                      id="filter-opponent-primary-pokemon"
+                      name="filterOpponentPrimaryPokemon"
+                      label="Filter Opponent Primary Pokemon"
+                      hideLabel
+                      value={opponentPrimaryPokemonFilter}
+                      onChange={(value, name) => {
+                        if (name === "filterOpponentPrimaryPokemon") {
+                          setOpponentPrimaryPokemonFilter(value);
+                        }
+                      }}
+                      groups={opponentPrimaryGroups}
+                      placeholder="Filter primary Pokemon"
+                    />
+
+                    <PkmnSelector
+                      id="filter-opponent-secondary-pokemon"
+                      name="filterOpponentSecondaryPokemon"
+                      label="Filter Opponent Secondary Pokemon"
+                      hideLabel
+                      value={opponentSecondaryPokemonFilter}
+                      onChange={(value, name) => {
+                        if (name === "filterOpponentSecondaryPokemon") {
+                          setOpponentSecondaryPokemonFilter(value);
+                        }
+                      }}
+                      groups={opponentSecondaryGroups}
+                      placeholder="Filter secondary Pokemon"
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -700,8 +755,10 @@ export default function MatchupRecordsPage() {
                   />
                 </div>
 
-                {(userArchetypeFilter ||
-                  opponentArchetypeFilter ||
+                {(userPrimaryPokemonFilter ||
+                  userSecondaryPokemonFilter ||
+                  opponentPrimaryPokemonFilter ||
+                  opponentSecondaryPokemonFilter ||
                   formatFilter ||
                   latestSetFilter) && (
                   <div className="col-span-full">
@@ -709,8 +766,10 @@ export default function MatchupRecordsPage() {
                       size="sm"
                       variant="secondary"
                       onClick={() => {
-                        setUserArchetypeFilter("");
-                        setOpponentArchetypeFilter("");
+                        setUserPrimaryPokemonFilter("");
+                        setUserSecondaryPokemonFilter("");
+                        setOpponentPrimaryPokemonFilter("");
+                        setOpponentSecondaryPokemonFilter("");
                         setFormatFilter("");
                         setLatestSetFilter("");
                       }}
@@ -738,8 +797,10 @@ export default function MatchupRecordsPage() {
                   size="sm"
                   variant="secondary"
                   onClick={() => {
-                    setUserArchetypeFilter("");
-                    setOpponentArchetypeFilter("");
+                    setUserPrimaryPokemonFilter("");
+                    setUserSecondaryPokemonFilter("");
+                    setOpponentPrimaryPokemonFilter("");
+                    setOpponentSecondaryPokemonFilter("");
                     setFormatFilter("");
                     setLatestSetFilter("");
                   }}

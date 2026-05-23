@@ -13,12 +13,44 @@ export interface MatchupRecord {
   id: string;
   userArchetype: string;
   opponentArchetype: string;
+  userPrimaryPokemon?: string;
+  userSecondaryPokemon?: string;
+  opponentPrimaryPokemon?: string;
+  opponentSecondaryPokemon?: string;
   format?: string;
   latestSet?: string;
   result: MatchupResult;
   notes?: string;
   createdAt: string;
   updatedAt?: string;
+}
+
+function splitPokemonSlots(archetype: string): [string?, string?] {
+  const parts = archetype
+    .split("+")
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0);
+
+  return [parts[0], parts[1]];
+}
+
+function ensurePokemonSlotFields(record: MatchupRecord): MatchupRecord {
+  const [userPrimaryPokemon, userSecondaryPokemon] = splitPokemonSlots(
+    record.userArchetype
+  );
+  const [opponentPrimaryPokemon, opponentSecondaryPokemon] = splitPokemonSlots(
+    record.opponentArchetype
+  );
+
+  return {
+    ...record,
+    userPrimaryPokemon: record.userPrimaryPokemon ?? userPrimaryPokemon,
+    userSecondaryPokemon: record.userSecondaryPokemon ?? userSecondaryPokemon,
+    opponentPrimaryPokemon:
+      record.opponentPrimaryPokemon ?? opponentPrimaryPokemon,
+    opponentSecondaryPokemon:
+      record.opponentSecondaryPokemon ?? opponentSecondaryPokemon
+  };
 }
 
 const STORAGE_KEY = "pokemon-matchup-records";
@@ -56,7 +88,9 @@ export function getMatchupRecords(): MatchupRecord[] {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     const records = stored ? JSON.parse(stored) : [];
-    return migrateRecordsToIncludeUpdatedAt(records);
+    return migrateRecordsToIncludeUpdatedAt(records).map(
+      ensurePokemonSlotFields
+    );
   } catch (error) {
     console.error("Error loading matchup records:", error);
     return [];
@@ -72,7 +106,7 @@ export function replaceMatchupRecords(records: MatchupRecord[]): void {
           records.map((record) => ({
             ...record,
             updatedAt: record.updatedAt ?? record.createdAt
-          }))
+          })).map(ensurePokemonSlotFields)
         )
       )
     );
@@ -86,6 +120,10 @@ export function saveMatchupRecord(
   userArchetype: string,
   opponentArchetype: string,
   result: MatchupResult,
+  userPrimaryPokemon?: string,
+  userSecondaryPokemon?: string,
+  opponentPrimaryPokemon?: string,
+  opponentSecondaryPokemon?: string,
   latestSet?: string,
   notes?: string,
   format?: string
@@ -95,6 +133,14 @@ export function saveMatchupRecord(
     id: generateId(),
     userArchetype,
     opponentArchetype,
+    userPrimaryPokemon:
+      userPrimaryPokemon ?? splitPokemonSlots(userArchetype)[0],
+    userSecondaryPokemon:
+      userSecondaryPokemon ?? splitPokemonSlots(userArchetype)[1],
+    opponentPrimaryPokemon:
+      opponentPrimaryPokemon ?? splitPokemonSlots(opponentArchetype)[0],
+    opponentSecondaryPokemon:
+      opponentSecondaryPokemon ?? splitPokemonSlots(opponentArchetype)[1],
     format,
     latestSet,
     result,
@@ -138,6 +184,10 @@ export function updateMatchupRecord(
   updates: {
     userArchetype?: string;
     opponentArchetype?: string;
+    userPrimaryPokemon?: string;
+    userSecondaryPokemon?: string;
+    opponentPrimaryPokemon?: string;
+    opponentSecondaryPokemon?: string;
     format?: string;
     latestSet?: string;
     result?: MatchupResult;
@@ -160,11 +210,13 @@ export function updateMatchupRecord(
     createdAt: existingRecord.createdAt
   };
 
-  records[recordIndex] = updatedRecord;
+  const normalizedRecord = ensurePokemonSlotFields(updatedRecord);
+
+  records[recordIndex] = normalizedRecord;
 
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
-    return updatedRecord;
+    return normalizedRecord;
   } catch (error) {
     console.error("Error updating matchup record:", error);
     throw new Error("Failed to update matchup record in local storage");
