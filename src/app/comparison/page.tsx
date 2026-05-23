@@ -435,18 +435,14 @@ Energy: 11
             ? decks.find((d) => d.id === activeDeckId)?.label || ""
             : ""
         }
-        archetype={
+        primaryPokemon={
           activeDeckId
-            ? (() => {
-                const activeDeck = decks.find((d) => d.id === activeDeckId);
-                if (!activeDeck?.primaryPokemon) {
-                  return "";
-                }
-
-                return activeDeck.secondaryPokemon
-                  ? `#${activeDeck.primaryPokemon}#${activeDeck.secondaryPokemon}`
-                  : `#${activeDeck.primaryPokemon}`;
-              })()
+            ? decks.find((d) => d.id === activeDeckId)?.primaryPokemon || ""
+            : ""
+        }
+        secondaryPokemon={
+          activeDeckId
+            ? decks.find((d) => d.id === activeDeckId)?.secondaryPokemon || ""
             : ""
         }
       />

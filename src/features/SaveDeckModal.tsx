@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { DeckPokemonBadge } from "@/components/DeckPokemonBadge";
-import { resolvePokemonSlots } from "@/utils/archetypePokemon";
 import { Button } from "../components/Button";
 import { Modal } from "../components/Modal";
 import { ModalFooter } from "../components/ModalFooter";
+import { PkmnSelector } from "../components/PkmnSelector";
 import { saveDeck } from "../utils/savedDecks";
 
 interface SaveDeckModalProps {
@@ -12,7 +11,8 @@ interface SaveDeckModalProps {
   deckList: string;
   initialLabel?: string;
   onSaved?: () => void;
-  archetype?: string;
+  primaryPokemon?: string;
+  secondaryPokemon?: string;
 }
 
 export function SaveDeckModal({
@@ -21,11 +21,29 @@ export function SaveDeckModal({
   deckList,
   initialLabel = "",
   onSaved,
-  archetype
+  primaryPokemon: initialPrimaryPokemon = "",
+  secondaryPokemon: initialSecondaryPokemon = ""
 }: SaveDeckModalProps) {
   const [label, setLabel] = useState(initialLabel);
+  const [primaryPokemon, setPrimaryPokemon] = useState(initialPrimaryPokemon);
+  const [secondaryPokemon, setSecondaryPokemon] = useState(
+    initialSecondaryPokemon
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  const handleDeckPokemonChange = (value: string, name?: string) => {
+    switch (name) {
+      case "savePrimaryPokemon":
+        setPrimaryPokemon(value);
+        break;
+      case "saveSecondaryPokemon":
+        setSecondaryPokemon(value);
+        break;
+      default:
+        break;
+    }
+  };
 
   const handleSave = async () => {
     if (!label.trim()) {
@@ -38,21 +56,20 @@ export function SaveDeckModal({
       return;
     }
 
+    if (!primaryPokemon.trim()) {
+      setError("Please select a deck primary Pokemon");
+      return;
+    }
+
     setSaving(true);
     setError("");
 
     try {
-      const archetypeList = archetype
-        ? archetype.trim().split("#").filter(Boolean)
-        : [];
-      const archetypeLabel = archetypeList.join(" + ");
-      const slots = resolvePokemonSlots(archetypeLabel);
-
       saveDeck(
         label.trim(),
         deckList,
-        slots.primaryPokemon,
-        slots.secondaryPokemon
+        primaryPokemon.trim(),
+        secondaryPokemon.trim() || undefined
       );
       onSaved?.();
       onClose();
@@ -85,17 +102,32 @@ export function SaveDeckModal({
             disabled={saving}
           />
         </div>
-        {archetype && (
-          <div className="gap-2 flex flex-wrap">
-            {archetype
-              .trim()
-              .split("#")
-              .filter(Boolean)
-              .map((tag) => (
-                <DeckPokemonBadge key={tag} label={tag} />
-              ))}
-          </div>
-        )}
+        <div className="grid gap-2">
+          <p className="block text-sm font-medium text-gray-700">
+            Deck Archetype
+          </p>
+          <PkmnSelector
+            id="save-primary-pokemon"
+            name="savePrimaryPokemon"
+            value={primaryPokemon}
+            onChange={handleDeckPokemonChange}
+            label="Primary Pokemon"
+            hideLabel
+            placeholder="Choose primary Pokemon..."
+            disabled={saving}
+            required
+          />
+          <PkmnSelector
+            id="save-secondary-pokemon"
+            name="saveSecondaryPokemon"
+            value={secondaryPokemon}
+            onChange={handleDeckPokemonChange}
+            label="Secondary Pokemon (Optional)"
+            hideLabel
+            placeholder="Choose secondary Pokemon..."
+            disabled={saving}
+          />
+        </div>
         {error && <p className="text-red-600 text-sm">{error}</p>}
       </div>
 
