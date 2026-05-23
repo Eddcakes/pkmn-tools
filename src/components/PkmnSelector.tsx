@@ -17,6 +17,7 @@ import { CheckIcon, ChevronIcon, CrossIcon } from "./Icons";
 export interface PkmnSelectorOption {
   value: string;
   label: string;
+  show?: boolean;
 }
 
 export interface PkmnSelectorGroup {
@@ -60,6 +61,9 @@ export function PkmnSelector({
   const virtualizerRef = useRef<VirtualizerHandle | null>(null);
 
   const renderedGroups = useMemo<PkmnSelectorGroup[]>(() => {
+    const isVisibleOption = (option: PkmnSelectorOption) =>
+      option.show !== false;
+
     if (groups?.length) {
       const seenValues = new Set<string>();
 
@@ -67,6 +71,10 @@ export function PkmnSelector({
         .map((group) => ({
           label: group.label,
           options: group.options.filter((option) => {
+            if (!isVisibleOption(option)) {
+              return false;
+            }
+
             if (seenValues.has(option.value)) {
               return false;
             }
@@ -80,15 +88,17 @@ export function PkmnSelector({
 
     const fallbackOptions =
       options ??
-      POKEMON_SEARCH_ENTRIES.map((entry) => ({
+      POKEMON_SEARCH_ENTRIES.filter((entry) => entry.show).map((entry) => ({
         value: entry.value,
         label: entry.label
       }));
 
+    const visibleFallbackOptions = fallbackOptions.filter(isVisibleOption);
+
     return [
       {
         label: "",
-        options: fallbackOptions
+        options: visibleFallbackOptions
       }
     ];
   }, [groups, options]);

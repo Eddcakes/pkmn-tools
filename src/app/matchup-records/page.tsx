@@ -18,7 +18,7 @@ import {
   addRecentArchetype,
   updateRecentPokemonSettings
 } from "@/utils/matchupSettings";
-import { POKEMON_SEARCH_ENTRIES, POKEMON_SEARCH_SET } from "@/utils/pokemon";
+import { POKEMON_VISIBLE_OPTIONS } from "@/utils/pokemon";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
 import { Select } from "../../components/Select";
@@ -39,6 +39,13 @@ const RESULT_BUTTON_OPTIONS: ButtonGroupOption<MatchupResult>[] = [
   { value: "loss", label: "L", ariaLabel: "Loss" },
   { value: "tie", label: "T", ariaLabel: "Tie" }
 ];
+
+const VISIBLE_POKEMON_LOOKUP = new Map(
+  POKEMON_VISIBLE_OPTIONS.flatMap((option) => [
+    [option.value.toLowerCase(), option.value],
+    [option.label.toLowerCase(), option.value]
+  ])
+);
 
 export default function MatchupRecordsPage() {
   const { records, saveRecord, updateRecord, deleteRecord } =
@@ -91,17 +98,7 @@ export default function MatchupRecordsPage() {
       return "";
     }
 
-    if (!POKEMON_SEARCH_SET.has(normalized)) {
-      return null;
-    }
-
-    const matchedOption = POKEMON_SEARCH_ENTRIES.find(
-      (option) =>
-        option.value.toLowerCase() === normalized ||
-        option.label.toLowerCase() === normalized
-    );
-
-    return matchedOption?.value ?? null;
+    return VISIBLE_POKEMON_LOOKUP.get(normalized) ?? null;
   };
 
   const handleDeckPokemonChange = (value: string, fieldName?: string) => {
@@ -156,21 +153,12 @@ export default function MatchupRecordsPage() {
       ? (settings.defaultSet ?? "")
       : latestSetOverrideValue;
 
-  const allPokemonOptions = useMemo(
-    () =>
-      POKEMON_SEARCH_ENTRIES.map((entry) => ({
-        value: entry.value,
-        label: entry.label
-      })),
-    []
-  );
+  const allPokemonOptions = useMemo(() => POKEMON_VISIBLE_OPTIONS, []);
 
   const pokemonLabelByValue = useMemo(
     () =>
-      new Map(
-        POKEMON_SEARCH_ENTRIES.map((entry) => [entry.value, entry.label])
-      ),
-    []
+      new Map(allPokemonOptions.map((option) => [option.value, option.label])),
+    [allPokemonOptions]
   );
 
   const buildPokemonGroups = useMemo(
