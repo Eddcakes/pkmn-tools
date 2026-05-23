@@ -111,7 +111,11 @@ export function useMatchupRecords() {
     hasRequestedBackfill.current = true;
 
     void convexBackfillArchetypePokemon({})
-      .then(() => {
+      .then((result) => {
+        if (!result.done) {
+          return;
+        }
+
         window.localStorage.setItem(ARCHETYPE_BACKFILL_FLAG_KEY, "done");
       })
       .catch((error: unknown) => {
