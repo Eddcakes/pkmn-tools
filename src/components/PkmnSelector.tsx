@@ -4,7 +4,6 @@
 import { Combobox } from "@base-ui/react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
-  type ComponentProps,
   type CSSProperties,
   useCallback,
   useId,
@@ -12,11 +11,18 @@ import {
   useRef,
   useState
 } from "react";
-import {
-  POKEMON_SEARCH_ENTRIES,
-  type PokemonSearchEntry
-} from "@/utils/pokemon";
-import { ChevronIcon, CrossIcon } from "./Icons";
+import { POKEMON_SEARCH_ENTRIES } from "@/utils/pokemon";
+import { CheckIcon, ChevronIcon, CrossIcon } from "./Icons";
+
+export interface PkmnSelectorOption {
+  value: string;
+  label: string;
+}
+
+export interface PkmnSelectorGroup {
+  label: string;
+  options: PkmnSelectorOption[];
+}
 
 interface PkmnSelectorProps {
   id?: string;
@@ -28,7 +34,8 @@ interface PkmnSelectorProps {
   disabled?: boolean;
   required?: boolean;
   className?: string;
-  topGroupValues?: string[];
+  options?: PkmnSelectorOption[];
+  groups?: PkmnSelectorGroup[];
   hideLabel?: boolean;
 }
 
@@ -42,76 +49,105 @@ export function PkmnSelector({
   disabled = false,
   required = false,
   className = "",
-  topGroupValues,
+  options,
+  groups,
   hideLabel = false
 }: PkmnSelectorProps) {
   const [open, setOpen] = useState(false);
   const generatedId = useId();
   const inputId = id ?? generatedId;
-  const virtualizerRef = useRef<Virtualizer | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const virtualizerRef = useRef<VirtualizerHandle | null>(null);
 
-  const orderedItems = useMemo(() => {
-    if (!topGroupValues?.length) {
-      return POKEMON_SEARCH_ENTRIES;
+  const renderedGroups = useMemo<PkmnSelectorGroup[]>(() => {
+    if (groups?.length) {
+      const seenValues = new Set<string>();
+
+      return groups
+        .map((group) => ({
+          label: group.label,
+          options: group.options.filter((option) => {
+            if (seenValues.has(option.value)) {
+              return false;
+            }
+
+            seenValues.add(option.value);
+            return true;
+          })
+        }))
+        .filter((group) => group.options.length > 0);
     }
 
-    const normalizedTopGroupValues = new Set(
-      topGroupValues
-        .map((item) => item.trim().toLowerCase())
-        .filter((item) => item.length > 0)
-    );
+    const fallbackOptions =
+      options ??
+      POKEMON_SEARCH_ENTRIES.map((entry) => ({
+        value: entry.value,
+        label: entry.label
+      }));
 
-    if (!normalizedTopGroupValues.size) {
-      return POKEMON_SEARCH_ENTRIES;
-    }
-
-    const topItems: PokemonSearchEntry[] = [];
-    const remainingItems: PokemonSearchEntry[] = [];
-
-    for (const entry of POKEMON_SEARCH_ENTRIES) {
-      const normalizedValue = entry.value.toLowerCase();
-      const normalizedLabel = entry.label.toLowerCase();
-
-      if (
-        normalizedTopGroupValues.has(normalizedValue) ||
-        normalizedTopGroupValues.has(normalizedLabel)
-      ) {
-        topItems.push(entry);
-      } else {
-        remainingItems.push(entry);
+    return [
+      {
+        label: "",
+        options: fallbackOptions
       }
-    }
+    ];
+  }, [groups, options]);
 
-    return [...topItems, ...remainingItems];
-  }, [topGroupValues]);
+  const flattenedItems = useMemo(
+    () => renderedGroups.flatMap((group) => group.options),
+    [renderedGroups]
+  );
+
+  const comboboxGroups = useMemo(
+    () =>
+      renderedGroups.map((group) => ({
+        label: group.label,
+        items: group.options
+      })),
+    [renderedGroups]
+  );
+
+  const isGrouped = Boolean(groups?.length);
 
   const selectedItem =
-    orderedItems.find((entry) => entry.value === value) ?? null;
+    flattenedItems.find((entry) => entry.value === value) ?? null;
 
   return (
     <Combobox.Root
       virtualized
-      items={orderedItems}
+      items={comboboxGroups}
       value={selectedItem}
       onValueChange={(nextItem) => onChange(nextItem?.value ?? "", name)}
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen && document.activeElement === inputRef.current) {
+          inputRef.current?.blur();
+        }
+
+        setOpen(nextOpen);
+      }}
+      modal={false}
       itemToStringLabel={(item) => (item ? item.label : "")}
       onItemHighlighted={(item, { reason, index }) => {
-        const virtualizer = virtualizerRef.current;
+        const state = virtualizerRef.current;
 
-        if (!item || !virtualizer) {
+        if (!item || !state) {
+          return;
+        }
+
+        const rowIndex = state.itemIndexToRowIndex[index];
+        if (rowIndex === undefined) {
           return;
         }
 
         const isStart = index === 0;
-        const isEnd = index === virtualizer.options.count - 1;
+        const isEnd = index === state.itemIndexToRowIndex.length - 1;
         const shouldScroll =
           reason === "none" || (reason === "keyboard" && (isStart || isEnd));
 
         if (shouldScroll) {
           queueMicrotask(() => {
-            virtualizer.scrollToIndex(index, {
+            state.virtualizer.scrollToIndex(rowIndex, {
               align: isEnd ? "start" : "end"
             });
           });
@@ -145,6 +181,7 @@ export function PkmnSelector({
 
           <Combobox.Input
             id={inputId}
+            ref={inputRef}
             aria-label={hideLabel ? label : undefined}
             name={name}
             placeholder={placeholder}
@@ -175,7 +212,7 @@ export function PkmnSelector({
             sideOffset={4}
           >
             <Combobox.Popup className="w-(--anchor-width) max-w-(--available-width) bg-white border border-gray-300 rounded-md shadow-lg text-gray-900">
-              <Combobox.Empty className="px-3 py-2 text-sm text-gray-500">
+              <Combobox.Empty className="px-3 text-sm text-gray-500">
                 No Pokemon found.
               </Combobox.Empty>
 
@@ -183,7 +220,7 @@ export function PkmnSelector({
                 <VirtualizedList
                   open={open}
                   virtualizerRef={virtualizerRef}
-                  topGroupValues={topGroupValues}
+                  isGrouped={isGrouped}
                 />
               </Combobox.List>
             </Combobox.Popup>
@@ -194,60 +231,83 @@ export function PkmnSelector({
   );
 }
 
+type FilteredGroup = {
+  label: string;
+  items: PkmnSelectorOption[];
+};
+
+type VirtualRow =
+  | {
+      type: "group-label";
+      key: string;
+      label: string;
+    }
+  | {
+      type: "item";
+      key: string;
+      item: PkmnSelectorOption;
+      ariaPosInset: number;
+      ariaSetSize: number;
+    };
+
 function VirtualizedList({
   open,
   virtualizerRef,
-  topGroupValues
+  isGrouped
 }: {
   open: boolean;
-  virtualizerRef: { current: Virtualizer | null };
-  topGroupValues?: string[];
+  virtualizerRef: { current: VirtualizerHandle | null };
+  isGrouped: boolean;
 }) {
-  const filteredItems = Combobox.useFilteredItems<PokemonSearchEntry>();
+  "use no memo";
+
+  const filteredGroups = Combobox.useFilteredItems<FilteredGroup>();
   const scrollElementRef = useRef<HTMLDivElement | null>(null);
 
-  const normalizedTopGroupValues = useMemo(
-    () =>
-      new Set(
-        (topGroupValues ?? [])
-          .map((item) => item.trim().toLowerCase())
-          .filter((item) => item.length > 0)
-      ),
-    [topGroupValues]
-  );
+  const { rows, itemIndexToRowIndex } = useMemo(() => {
+    const nextRows: VirtualRow[] = [];
+    const nextItemIndexToRowIndex: number[] = [];
 
-  const topFilteredCount = useMemo(() => {
-    if (!normalizedTopGroupValues.size) {
-      return 0;
-    }
+    const totalItemCount = filteredGroups.reduce(
+      (total, group) => total + group.items.length,
+      0
+    );
 
-    let count = 0;
+    let itemIndex = 0;
 
-    for (const item of filteredItems) {
-      const isTopItem =
-        normalizedTopGroupValues.has(item.value.toLowerCase()) ||
-        normalizedTopGroupValues.has(item.label.toLowerCase());
-
-      if (isTopItem) {
-        count += 1;
-        continue;
+    filteredGroups.forEach((group, groupIndex) => {
+      if (isGrouped && group.items.length > 0) {
+        nextRows.push({
+          type: "group-label",
+          key: `group-${group.label}-${groupIndex}`,
+          label: group.label
+        });
       }
 
-      break;
-    }
+      group.items.forEach((item) => {
+        nextRows.push({
+          type: "item",
+          key: `item-${item.value}`,
+          item,
+          ariaPosInset: itemIndex + 1,
+          ariaSetSize: totalItemCount
+        });
+        nextItemIndexToRowIndex.push(nextRows.length - 1);
+        itemIndex += 1;
+      });
+    });
 
-    return count;
-  }, [filteredItems, normalizedTopGroupValues]);
-
-  const showTopGroupSeparator =
-    topFilteredCount > 0 && topFilteredCount < filteredItems.length;
-  const separatorTop = 4 + topFilteredCount * 40;
+    return {
+      rows: nextRows,
+      itemIndexToRowIndex: nextItemIndexToRowIndex
+    };
+  }, [filteredGroups, isGrouped]);
 
   const virtualizer = useVirtualizer({
     enabled: open,
-    count: filteredItems.length,
+    count: rows.length,
     getScrollElement: () => scrollElementRef.current,
-    estimateSize: () => 40,
+    estimateSize: (index) => (rows[index]?.type === "group-label" ? 32 : 40),
     overscan: 10,
     paddingStart: 4,
     paddingEnd: 4,
@@ -255,7 +315,10 @@ function VirtualizedList({
     scrollPaddingEnd: 4
   });
 
-  virtualizerRef.current = virtualizer;
+  virtualizerRef.current = {
+    virtualizer,
+    itemIndexToRowIndex
+  };
 
   const handleScrollElementRef = useCallback(
     (element: HTMLDivElement | null) => {
@@ -269,7 +332,7 @@ function VirtualizedList({
 
   const totalSize = virtualizer.getTotalSize();
 
-  if (!filteredItems.length) {
+  if (!rows.length) {
     return null;
   }
 
@@ -285,30 +348,43 @@ function VirtualizedList({
         className="relative w-full"
         style={{ height: totalSize }}
       >
-        {showTopGroupSeparator && (
-          <Combobox.Separator
-            className="pointer-events-none absolute left-3 right-3 h-px bg-gray-200"
-            style={{ top: separatorTop }}
-          />
-        )}
-
         {virtualizer.getVirtualItems().map((virtualItem) => {
-          const item = filteredItems[virtualItem.index];
-
-          if (!item) {
+          const row = rows[virtualItem.index];
+          if (!row) {
             return null;
+          }
+
+          if (row.type === "group-label") {
+            return (
+              <div
+                key={virtualItem.key}
+                ref={virtualizer.measureElement}
+                data-index={virtualItem.index}
+                className="pointer-events-none px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500"
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: virtualItem.size,
+                  transform: `translateY(${virtualItem.start}px)`
+                }}
+              >
+                {row.label}
+              </div>
+            );
           }
 
           return (
             <Combobox.Item
               key={virtualItem.key}
-              index={virtualItem.index}
+              index={row.ariaPosInset - 1}
               data-index={virtualItem.index}
               ref={virtualizer.measureElement}
-              value={item}
+              value={row.item}
               className="grid cursor-default grid-cols-[1rem_2rem_1fr] items-center gap-2 px-3 py-2 text-sm leading-4 outline-none select-none transition-colors hover:bg-gray-50 data-highlighted:bg-blue-50 data-highlighted:text-blue-900 data-selected:bg-blue-100 data-selected:font-medium"
-              aria-setsize={filteredItems.length}
-              aria-posinset={virtualItem.index + 1}
+              aria-setsize={row.ariaSetSize}
+              aria-posinset={row.ariaPosInset}
               style={{
                 position: "absolute",
                 top: 0,
@@ -323,13 +399,12 @@ function VirtualizedList({
               </Combobox.ItemIndicator>
 
               <img
-                key={item.value}
-                src={`https://r2.limitlesstcg.net/pokemon/gen9/${item.value}.png`}
-                alt={item.label}
+                src={`https://r2.limitlesstcg.net/pokemon/gen9/${row.item.value}.png`}
+                alt={row.item.label}
                 className="col-start-2 h-6 w-6 object-contain"
               />
 
-              <span className="col-start-3">{item.label}</span>
+              <span className="col-start-3">{row.item.label}</span>
             </Combobox.Item>
           );
         })}
@@ -338,21 +413,9 @@ function VirtualizedList({
   );
 }
 
-function CheckIcon(props: ComponentProps<"svg">) {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      {...props}
-      style={{ display: "block", ...props.style }}
-    >
-      <title>Check</title>
-      <path d="m2.5 8.5 4 4 7-9" />
-    </svg>
-  );
-}
-
 type Virtualizer = ReturnType<typeof useVirtualizer<HTMLDivElement, Element>>;
+
+type VirtualizerHandle = {
+  virtualizer: Virtualizer;
+  itemIndexToRowIndex: number[];
+};

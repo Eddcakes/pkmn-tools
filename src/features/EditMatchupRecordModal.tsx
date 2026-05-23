@@ -145,7 +145,6 @@ export function EditMatchupRecordModal({
             placeholder="Select your archetype..."
             disabled={isSubmitting}
             required
-            allowCustom={true}
           />
         </div>
 
@@ -164,7 +163,6 @@ export function EditMatchupRecordModal({
             placeholder="Select opponent archetype..."
             disabled={isSubmitting}
             required
-            allowCustom={true}
           />
         </div>
 
