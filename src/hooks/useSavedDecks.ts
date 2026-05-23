@@ -1,7 +1,7 @@
 "use client";
 
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { api } from "../../convex/_generated/api";
 import {
   deleteSavedDeck as lsDelete,
@@ -23,7 +23,11 @@ export function useSavedDecks() {
   const convexUpdate = useMutation(api.savedDecks.update);
   const convexRemove = useMutation(api.savedDecks.remove);
 
-  const [localDecksFallback] = useState<SavedDeck[]>(() => lsGet());
+  const [localDecksFallback, setLocalDecksFallback] = useState<SavedDeck[]>([]);
+
+  useEffect(() => {
+    setLocalDecksFallback(lsGet());
+  }, []);
 
   const decks: SavedDeck[] =
     // For authenticated users: prefer Convex data, fall back to localStorage while loading
@@ -32,7 +36,8 @@ export function useSavedDecks() {
           id: d.clientId,
           label: d.label,
           deckList: d.deckList,
-          archetype: d.archetype,
+          primaryPokemon: d.primaryPokemon,
+          secondaryPokemon: d.secondaryPokemon,
           createdAt: d.createdAt,
           updatedAt: d.updatedAt
         }))
@@ -40,16 +45,22 @@ export function useSavedDecks() {
         localDecksFallback;
 
   const saveDeck = useCallback(
-    async (label: string, deckList: string, archetype?: string[]) => {
+    async (
+      label: string,
+      deckList: string,
+      primaryPokemon?: string,
+      secondaryPokemon?: string
+    ) => {
       // Always write to localStorage
-      const deck = lsSave(label, deckList, archetype);
+      const deck = lsSave(label, deckList, primaryPokemon, secondaryPokemon);
 
       if (isAuthenticated) {
         await convexUpsert({
           clientId: deck.id,
           label: deck.label,
           deckList: deck.deckList,
-          archetype: deck.archetype,
+          primaryPokemon: deck.primaryPokemon,
+          secondaryPokemon: deck.secondaryPokemon,
           createdAt: deck.createdAt,
           updatedAt: deck.updatedAt
         });
@@ -65,9 +76,16 @@ export function useSavedDecks() {
       id: string,
       label: string,
       deckList: string,
-      archetype?: string[]
+      primaryPokemon?: string,
+      secondaryPokemon?: string
     ) => {
-      const updated = lsUpdate(id, label, deckList, archetype);
+      const updated = lsUpdate(
+        id,
+        label,
+        deckList,
+        primaryPokemon,
+        secondaryPokemon
+      );
       if (!updated) return null;
 
       if (isAuthenticated) {
@@ -75,7 +93,8 @@ export function useSavedDecks() {
           clientId: id,
           label,
           deckList,
-          archetype,
+          primaryPokemon,
+          secondaryPokemon,
           updatedAt: updated.updatedAt
         });
       }

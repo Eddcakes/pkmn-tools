@@ -3,6 +3,8 @@ import { useState } from "react";
 import { Button } from "../components/Button";
 import { Modal } from "../components/Modal";
 import { ModalFooter } from "../components/ModalFooter";
+import { PkmnSelector } from "../components/PkmnSelector";
+import { resolvePokemonSlots } from "../utils/archetypePokemon";
 import { type SavedDeck, updateSavedDeck } from "../utils/savedDecks";
 
 interface EditDeckModalProps {
@@ -14,7 +16,8 @@ interface EditDeckModalProps {
     id: string,
     label: string,
     deckList: string,
-    archetype?: string[]
+    primaryPokemon?: string,
+    secondaryPokemon?: string
   ) => Promise<unknown>;
 }
 
@@ -25,13 +28,38 @@ export function EditDeckModal({
   deck,
   onUpdateDeck
 }: EditDeckModalProps) {
+  const initialArchetypeLabel =
+    deck?.primaryPokemon && deck?.secondaryPokemon
+      ? `${deck.primaryPokemon} + ${deck.secondaryPokemon}`
+      : deck?.primaryPokemon ?? "";
+  const initialSlots = resolvePokemonSlots(
+    initialArchetypeLabel,
+    deck?.primaryPokemon,
+    deck?.secondaryPokemon
+  );
   const [label, setLabel] = useState(() => deck?.label ?? "");
-  const [archetype, setArchetype] = useState(() =>
-    deck?.archetype ? deck.archetype.map((tag) => `#${tag}`).join(" ") : ""
+  const [primaryPokemon, setPrimaryPokemon] = useState(
+    () => initialSlots.primaryPokemon ?? ""
+  );
+  const [secondaryPokemon, setSecondaryPokemon] = useState(
+    () => initialSlots.secondaryPokemon ?? ""
   );
   const [deckList, setDeckList] = useState(() => deck?.deckList ?? "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  const handleDeckPokemonChange = (value: string, name?: string) => {
+    switch (name) {
+      case "editDeckPrimaryPokemon":
+        setPrimaryPokemon(value);
+        break;
+      case "editDeckSecondaryPokemon":
+        setSecondaryPokemon(value);
+        break;
+      default:
+        break;
+    }
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -47,19 +75,23 @@ export function EditDeckModal({
       return;
     }
 
+    if (!primaryPokemon.trim()) {
+      setError("Please select a deck primary Pokemon");
+      return;
+    }
+
     setIsSubmitting(true);
     setError("");
 
     try {
-      // for now havent created a custom tag selector so seperate tags with a # in a string
-      const archetypeList = archetype.trim().split("#").filter(Boolean);
       let updatedDeck: SavedDeck | boolean | null;
       if (onUpdateDeck) {
         await onUpdateDeck(
           deck.id,
           label.trim(),
           deckList.trim(),
-          archetypeList
+          primaryPokemon.trim(),
+          secondaryPokemon.trim() || undefined
         );
         updatedDeck = true;
       } else {
@@ -67,7 +99,8 @@ export function EditDeckModal({
           deck.id,
           label.trim(),
           deckList.trim(),
-          archetypeList
+          primaryPokemon.trim(),
+          secondaryPokemon.trim() || undefined
         );
       }
       if (updatedDeck) {
@@ -123,21 +156,30 @@ export function EditDeckModal({
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
           />
         </div>
-        <div>
-          <label
-            htmlFor="edit-deck-archetype"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
+        <div className="grid gap-2">
+          <p className="block text-sm font-medium text-gray-700">
             Deck Archetype
-          </label>
-          <input
-            id="edit-deck-archetype"
-            type="text"
-            value={archetype}
-            onChange={(e) => setArchetype(e.target.value)}
-            placeholder="Seperate #, e.g. '#gholdengo #joltik box'"
+          </p>
+          <PkmnSelector
+            id="edit-deck-primary-pokemon"
+            name="editDeckPrimaryPokemon"
+            value={primaryPokemon}
+            onChange={handleDeckPokemonChange}
+            label="Primary Pokemon"
+            hideLabel
+            placeholder="Choose primary Pokemon..."
             disabled={isSubmitting}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+            required
+          />
+          <PkmnSelector
+            id="edit-deck-secondary-pokemon"
+            name="editDeckSecondaryPokemon"
+            value={secondaryPokemon}
+            onChange={handleDeckPokemonChange}
+            label="Secondary Pokemon (Optional)"
+            hideLabel
+            placeholder="Choose secondary Pokemon..."
+            disabled={isSubmitting}
           />
         </div>
         <div>

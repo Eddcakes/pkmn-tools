@@ -9,7 +9,8 @@ export default defineSchema({
     userId: v.string(),
     label: v.string(),
     deckList: v.string(),
-    archetype: v.optional(v.array(v.string())),
+    primaryPokemon: v.optional(v.string()),
+    secondaryPokemon: v.optional(v.string()),
     createdAt: v.string(),
     updatedAt: v.string(),
     // client-side id so we can match/merge with localStorage records

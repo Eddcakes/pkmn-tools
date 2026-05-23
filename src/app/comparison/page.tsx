@@ -186,8 +186,10 @@ export default function ComparisonPage() {
 
   const handleLoadDeck = (savedDeck: SavedDeck) => {
     if (activeDeckId) {
-      const taggedArchetype = savedDeck.archetype
-        ? savedDeck.archetype.map((tag) => `#${tag}`).join(" ")
+      const taggedArchetype = savedDeck.primaryPokemon
+        ? savedDeck.secondaryPokemon
+          ? `#${savedDeck.primaryPokemon}#${savedDeck.secondaryPokemon}`
+          : `#${savedDeck.primaryPokemon}`
         : "";
       setDecks(
         decks.map((d) =>

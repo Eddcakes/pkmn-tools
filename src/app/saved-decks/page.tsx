@@ -134,11 +134,17 @@ export default function SavedDecksPage() {
                   <h2 className="text-xl font-semibold text-gray-900 mb-2">
                     {deck.label}
                   </h2>
-                  {deck.archetype && (
+                  {deck.primaryPokemon && (
                     <div className="gap-2 flex flex-wrap">
-                      {deck.archetype.map((tag) => (
-                        <DeckPokemonBadge key={tag} label={tag} />
-                      ))}
+                      <DeckPokemonBadge
+                        label={
+                          deck.secondaryPokemon
+                            ? `${deck.primaryPokemon} + ${deck.secondaryPokemon}`
+                            : deck.primaryPokemon
+                        }
+                        primaryPokemon={deck.primaryPokemon}
+                        secondaryPokemon={deck.secondaryPokemon}
+                      />
                     </div>
                   )}
                   <div className="text-sm text-gray-500 space-y-1">

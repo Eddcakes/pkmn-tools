@@ -1,8 +1,11 @@
+import { resolvePokemonSlots } from "./archetypePokemon";
+
 export interface SavedDeck {
   id: string;
   label: string;
   deckList: string;
-  archetype?: string[];
+  primaryPokemon?: string;
+  secondaryPokemon?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -27,20 +30,36 @@ function normalizeSavedDeck(rawDeck: unknown): SavedDeck | null {
 
   const updatedAt =
     typeof deck.updatedAt === "string" ? deck.updatedAt : deck.createdAt;
+
+  const directPrimaryPokemon =
+    typeof deck.primaryPokemon === "string" ? deck.primaryPokemon : undefined;
+  const directSecondaryPokemon =
+    typeof deck.secondaryPokemon === "string"
+      ? deck.secondaryPokemon
+      : undefined;
+
   const rawArchetype = Array.isArray(deck.archetype)
     ? deck.archetype
     : Array.isArray(deck.archetypes)
       ? deck.archetypes
       : undefined;
-  const archetype = rawArchetype?.filter(
+  const firstArchetype = rawArchetype?.find(
     (value): value is string => typeof value === "string"
   );
+  const fallbackSlots = firstArchetype
+    ? resolvePokemonSlots(firstArchetype)
+    : undefined;
+
+  const primaryPokemon = directPrimaryPokemon ?? fallbackSlots?.primaryPokemon;
+  const secondaryPokemon =
+    directSecondaryPokemon ?? fallbackSlots?.secondaryPokemon;
 
   return {
     id: deck.id,
     label: deck.label,
     deckList: deck.deckList,
-    ...(archetype && archetype.length > 0 ? { archetype } : {}),
+    ...(primaryPokemon ? { primaryPokemon } : {}),
+    ...(secondaryPokemon ? { secondaryPokemon } : {}),
     createdAt: deck.createdAt,
     updatedAt
   };
@@ -94,13 +113,15 @@ export function replaceSavedDecks(decks: SavedDeck[]): void {
 export function saveDeck(
   label: string,
   deckList: string,
-  archetype?: string[]
+  primaryPokemon?: string,
+  secondaryPokemon?: string
 ): SavedDeck {
   const deck: SavedDeck = {
     id: generateId(),
     label,
     deckList,
-    ...(archetype && archetype.length > 0 && { archetype }),
+    ...(primaryPokemon ? { primaryPokemon } : {}),
+    ...(secondaryPokemon ? { secondaryPokemon } : {}),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
@@ -122,7 +143,8 @@ export function updateSavedDeck(
   id: string,
   label: string,
   deckList: string,
-  archetype?: string[]
+  primaryPokemon?: string,
+  secondaryPokemon?: string
 ): SavedDeck | null {
   const decks = getSavedDecks();
   const deckIndex = decks.findIndex((deck) => deck.id === id);
@@ -133,7 +155,10 @@ export function updateSavedDeck(
     ...decks[deckIndex],
     label,
     deckList,
-    ...(archetype !== undefined && { archetype }),
+    ...(primaryPokemon ? { primaryPokemon } : {}),
+    ...(secondaryPokemon ? { secondaryPokemon } : {}),
+    ...(!primaryPokemon ? { primaryPokemon: undefined } : {}),
+    ...(!secondaryPokemon ? { secondaryPokemon: undefined } : {}),
     updatedAt: new Date().toISOString()
   };
 

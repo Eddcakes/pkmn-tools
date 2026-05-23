@@ -9,7 +9,8 @@ export const syncOnLogin = mutation({
         id: v.string(),
         label: v.string(),
         deckList: v.string(),
-        archetype: v.optional(v.array(v.string())),
+        primaryPokemon: v.optional(v.string()),
+        secondaryPokemon: v.optional(v.string()),
         createdAt: v.string(),
         updatedAt: v.string()
       })
@@ -92,7 +93,8 @@ export const syncOnLogin = mutation({
         await ctx.db.patch(existing._id, {
           label: deckArg.label,
           deckList: deckArg.deckList,
-          archetype: deckArg.archetype,
+          primaryPokemon: deckArg.primaryPokemon,
+          secondaryPokemon: deckArg.secondaryPokemon,
           updatedAt: deckArg.updatedAt
         });
         deckIds.push(existing._id);
@@ -102,7 +104,8 @@ export const syncOnLogin = mutation({
           clientId: deckArg.id,
           label: deckArg.label,
           deckList: deckArg.deckList,
-          archetype: deckArg.archetype,
+          primaryPokemon: deckArg.primaryPokemon,
+          secondaryPokemon: deckArg.secondaryPokemon,
           createdAt: deckArg.createdAt,
           updatedAt: deckArg.updatedAt
         });
@@ -254,7 +257,8 @@ export const syncOnLogin = mutation({
         id: deck.clientId,
         label: deck.label,
         deckList: deck.deckList,
-        archetype: deck.archetype,
+        primaryPokemon: deck.primaryPokemon,
+        secondaryPokemon: deck.secondaryPokemon,
         createdAt: deck.createdAt,
         updatedAt: deck.updatedAt
       })),

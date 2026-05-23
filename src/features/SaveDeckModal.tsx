@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { DeckPokemonBadge } from "@/components/DeckPokemonBadge";
+import { resolvePokemonSlots } from "@/utils/archetypePokemon";
 import { Button } from "../components/Button";
 import { Modal } from "../components/Modal";
 import { ModalFooter } from "../components/ModalFooter";
@@ -44,8 +45,15 @@ export function SaveDeckModal({
       const archetypeList = archetype
         ? archetype.trim().split("#").filter(Boolean)
         : [];
+      const archetypeLabel = archetypeList.join(" + ");
+      const slots = resolvePokemonSlots(archetypeLabel);
 
-      saveDeck(label.trim(), deckList, archetypeList);
+      saveDeck(
+        label.trim(),
+        deckList,
+        slots.primaryPokemon,
+        slots.secondaryPokemon
+      );
       onSaved?.();
       onClose();
     } catch (err) {
