@@ -465,36 +465,28 @@ export default function MatchupRecordsPage() {
               </div>
 
               <div>
-                <label
-                  htmlFor="format"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Format (Optional)
-                </label>
                 <Select
                   id="format"
+                  label="Format (Optional)"
                   value={selectedFormatValue}
                   onChange={setFormatOverrideValue}
                   options={formatOptions}
                   placeholder="Select format..."
                   disabled={saving}
+                  description="The default format can be set in settings."
                 />
               </div>
 
               <div>
-                <label
-                  htmlFor="latest-set"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Latest Set
-                </label>
                 <Select
                   id="latest-set"
+                  label="Latest Set"
                   value={selectedLatestSetValue}
                   onChange={setLatestSetOverrideValue}
                   options={latestSetOptions}
                   placeholder="Select latest set..."
                   disabled={saving}
+                  description="The default latest set can be set in settings."
                 />
               </div>
 
@@ -564,14 +556,9 @@ export default function MatchupRecordsPage() {
             {showFilters && records.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 pb-4 border-b border-gray-200">
                 <div>
-                  <label
-                    htmlFor="filter-user-archetype"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Filter Your Deck
-                  </label>
                   <Select
                     id="filter-user-archetype"
+                    label="Filter Your Deck"
                     value={userArchetypeFilter}
                     onChange={setUserArchetypeFilter}
                     groups={archetypeGroups}
@@ -580,14 +567,9 @@ export default function MatchupRecordsPage() {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="filter-opponent-archetype"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Filter Opponent Deck
-                  </label>
                   <Select
                     id="filter-opponent-archetype"
+                    label="Filter Opponent Deck"
                     value={opponentArchetypeFilter}
                     onChange={setOpponentArchetypeFilter}
                     groups={archetypeGroups}
@@ -596,14 +578,9 @@ export default function MatchupRecordsPage() {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="filter-format"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Filter Format
-                  </label>
                   <Select
                     id="filter-format"
+                    label="Filter Format"
                     value={formatFilter}
                     onChange={setFormatFilter}
                     options={formatOptions}
@@ -612,14 +589,9 @@ export default function MatchupRecordsPage() {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="filter-latest-set"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Filter Latest Set
-                  </label>
                   <Select
                     id="filter-latest-set"
+                    label="Filter Latest Set"
                     value={latestSetFilter}
                     onChange={setLatestSetFilter}
                     options={latestSetOptions}

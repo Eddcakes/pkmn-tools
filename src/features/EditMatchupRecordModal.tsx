@@ -131,14 +131,9 @@ export function EditMatchupRecordModal({
         )}
 
         <div>
-          <label
-            htmlFor="edit-user-archetype"
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
-            Your Deck Archetype
-          </label>
           <Select
             id="edit-user-archetype"
+            label="Your Deck Archetype"
             value={userArchetype}
             onChange={setUserArchetype}
             groups={archetypeGroups}
@@ -149,14 +144,9 @@ export function EditMatchupRecordModal({
         </div>
 
         <div>
-          <label
-            htmlFor="edit-opponent-archetype"
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
-            Opponent Archetype
-          </label>
           <Select
             id="edit-opponent-archetype"
+            label="Opponent Archetype"
             value={opponentArchetype}
             onChange={setOpponentArchetype}
             groups={archetypeGroups}
@@ -167,14 +157,9 @@ export function EditMatchupRecordModal({
         </div>
 
         <div>
-          <label
-            htmlFor="edit-result"
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
-            Result
-          </label>
           <Select
             id="edit-result"
+            label="Result"
             value={result}
             onChange={(value) =>
               setResult(value as "win" | "loss" | "tie" | "")
@@ -187,14 +172,9 @@ export function EditMatchupRecordModal({
         </div>
 
         <div>
-          <label
-            htmlFor="edit-format"
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
-            Format (Optional)
-          </label>
           <Select
             id="edit-format"
+            label="Format (Optional)"
             value={formatValue}
             onChange={setFormatValue}
             options={formatOptions.map((formatOption) => ({
@@ -207,14 +187,9 @@ export function EditMatchupRecordModal({
         </div>
 
         <div>
-          <label
-            htmlFor="edit-latest-set"
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
-            Latest Set
-          </label>
           <Select
             id="edit-latest-set"
+            label="Latest Set"
             value={latestSetValue}
             onChange={setLatestSetValue}
             options={latestSetOptions.map((setOption) => ({

@@ -87,17 +87,10 @@ export function MatchupSettingsModal({
 
         {/* Format Default */}
         <div>
-          <label
-            htmlFor="default-format"
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
-            Default Format For New Records
-          </label>
-          <p className="text-xs text-gray-500 mb-3">
-            Optional. Leave blank if you do not want a default.
-          </p>
           <Select
             id="default-format"
+            label="Default Format For New Records"
+            description="Optional. Leave blank if you do not want a default."
             value={settings.defaultFormat ?? ""}
             onChange={(value) =>
               setSettings({
@@ -116,17 +109,10 @@ export function MatchupSettingsModal({
 
         {/* Latest Set Default */}
         <div>
-          <label
-            htmlFor="default-latest-set"
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
-            Default Latest Set For New Records
-          </label>
-          <p className="text-xs text-gray-500 mb-3">
-            Optional. Leave blank if you do not want a default.
-          </p>
           <Select
             id="default-latest-set"
+            label="Default Latest Set For New Records"
+            description="Optional. Leave blank if you do not want a default."
             value={settings.defaultLatestSet ?? ""}
             onChange={(value) =>
               setSettings({
