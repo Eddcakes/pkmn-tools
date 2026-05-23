@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { Alert } from "@/components/Alert";
-import { Tag } from "@/components/Tag";
-import { archetypeToTagType } from "@/utils/archetype";
+import { DeckPokemonBadge } from "@/components/DeckPokemonBadge";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
 import { EditDeckModal } from "../../features/EditDeckModal";
@@ -135,15 +134,17 @@ export default function SavedDecksPage() {
                   <h2 className="text-xl font-semibold text-gray-900 mb-2">
                     {deck.label}
                   </h2>
-                  {deck.archetype && (
+                  {deck.primaryPokemon && (
                     <div className="gap-2 flex flex-wrap">
-                      {deck.archetype.map((tag) => (
-                        <Tag
-                          key={tag}
-                          label={tag}
-                          type={archetypeToTagType(tag)}
-                        />
-                      ))}
+                      <DeckPokemonBadge
+                        label={
+                          deck.secondaryPokemon
+                            ? `${deck.primaryPokemon} + ${deck.secondaryPokemon}`
+                            : deck.primaryPokemon
+                        }
+                        primaryPokemon={deck.primaryPokemon}
+                        secondaryPokemon={deck.secondaryPokemon}
+                      />
                     </div>
                   )}
                   <div className="text-sm text-gray-500 space-y-1">

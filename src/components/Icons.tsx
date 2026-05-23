@@ -85,4 +85,18 @@ const MenuIcon = ({ className }: IconProps) => {
   );
 };
 
-export { ChevronIcon, CogIcon, CrossIcon, MenuIcon };
+const CheckIcon = ({ className }: IconProps) => {
+  return (
+    <svg
+      className={`w-4 h-4 ${className}`}
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+    >
+      <title>Check</title>
+      <path d="m2.5 8.5 4 4 7-9" />
+    </svg>
+  );
+};
+
+export { CheckIcon, ChevronIcon, CogIcon, CrossIcon, MenuIcon };

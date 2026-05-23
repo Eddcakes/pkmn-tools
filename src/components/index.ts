@@ -1,5 +1,6 @@
 export { Alert } from "./Alert";
 export { Button } from "./Button";
+export { ButtonGroup } from "./ButtonGroup";
 export { Card } from "./Card";
 export { Link } from "./Link";
 export { Modal } from "./Modal";

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "../components/Button";
 import { Modal } from "../components/Modal";
 import { ModalFooter } from "../components/ModalFooter";
+import { PkmnSelector } from "../components/PkmnSelector";
 import { saveDeck } from "../utils/savedDecks";
 
 interface ImportDeckModalProps {
@@ -11,7 +12,8 @@ interface ImportDeckModalProps {
   onSaveDeck?: (
     label: string,
     deckList: string,
-    archetype?: string[]
+    primaryPokemon?: string,
+    secondaryPokemon?: string
   ) => Promise<unknown>;
 }
 
@@ -23,13 +25,32 @@ export function ImportDeckModal({
 }: ImportDeckModalProps) {
   const [label, setLabel] = useState("");
   const [deckList, setDeckList] = useState("");
-  const [archetype, setArchetype] = useState("");
+  const [primaryPokemon, setPrimaryPokemon] = useState("");
+  const [secondaryPokemon, setSecondaryPokemon] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  const handleDeckPokemonChange = (value: string, name?: string) => {
+    switch (name) {
+      case "importPrimaryPokemon":
+        setPrimaryPokemon(value);
+        break;
+      case "importSecondaryPokemon":
+        setSecondaryPokemon(value);
+        break;
+      default:
+        break;
+    }
+  };
 
   const handleImport = async () => {
     if (!label.trim()) {
       setError("Please enter a label for the deck");
+      return;
+    }
+
+    if (!primaryPokemon.trim()) {
+      setError("Please select a deck primary Pokemon");
       return;
     }
 
@@ -43,9 +64,19 @@ export function ImportDeckModal({
 
     try {
       if (onSaveDeck) {
-        await onSaveDeck(label.trim(), deckList.trim());
+        await onSaveDeck(
+          label.trim(),
+          deckList.trim(),
+          primaryPokemon.trim(),
+          secondaryPokemon.trim() || undefined
+        );
       } else {
-        saveDeck(label.trim(), deckList.trim());
+        saveDeck(
+          label.trim(),
+          deckList.trim(),
+          primaryPokemon.trim(),
+          secondaryPokemon.trim() || undefined
+        );
       }
       onImported?.();
       onClose();
@@ -76,20 +107,30 @@ export function ImportDeckModal({
             disabled={saving}
           />
         </div>
-        <div>
-          <label
-            htmlFor="edit-deck-archetype"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
+        <div className="grid gap-2">
+          <p className="block text-sm font-medium text-gray-700">
             Deck Archetype
-          </label>
-          <input
-            id="edit-deck-archetype"
-            type="text"
-            value={archetype}
-            onChange={(e) => setArchetype(e.target.value)}
-            placeholder="Seperate #, e.g. '#gholdengo #joltik box'"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+          </p>
+          <PkmnSelector
+            id="import-primary-pokemon"
+            name="importPrimaryPokemon"
+            value={primaryPokemon}
+            onChange={handleDeckPokemonChange}
+            label="Primary Pokemon"
+            hideLabel
+            placeholder="Choose primary Pokemon..."
+            disabled={saving}
+            required
+          />
+          <PkmnSelector
+            id="import-secondary-pokemon"
+            name="importSecondaryPokemon"
+            value={secondaryPokemon}
+            onChange={handleDeckPokemonChange}
+            label="Secondary Pokemon (Optional)"
+            hideLabel
+            placeholder="Choose secondary Pokemon..."
+            disabled={saving}
           />
         </div>
         <div>

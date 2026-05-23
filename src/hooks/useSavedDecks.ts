@@ -1,15 +1,38 @@
 "use client";
 
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
-import { useCallback, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import { api } from "../../convex/_generated/api";
 import {
   deleteSavedDeck as lsDelete,
   getSavedDecks as lsGet,
   saveDeck as lsSave,
   updateSavedDeck as lsUpdate,
-  type SavedDeck
+  type SavedDeck,
+  subscribeSavedDecks
 } from "../utils/savedDecks";
+
+const EMPTY_SAVED_DECKS: SavedDeck[] = [];
+
+let cachedLocalDecksSnapshot: SavedDeck[] = EMPTY_SAVED_DECKS;
+let cachedLocalDecksSerialized = "";
+
+function getLocalDecksSnapshot(): SavedDeck[] {
+  const nextDecks = lsGet();
+  const nextSerialized = JSON.stringify(nextDecks);
+
+  if (nextSerialized === cachedLocalDecksSerialized) {
+    return cachedLocalDecksSnapshot;
+  }
+
+  cachedLocalDecksSerialized = nextSerialized;
+  cachedLocalDecksSnapshot = nextDecks;
+  return nextDecks;
+}
+
+function getLocalDecksServerSnapshot(): SavedDeck[] {
+  return EMPTY_SAVED_DECKS;
+}
 
 export function useSavedDecks() {
   const { isAuthenticated } = useConvexAuth();
@@ -23,7 +46,11 @@ export function useSavedDecks() {
   const convexUpdate = useMutation(api.savedDecks.update);
   const convexRemove = useMutation(api.savedDecks.remove);
 
-  const [localDecksFallback] = useState<SavedDeck[]>(() => lsGet());
+  const localDecksFallback = useSyncExternalStore<SavedDeck[]>(
+    subscribeSavedDecks,
+    getLocalDecksSnapshot,
+    getLocalDecksServerSnapshot
+  );
 
   const decks: SavedDeck[] =
     // For authenticated users: prefer Convex data, fall back to localStorage while loading
@@ -32,7 +59,8 @@ export function useSavedDecks() {
           id: d.clientId,
           label: d.label,
           deckList: d.deckList,
-          archetype: d.archetype,
+          primaryPokemon: d.primaryPokemon,
+          secondaryPokemon: d.secondaryPokemon,
           createdAt: d.createdAt,
           updatedAt: d.updatedAt
         }))
@@ -40,16 +68,22 @@ export function useSavedDecks() {
         localDecksFallback;
 
   const saveDeck = useCallback(
-    async (label: string, deckList: string, archetype?: string[]) => {
+    async (
+      label: string,
+      deckList: string,
+      primaryPokemon?: string,
+      secondaryPokemon?: string
+    ) => {
       // Always write to localStorage
-      const deck = lsSave(label, deckList, archetype);
+      const deck = lsSave(label, deckList, primaryPokemon, secondaryPokemon);
 
       if (isAuthenticated) {
         await convexUpsert({
           clientId: deck.id,
           label: deck.label,
           deckList: deck.deckList,
-          archetype: deck.archetype,
+          primaryPokemon: deck.primaryPokemon,
+          secondaryPokemon: deck.secondaryPokemon,
           createdAt: deck.createdAt,
           updatedAt: deck.updatedAt
         });
@@ -65,17 +99,38 @@ export function useSavedDecks() {
       id: string,
       label: string,
       deckList: string,
-      archetype?: string[]
+      primaryPokemon?: string | null,
+      secondaryPokemon?: string | null
     ) => {
-      const updated = lsUpdate(id, label, deckList, archetype);
+      const updated = lsUpdate(
+        id,
+        label,
+        deckList,
+        primaryPokemon,
+        secondaryPokemon
+      );
       if (!updated) return null;
 
       if (isAuthenticated) {
+        const hasPrimaryPokemonUpdate = primaryPokemon !== undefined;
+        const hasSecondaryPokemonUpdate = secondaryPokemon !== undefined;
+        const normalizedPrimaryPokemon = primaryPokemon?.trim()
+          ? primaryPokemon.trim()
+          : undefined;
+        const normalizedSecondaryPokemon = secondaryPokemon?.trim()
+          ? secondaryPokemon.trim()
+          : undefined;
+
         await convexUpdate({
           clientId: id,
           label,
           deckList,
-          archetype,
+          ...(hasPrimaryPokemonUpdate
+            ? { primaryPokemon: normalizedPrimaryPokemon }
+            : {}),
+          ...(hasSecondaryPokemonUpdate
+            ? { secondaryPokemon: normalizedSecondaryPokemon }
+            : {}),
           updatedAt: updated.updatedAt
         });
       }

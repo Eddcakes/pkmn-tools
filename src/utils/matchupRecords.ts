@@ -1,31 +1,83 @@
+export type MatchupResult = "win" | "loss" | "tie";
+
+import { resolvePokemonSlots } from "./archetypePokemon";
+
+export const MATCHUP_RESULT_OPTIONS: Array<{
+  value: MatchupResult;
+  label: string;
+}> = [
+  { value: "win", label: "Win" },
+  { value: "loss", label: "Loss" },
+  { value: "tie", label: "Tie" }
+];
+
 export interface MatchupRecord {
   id: string;
   userArchetype: string;
   opponentArchetype: string;
+  userPrimaryPokemon?: string;
+  userSecondaryPokemon?: string;
+  opponentPrimaryPokemon?: string;
+  opponentSecondaryPokemon?: string;
   format?: string;
   latestSet?: string;
-  result: "win" | "loss" | "tie";
+  result: MatchupResult;
   notes?: string;
   createdAt: string;
   updatedAt?: string;
 }
 
+function ensurePokemonSlotFields(record: MatchupRecord): MatchupRecord {
+  const userSlots = resolvePokemonSlots(
+    record.userArchetype,
+    record.userPrimaryPokemon,
+    record.userSecondaryPokemon
+  );
+  const opponentSlots = resolvePokemonSlots(
+    record.opponentArchetype,
+    record.opponentPrimaryPokemon,
+    record.opponentSecondaryPokemon
+  );
+
+  return {
+    ...record,
+    userPrimaryPokemon: userSlots.primaryPokemon,
+    userSecondaryPokemon: userSlots.secondaryPokemon,
+    opponentPrimaryPokemon: opponentSlots.primaryPokemon,
+    opponentSecondaryPokemon: opponentSlots.secondaryPokemon
+  };
+}
+
 const STORAGE_KEY = "pokemon-matchup-records";
 
-function migrateRecordsToIncludeUpdatedAt(
-  records: MatchupRecord[]
-): MatchupRecord[] {
+function migrateStoredRecords(records: MatchupRecord[]): MatchupRecord[] {
   let needsMigration = false;
 
   const migratedRecords = records.map((record) => {
+    const withUpdatedAt = !record.updatedAt
+      ? {
+          ...record,
+          updatedAt: record.createdAt
+        }
+      : record;
+
     if (!record.updatedAt) {
       needsMigration = true;
-      return {
-        ...record,
-        updatedAt: record.createdAt
-      };
     }
-    return record;
+
+    const normalized = ensurePokemonSlotFields(withUpdatedAt);
+    if (
+      normalized.userPrimaryPokemon !== withUpdatedAt.userPrimaryPokemon ||
+      normalized.userSecondaryPokemon !== withUpdatedAt.userSecondaryPokemon ||
+      normalized.opponentPrimaryPokemon !==
+        withUpdatedAt.opponentPrimaryPokemon ||
+      normalized.opponentSecondaryPokemon !==
+        withUpdatedAt.opponentSecondaryPokemon
+    ) {
+      needsMigration = true;
+    }
+
+    return normalized;
   });
 
   if (needsMigration) {
@@ -45,7 +97,7 @@ export function getMatchupRecords(): MatchupRecord[] {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     const records = stored ? JSON.parse(stored) : [];
-    return migrateRecordsToIncludeUpdatedAt(records);
+    return migrateStoredRecords(records);
   } catch (error) {
     console.error("Error loading matchup records:", error);
     return [];
@@ -54,16 +106,14 @@ export function getMatchupRecords(): MatchupRecord[] {
 
 export function replaceMatchupRecords(records: MatchupRecord[]): void {
   try {
+    const recordsWithUpdatedAt = records.map((record) => ({
+      ...record,
+      updatedAt: record.updatedAt ?? record.createdAt
+    }));
+
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify(
-        migrateRecordsToIncludeUpdatedAt(
-          records.map((record) => ({
-            ...record,
-            updatedAt: record.updatedAt ?? record.createdAt
-          }))
-        )
-      )
+      JSON.stringify(migrateStoredRecords(recordsWithUpdatedAt))
     );
   } catch (error) {
     console.error("Error replacing matchup records:", error);
@@ -74,16 +124,35 @@ export function replaceMatchupRecords(records: MatchupRecord[]): void {
 export function saveMatchupRecord(
   userArchetype: string,
   opponentArchetype: string,
-  result: "win" | "loss" | "tie",
+  result: MatchupResult,
+  userPrimaryPokemon?: string,
+  userSecondaryPokemon?: string,
+  opponentPrimaryPokemon?: string,
+  opponentSecondaryPokemon?: string,
   latestSet?: string,
   notes?: string,
   format?: string
 ): MatchupRecord {
   const now = new Date().toISOString();
+  const userSlots = resolvePokemonSlots(
+    userArchetype,
+    userPrimaryPokemon,
+    userSecondaryPokemon
+  );
+  const opponentSlots = resolvePokemonSlots(
+    opponentArchetype,
+    opponentPrimaryPokemon,
+    opponentSecondaryPokemon
+  );
+
   const record: MatchupRecord = {
     id: generateId(),
     userArchetype,
     opponentArchetype,
+    userPrimaryPokemon: userSlots.primaryPokemon,
+    userSecondaryPokemon: userSlots.secondaryPokemon,
+    opponentPrimaryPokemon: opponentSlots.primaryPokemon,
+    opponentSecondaryPokemon: opponentSlots.secondaryPokemon,
     format,
     latestSet,
     result,
@@ -127,9 +196,13 @@ export function updateMatchupRecord(
   updates: {
     userArchetype?: string;
     opponentArchetype?: string;
+    userPrimaryPokemon?: string;
+    userSecondaryPokemon?: string;
+    opponentPrimaryPokemon?: string;
+    opponentSecondaryPokemon?: string;
     format?: string;
     latestSet?: string;
-    result?: "win" | "loss" | "tie";
+    result?: MatchupResult;
     notes?: string;
   }
 ): MatchupRecord | null {
@@ -149,11 +222,13 @@ export function updateMatchupRecord(
     createdAt: existingRecord.createdAt
   };
 
-  records[recordIndex] = updatedRecord;
+  const normalizedRecord = ensurePokemonSlotFields(updatedRecord);
+
+  records[recordIndex] = normalizedRecord;
 
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
-    return updatedRecord;
+    return normalizedRecord;
   } catch (error) {
     console.error("Error updating matchup record:", error);
     throw new Error("Failed to update matchup record in local storage");

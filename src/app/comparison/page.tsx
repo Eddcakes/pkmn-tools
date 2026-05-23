@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Alert, Card, Link } from "@/components";
 import { Button } from "../../components/Button";
+import { PkmnSelector } from "../../components/PkmnSelector";
 import { ComparisonTable } from "../../features/ComparisonTable";
 import { LoadDeckModal } from "../../features/LoadDeckModal";
 import { SaveDeckModal } from "../../features/SaveDeckModal";
@@ -14,7 +15,8 @@ interface DeckEntry {
   id: string;
   label: string;
   deckList: string;
-  archetype: string;
+  primaryPokemon: string;
+  secondaryPokemon: string;
 }
 
 interface ParsedCard {
@@ -144,7 +146,13 @@ function createComparisonData(decks: DeckEntry[]): ComparisonCard[] {
 
 export default function ComparisonPage() {
   const [decks, setDecks] = useState<DeckEntry[]>([
-    { id: "1", label: "Deck 1", deckList: "", archetype: "" }
+    {
+      id: "1",
+      label: "Deck 1",
+      deckList: "",
+      primaryPokemon: "",
+      secondaryPokemon: ""
+    }
   ]);
   const [comparisonData, setComparisonData] = useState<ComparisonCard[]>([]);
   const [loadModalOpen, setLoadModalOpen] = useState(false);
@@ -158,7 +166,13 @@ export default function ComparisonPage() {
       ).toString();
       setDecks([
         ...decks,
-        { id: newId, label: `Deck ${newId}`, deckList: "", archetype: "" }
+        {
+          id: newId,
+          label: `Deck ${newId}`,
+          deckList: "",
+          primaryPokemon: "",
+          secondaryPokemon: ""
+        }
       ]);
     }
   };
@@ -171,7 +185,7 @@ export default function ComparisonPage() {
 
   const updateDeck = (
     deckId: string,
-    field: "label" | "deckList" | "archetype",
+    field: "label" | "deckList" | "primaryPokemon" | "secondaryPokemon",
     value: string
   ) => {
     setDecks(
@@ -186,9 +200,6 @@ export default function ComparisonPage() {
 
   const handleLoadDeck = (savedDeck: SavedDeck) => {
     if (activeDeckId) {
-      const taggedArchetype = savedDeck.archetype
-        ? savedDeck.archetype.map((tag) => `#${tag}`).join(" ")
-        : "";
       setDecks(
         decks.map((d) =>
           d.id === activeDeckId
@@ -196,11 +207,27 @@ export default function ComparisonPage() {
                 ...d,
                 label: savedDeck.label,
                 deckList: savedDeck.deckList,
-                archetype: taggedArchetype
+                primaryPokemon: savedDeck.primaryPokemon ?? "",
+                secondaryPokemon: savedDeck.secondaryPokemon ?? ""
               }
             : d
         )
       );
+    }
+  };
+
+  const handleDeckPokemonChange = (
+    deckId: string,
+    value: string,
+    name?: string
+  ) => {
+    if (name === "primaryPokemon") {
+      updateDeck(deckId, "primaryPokemon", value);
+      return;
+    }
+
+    if (name === "secondaryPokemon") {
+      updateDeck(deckId, "secondaryPokemon", value);
     }
   };
 
@@ -258,22 +285,32 @@ export default function ComparisonPage() {
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
-                  <div>
-                    <label
-                      htmlFor="edit-deck-archetype"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
+                  <div className="grid gap-2">
+                    <p className="block text-sm font-medium text-gray-700">
                       Deck Archetype
-                    </label>
-                    <input
-                      id="edit-deck-archetype"
-                      type="text"
-                      value={deck.archetype}
-                      onChange={(e) =>
-                        updateDeck(deck.id, "archetype", e.target.value)
+                    </p>
+                    <PkmnSelector
+                      id={`deck-primary-pokemon-${deck.id}`}
+                      name="primaryPokemon"
+                      value={deck.primaryPokemon}
+                      onChange={(value, name) =>
+                        handleDeckPokemonChange(deck.id, value, name)
                       }
-                      placeholder="Seperate #, e.g. '#gholdengo #joltik box'"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+                      label="Primary Pokemon"
+                      hideLabel
+                      placeholder="Choose primary Pokemon..."
+                      required
+                    />
+                    <PkmnSelector
+                      id={`deck-secondary-pokemon-${deck.id}`}
+                      name="secondaryPokemon"
+                      value={deck.secondaryPokemon}
+                      onChange={(value, name) =>
+                        handleDeckPokemonChange(deck.id, value, name)
+                      }
+                      label="Secondary Pokemon (Optional)"
+                      hideLabel
+                      placeholder="Choose secondary Pokemon..."
                     />
                   </div>
                   <div>
@@ -338,7 +375,7 @@ Energy: 11
             ))}
 
             {decks.length < MAX_DECKS && (
-              <Card className="flex flex-col items-center justify-center min-h-[400px] bg-gray-50">
+              <Card className="flex flex-col items-center justify-center min-h-100 bg-gray-50">
                 <div className="text-center space-y-6">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-700 mb-2">
@@ -398,9 +435,14 @@ Energy: 11
             ? decks.find((d) => d.id === activeDeckId)?.label || ""
             : ""
         }
-        archetype={
+        primaryPokemon={
           activeDeckId
-            ? decks.find((d) => d.id === activeDeckId)?.archetype || ""
+            ? decks.find((d) => d.id === activeDeckId)?.primaryPokemon || ""
+            : ""
+        }
+        secondaryPokemon={
+          activeDeckId
+            ? decks.find((d) => d.id === activeDeckId)?.secondaryPokemon || ""
             : ""
         }
       />

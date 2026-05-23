@@ -9,7 +9,8 @@ export const syncOnLogin = mutation({
         id: v.string(),
         label: v.string(),
         deckList: v.string(),
-        archetype: v.optional(v.array(v.string())),
+        primaryPokemon: v.optional(v.string()),
+        secondaryPokemon: v.optional(v.string()),
         createdAt: v.string(),
         updatedAt: v.string()
       })
@@ -19,6 +20,10 @@ export const syncOnLogin = mutation({
         id: v.string(),
         userArchetype: v.string(),
         opponentArchetype: v.string(),
+        userPrimaryPokemon: v.optional(v.string()),
+        userSecondaryPokemon: v.optional(v.string()),
+        opponentPrimaryPokemon: v.optional(v.string()),
+        opponentSecondaryPokemon: v.optional(v.string()),
         format: v.optional(v.string()),
         latestSet: v.optional(v.string()),
         result: v.union(v.literal("win"), v.literal("loss"), v.literal("tie")),
@@ -28,14 +33,12 @@ export const syncOnLogin = mutation({
       })
     ),
     localSettings: v.object({
-      useRecentArchetypes: v.boolean(),
-      useFavouriteArchetypes: v.boolean(),
-      recentArchetypes: v.array(v.string()),
-      favouriteArchetypes: v.array(v.string()),
-      availableSets: v.optional(v.array(v.string())),
-      customArchetypes: v.string(),
       defaultFormat: v.optional(v.string()),
-      defaultLatestSet: v.optional(v.string())
+      defaultSet: v.optional(v.string()),
+      recentUserPrimary: v.optional(v.array(v.string())),
+      recentUserSecondary: v.optional(v.array(v.string())),
+      recentOpponentPrimary: v.optional(v.array(v.string())),
+      recentOpponentSecondary: v.optional(v.array(v.string()))
     })
   },
   handler: async (ctx, args) => {
@@ -90,7 +93,8 @@ export const syncOnLogin = mutation({
         await ctx.db.patch(existing._id, {
           label: deckArg.label,
           deckList: deckArg.deckList,
-          archetype: deckArg.archetype,
+          primaryPokemon: deckArg.primaryPokemon,
+          secondaryPokemon: deckArg.secondaryPokemon,
           updatedAt: deckArg.updatedAt
         });
         deckIds.push(existing._id);
@@ -100,7 +104,8 @@ export const syncOnLogin = mutation({
           clientId: deckArg.id,
           label: deckArg.label,
           deckList: deckArg.deckList,
-          archetype: deckArg.archetype,
+          primaryPokemon: deckArg.primaryPokemon,
+          secondaryPokemon: deckArg.secondaryPokemon,
           createdAt: deckArg.createdAt,
           updatedAt: deckArg.updatedAt
         });
@@ -122,6 +127,10 @@ export const syncOnLogin = mutation({
         await ctx.db.patch(existing._id, {
           userArchetype: recordArg.userArchetype,
           opponentArchetype: recordArg.opponentArchetype,
+          userPrimaryPokemon: recordArg.userPrimaryPokemon,
+          userSecondaryPokemon: recordArg.userSecondaryPokemon,
+          opponentPrimaryPokemon: recordArg.opponentPrimaryPokemon,
+          opponentSecondaryPokemon: recordArg.opponentSecondaryPokemon,
           format: recordArg.format,
           latestSet: recordArg.latestSet,
           result: recordArg.result,
@@ -135,6 +144,10 @@ export const syncOnLogin = mutation({
           clientId: recordArg.id,
           userArchetype: recordArg.userArchetype,
           opponentArchetype: recordArg.opponentArchetype,
+          userPrimaryPokemon: recordArg.userPrimaryPokemon,
+          userSecondaryPokemon: recordArg.userSecondaryPokemon,
+          opponentPrimaryPokemon: recordArg.opponentPrimaryPokemon,
+          opponentSecondaryPokemon: recordArg.opponentSecondaryPokemon,
           format: recordArg.format,
           latestSet: recordArg.latestSet,
           result: recordArg.result,
@@ -149,11 +162,81 @@ export const syncOnLogin = mutation({
     // Sync settings if server has none
     let settingsSynced = false;
     if (!serverSettings) {
-      await ctx.db.insert("matchupSettings", {
+      const newSettings = {
         userId,
-        ...args.localSettings
-      });
+        ...(args.localSettings.defaultFormat !== undefined
+          ? { defaultFormat: args.localSettings.defaultFormat }
+          : {}),
+        ...(args.localSettings.defaultSet !== undefined
+          ? { defaultSet: args.localSettings.defaultSet }
+          : {}),
+        ...(args.localSettings.recentUserPrimary !== undefined
+          ? { recentUserPrimary: args.localSettings.recentUserPrimary }
+          : {}),
+        ...(args.localSettings.recentUserSecondary !== undefined
+          ? { recentUserSecondary: args.localSettings.recentUserSecondary }
+          : {}),
+        ...(args.localSettings.recentOpponentPrimary !== undefined
+          ? { recentOpponentPrimary: args.localSettings.recentOpponentPrimary }
+          : {}),
+        ...(args.localSettings.recentOpponentSecondary !== undefined
+          ? {
+              recentOpponentSecondary:
+                args.localSettings.recentOpponentSecondary
+            }
+          : {})
+      };
+      await ctx.db.insert("matchupSettings", newSettings);
       settingsSynced = true;
+    } else {
+      const cleanedSettings = {
+        userId,
+        ...((serverSettings.defaultFormat ?? args.localSettings.defaultFormat)
+          ? {
+              defaultFormat:
+                serverSettings.defaultFormat ?? args.localSettings.defaultFormat
+            }
+          : {}),
+        ...((serverSettings.defaultSet ?? args.localSettings.defaultSet)
+          ? {
+              defaultSet:
+                serverSettings.defaultSet ?? args.localSettings.defaultSet
+            }
+          : {}),
+        ...((serverSettings.recentUserPrimary ??
+        args.localSettings.recentUserPrimary)
+          ? {
+              recentUserPrimary:
+                serverSettings.recentUserPrimary ??
+                args.localSettings.recentUserPrimary
+            }
+          : {}),
+        ...((serverSettings.recentUserSecondary ??
+        args.localSettings.recentUserSecondary)
+          ? {
+              recentUserSecondary:
+                serverSettings.recentUserSecondary ??
+                args.localSettings.recentUserSecondary
+            }
+          : {}),
+        ...((serverSettings.recentOpponentPrimary ??
+        args.localSettings.recentOpponentPrimary)
+          ? {
+              recentOpponentPrimary:
+                serverSettings.recentOpponentPrimary ??
+                args.localSettings.recentOpponentPrimary
+            }
+          : {}),
+        ...((serverSettings.recentOpponentSecondary ??
+        args.localSettings.recentOpponentSecondary)
+          ? {
+              recentOpponentSecondary:
+                serverSettings.recentOpponentSecondary ??
+                args.localSettings.recentOpponentSecondary
+            }
+          : {})
+      };
+      await ctx.db.replace(serverSettings._id, cleanedSettings);
     }
 
     const finalDecks = await ctx.db
@@ -179,7 +262,8 @@ export const syncOnLogin = mutation({
         id: deck.clientId,
         label: deck.label,
         deckList: deck.deckList,
-        archetype: deck.archetype,
+        primaryPokemon: deck.primaryPokemon,
+        secondaryPokemon: deck.secondaryPokemon,
         createdAt: deck.createdAt,
         updatedAt: deck.updatedAt
       })),
@@ -187,6 +271,10 @@ export const syncOnLogin = mutation({
         id: record.clientId,
         userArchetype: record.userArchetype,
         opponentArchetype: record.opponentArchetype,
+        userPrimaryPokemon: record.userPrimaryPokemon,
+        userSecondaryPokemon: record.userSecondaryPokemon,
+        opponentPrimaryPokemon: record.opponentPrimaryPokemon,
+        opponentSecondaryPokemon: record.opponentSecondaryPokemon,
         format: record.format,
         latestSet: record.latestSet,
         result: record.result,
@@ -196,13 +284,12 @@ export const syncOnLogin = mutation({
       })),
       settings: finalSettings
         ? {
-            useRecentArchetypes: finalSettings.useRecentArchetypes,
-            useFavouriteArchetypes: finalSettings.useFavouriteArchetypes,
-            recentArchetypes: finalSettings.recentArchetypes,
-            favouriteArchetypes: finalSettings.favouriteArchetypes,
-            customArchetypes: finalSettings.customArchetypes,
             defaultFormat: finalSettings.defaultFormat,
-            defaultLatestSet: finalSettings.defaultLatestSet
+            defaultSet: finalSettings.defaultSet,
+            recentUserPrimary: finalSettings.recentUserPrimary,
+            recentUserSecondary: finalSettings.recentUserSecondary,
+            recentOpponentPrimary: finalSettings.recentOpponentPrimary,
+            recentOpponentSecondary: finalSettings.recentOpponentSecondary
           }
         : args.localSettings
     };

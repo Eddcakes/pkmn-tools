@@ -1,13 +1,119 @@
+import { type PokemonSlots, resolvePokemonSlots } from "./archetypePokemon";
+
 export interface SavedDeck {
   id: string;
   label: string;
   deckList: string;
-  archetype?: string[];
+  primaryPokemon?: string;
+  secondaryPokemon?: string;
   createdAt: string;
   updatedAt: string;
 }
 
 const STORAGE_KEY = "pokemon-saved-decks";
+const SAVED_DECKS_CHANGED_EVENT = "saved-decks-changed";
+
+function notifySavedDecksChanged(): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.dispatchEvent(new Event(SAVED_DECKS_CHANGED_EVENT));
+}
+
+export function subscribeSavedDecks(onStoreChange: () => void): () => void {
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+
+  const handleStorageChange = (event: StorageEvent) => {
+    if (event.storageArea !== window.localStorage) {
+      return;
+    }
+
+    if (event.key !== STORAGE_KEY) {
+      return;
+    }
+
+    onStoreChange();
+  };
+  const handleInTabChange = () => onStoreChange();
+
+  window.addEventListener("storage", handleStorageChange);
+  window.addEventListener(SAVED_DECKS_CHANGED_EVENT, handleInTabChange);
+
+  return () => {
+    window.removeEventListener("storage", handleStorageChange);
+    window.removeEventListener(SAVED_DECKS_CHANGED_EVENT, handleInTabChange);
+  };
+}
+
+function getLegacyArchetypeLabels(deck: Record<string, unknown>): string[] {
+  const rawArchetype = Array.isArray(deck.archetype)
+    ? deck.archetype
+    : Array.isArray(deck.archetypes)
+      ? deck.archetypes
+      : undefined;
+
+  if (!rawArchetype) {
+    return [];
+  }
+
+  return rawArchetype
+    .filter((value): value is string => typeof value === "string")
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0);
+}
+
+function resolveLegacyArchetypeSlots(
+  legacyArchetypeLabels: string[]
+): PokemonSlots | undefined {
+  if (legacyArchetypeLabels.length === 0) {
+    return undefined;
+  }
+
+  // Prefer a single composite label so mappings like "gholdengo joltik box" match.
+  const compositeLabel = legacyArchetypeLabels.join(" ");
+  const compositeSlots = resolvePokemonSlots(compositeLabel);
+
+  let primaryPokemon = compositeSlots.primaryPokemon;
+  let secondaryPokemon = compositeSlots.secondaryPokemon;
+
+  // If composite mapping is partial/missing, progressively fill from each entry.
+  if (!primaryPokemon || !secondaryPokemon) {
+    for (const label of legacyArchetypeLabels) {
+      const entrySlots = resolvePokemonSlots(label);
+
+      if (!primaryPokemon && entrySlots.primaryPokemon) {
+        primaryPokemon = entrySlots.primaryPokemon;
+      }
+
+      if (!secondaryPokemon && entrySlots.secondaryPokemon) {
+        secondaryPokemon = entrySlots.secondaryPokemon;
+      }
+
+      if (primaryPokemon && secondaryPokemon) {
+        break;
+      }
+    }
+  }
+
+  // Final safety fallback to keep first-entry behavior compatible.
+  if ((!primaryPokemon || !secondaryPokemon) && legacyArchetypeLabels[0]) {
+    const firstEntrySlots = resolvePokemonSlots(legacyArchetypeLabels[0]);
+    primaryPokemon ??= firstEntrySlots.primaryPokemon;
+    secondaryPokemon ??= firstEntrySlots.secondaryPokemon;
+  }
+
+  if (!primaryPokemon && !secondaryPokemon) {
+    return undefined;
+  }
+
+  return {
+    ...(primaryPokemon ? { primaryPokemon } : {}),
+    ...(secondaryPokemon ? { secondaryPokemon } : {})
+  };
+}
 
 function normalizeSavedDeck(rawDeck: unknown): SavedDeck | null {
   if (!rawDeck || typeof rawDeck !== "object") {
@@ -27,20 +133,27 @@ function normalizeSavedDeck(rawDeck: unknown): SavedDeck | null {
 
   const updatedAt =
     typeof deck.updatedAt === "string" ? deck.updatedAt : deck.createdAt;
-  const rawArchetype = Array.isArray(deck.archetype)
-    ? deck.archetype
-    : Array.isArray(deck.archetypes)
-      ? deck.archetypes
+
+  const directPrimaryPokemon =
+    typeof deck.primaryPokemon === "string" ? deck.primaryPokemon : undefined;
+  const directSecondaryPokemon =
+    typeof deck.secondaryPokemon === "string"
+      ? deck.secondaryPokemon
       : undefined;
-  const archetype = rawArchetype?.filter(
-    (value): value is string => typeof value === "string"
-  );
+
+  const legacyArchetypeLabels = getLegacyArchetypeLabels(deck);
+  const fallbackSlots = resolveLegacyArchetypeSlots(legacyArchetypeLabels);
+
+  const primaryPokemon = directPrimaryPokemon ?? fallbackSlots?.primaryPokemon;
+  const secondaryPokemon =
+    directSecondaryPokemon ?? fallbackSlots?.secondaryPokemon;
 
   return {
     id: deck.id,
     label: deck.label,
     deckList: deck.deckList,
-    ...(archetype && archetype.length > 0 ? { archetype } : {}),
+    ...(primaryPokemon ? { primaryPokemon } : {}),
+    ...(secondaryPokemon ? { secondaryPokemon } : {}),
     createdAt: deck.createdAt,
     updatedAt
   };
@@ -85,6 +198,7 @@ export function replaceSavedDecks(decks: SavedDeck[]): void {
       STORAGE_KEY,
       JSON.stringify(normalizeSavedDecks(decks))
     );
+    notifySavedDecksChanged();
   } catch (error) {
     console.error("Error replacing saved decks:", error);
     throw new Error("Failed to replace saved decks in local storage");
@@ -94,13 +208,15 @@ export function replaceSavedDecks(decks: SavedDeck[]): void {
 export function saveDeck(
   label: string,
   deckList: string,
-  archetype?: string[]
+  primaryPokemon?: string,
+  secondaryPokemon?: string
 ): SavedDeck {
   const deck: SavedDeck = {
     id: generateId(),
     label,
     deckList,
-    ...(archetype && archetype.length > 0 && { archetype }),
+    ...(primaryPokemon ? { primaryPokemon } : {}),
+    ...(secondaryPokemon ? { secondaryPokemon } : {}),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
@@ -110,6 +226,7 @@ export function saveDeck(
 
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(decks));
+    notifySavedDecksChanged();
   } catch (error) {
     console.error("Error saving deck:", error);
     throw new Error("Failed to save deck to local storage");
@@ -122,23 +239,39 @@ export function updateSavedDeck(
   id: string,
   label: string,
   deckList: string,
-  archetype?: string[]
+  primaryPokemon?: string | null,
+  secondaryPokemon?: string | null
 ): SavedDeck | null {
   const decks = getSavedDecks();
   const deckIndex = decks.findIndex((deck) => deck.id === id);
 
   if (deckIndex === -1) return null;
 
+  const hasPrimaryPokemonUpdate = primaryPokemon !== undefined;
+  const hasSecondaryPokemonUpdate = secondaryPokemon !== undefined;
+  const normalizedPrimaryPokemon = primaryPokemon?.trim()
+    ? primaryPokemon.trim()
+    : undefined;
+  const normalizedSecondaryPokemon = secondaryPokemon?.trim()
+    ? secondaryPokemon.trim()
+    : undefined;
+
   decks[deckIndex] = {
     ...decks[deckIndex],
     label,
     deckList,
-    ...(archetype !== undefined && { archetype }),
+    ...(hasPrimaryPokemonUpdate
+      ? { primaryPokemon: normalizedPrimaryPokemon }
+      : {}),
+    ...(hasSecondaryPokemonUpdate
+      ? { secondaryPokemon: normalizedSecondaryPokemon }
+      : {}),
     updatedAt: new Date().toISOString()
   };
 
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(decks));
+    notifySavedDecksChanged();
   } catch (error) {
     console.error("Error updating deck:", error);
     throw new Error("Failed to update deck in local storage");
@@ -157,6 +290,7 @@ export function deleteSavedDeck(id: string): boolean {
 
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(filteredDecks));
+    notifySavedDecksChanged();
     return true;
   } catch (error) {
     console.error("Error deleting deck:", error);

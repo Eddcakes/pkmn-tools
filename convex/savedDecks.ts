@@ -22,7 +22,8 @@ export const upsert = mutation({
     clientId: v.string(),
     label: v.string(),
     deckList: v.string(),
-    archetype: v.optional(v.array(v.string())),
+    primaryPokemon: v.optional(v.string()),
+    secondaryPokemon: v.optional(v.string()),
     createdAt: v.string(),
     updatedAt: v.string()
   },
@@ -41,7 +42,8 @@ export const upsert = mutation({
       await ctx.db.patch(existing._id, {
         label: args.label,
         deckList: args.deckList,
-        archetype: args.archetype,
+        primaryPokemon: args.primaryPokemon,
+        secondaryPokemon: args.secondaryPokemon,
         updatedAt: args.updatedAt
       });
       return existing._id;
@@ -58,7 +60,8 @@ export const batchUpsert = mutation({
         clientId: v.string(),
         label: v.string(),
         deckList: v.string(),
-        archetype: v.optional(v.array(v.string())),
+        primaryPokemon: v.optional(v.string()),
+        secondaryPokemon: v.optional(v.string()),
         createdAt: v.string(),
         updatedAt: v.string()
       })
@@ -82,7 +85,8 @@ export const batchUpsert = mutation({
         await ctx.db.patch(existing._id, {
           label: deckArg.label,
           deckList: deckArg.deckList,
-          archetype: deckArg.archetype,
+          primaryPokemon: deckArg.primaryPokemon,
+          secondaryPokemon: deckArg.secondaryPokemon,
           updatedAt: deckArg.updatedAt
         });
         ids.push(existing._id);
@@ -104,7 +108,8 @@ export const update = mutation({
     clientId: v.string(),
     label: v.string(),
     deckList: v.string(),
-    archetype: v.optional(v.array(v.string())),
+    primaryPokemon: v.optional(v.string()),
+    secondaryPokemon: v.optional(v.string()),
     updatedAt: v.string()
   },
   handler: async (ctx, args) => {
@@ -123,7 +128,12 @@ export const update = mutation({
     await ctx.db.patch(existing._id, {
       label: args.label,
       deckList: args.deckList,
-      archetype: args.archetype,
+      ...("primaryPokemon" in args
+        ? { primaryPokemon: args.primaryPokemon }
+        : {}),
+      ...("secondaryPokemon" in args
+        ? { secondaryPokemon: args.secondaryPokemon }
+        : {}),
       updatedAt: args.updatedAt
     });
   }

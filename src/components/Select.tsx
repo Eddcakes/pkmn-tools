@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
-import { IconButton } from "./IconButton";
-import { ChevronIcon, CrossIcon } from "./Icons";
+import { Select as BaseSelect } from "@base-ui/react/select";
+import { Fragment, type MouseEvent, useId, useMemo, useState } from "react";
+import { CheckIcon, ChevronIcon, CrossIcon } from "./Icons";
 
 export interface SelectOption {
   value: string;
@@ -14,6 +14,8 @@ export interface SelectGroup {
 
 interface SelectProps {
   id?: string;
+  label?: string;
+  description?: string;
   value: string;
   onChange: (value: string) => void;
   options?: SelectOption[];
@@ -22,11 +24,12 @@ interface SelectProps {
   disabled?: boolean;
   required?: boolean;
   className?: string;
-  allowCustom?: boolean;
 }
 
 export function Select({
   id,
+  label,
+  description,
   value,
   onChange,
   options,
@@ -34,352 +37,183 @@ export function Select({
   placeholder = "Select an option...",
   disabled = false,
   required = false,
-  className = "",
-  allowCustom = false
+  className = ""
 }: SelectProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [searchText, setSearchText] = useState("");
-  const [highlightedIndex, setHighlightedIndex] = useState(-1);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const listRef = useRef<HTMLUListElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const shouldScrollRef = useRef(false);
+  const [open, setOpen] = useState(false);
+  const generatedId = useId();
+  const selectId = id ?? generatedId;
+  const descriptionId = description ? `${selectId}-description` : undefined;
 
-  // Flatten all options from groups or use direct options
-  const allOptions: SelectOption[] = groups
-    ? groups.flatMap((group) => group.options)
-    : options || [];
+  const renderedGroups = useMemo(() => {
+    if (groups?.length) {
+      const seenValues = new Set<string>();
+      const labelCounts = new Map<string, number>();
 
-  // Filter options based on search text
-  const filteredOptions = allOptions.filter((option) =>
-    option.label.toLowerCase().includes(searchText.toLowerCase())
-  );
-
-  // Filter groups based on search text and deduplicate options across groups
-  const filteredGroups = groups
-    ? (() => {
-        const seenValues = new Set<string>();
-        return groups
-          .map((group) => ({
-            ...group,
-            options: group.options.filter((option) => {
-              const matchesSearch = option.label
-                .toLowerCase()
-                .includes(searchText.toLowerCase());
-              const notSeenYet = !seenValues.has(option.value);
-              if (matchesSearch && notSeenYet) {
-                seenValues.add(option.value);
-                return true;
-              }
+      return groups
+        .map((group) => {
+          const options = group.options.filter((option) => {
+            if (seenValues.has(option.value)) {
               return false;
-            })
-          }))
-          .filter((group) => group.options.length > 0);
-      })()
-    : null;
+            }
 
-  // Create a flat deduplicated list for keyboard navigation (matches render order)
-  const deduplicatedOptions = filteredGroups
-    ? filteredGroups.flatMap((group) => group.options)
-    : filteredOptions;
+            seenValues.add(option.value);
+            return true;
+          });
+          const count = (labelCounts.get(group.label) ?? 0) + 1;
+          labelCounts.set(group.label, count);
 
-  // Get display label for selected value
-  const selectedOption = allOptions.find((opt) => opt.value === value);
-  const displayLabel = selectedOption ? selectedOption.label : value;
+          return {
+            key: count === 1 ? group.label : `${group.label}-${count}`,
+            label: group.label,
+            options
+          };
+        })
+        .filter((group) => group.options.length > 0);
+    }
 
-  // Check if search text exactly matches any existing option value
-  const hasExactMatch = allOptions.some(
-    (opt) => opt.value.toLowerCase() === searchText.trim().toLowerCase()
+    return [
+      {
+        key: "options",
+        label: "",
+        options: options ?? []
+      }
+    ];
+  }, [groups, options]);
+
+  const flattenedItems = useMemo(
+    () => renderedGroups.flatMap((group) => group.options),
+    [renderedGroups]
   );
-  const canAddCustom = allowCustom && searchText.trim() && !hasExactMatch;
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-        setSearchText("");
-      }
-    };
+  const isGrouped = Boolean(groups?.length);
+  const hasValue = value.trim().length > 0;
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // Scroll highlighted option into view (only for keyboard navigation)
-  useEffect(() => {
-    if (shouldScrollRef.current && highlightedIndex >= 0 && listRef.current) {
-      const highlightedElement = listRef.current.querySelector(
-        `[data-option-index="${highlightedIndex}"]`
-      ) as HTMLElement;
-      if (highlightedElement) {
-        highlightedElement.scrollIntoView({
-          block: "nearest",
-          behavior: "smooth"
-        });
-      }
-      shouldScrollRef.current = false;
-    }
-  }, [highlightedIndex]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const text = e.target.value;
-    setSearchText(text);
-    setIsOpen(true);
-    setHighlightedIndex(0);
-  };
-
-  const handleInputFocus = () => {
-    setIsOpen(true);
-    setHighlightedIndex(0);
-  };
-
-  const handleInputBlur = () => {
-    // Small delay to allow click on option to register
-    setTimeout(() => {
-      // Clear search text if no valid option selected
-      if (!value && searchText) {
-        setSearchText("");
-      }
-      setIsOpen(false);
-    }, 200);
-  };
-
-  const handleOptionSelect = (optionValue: string) => {
-    onChange(optionValue);
-    setSearchText("");
-    setIsOpen(false);
-    inputRef.current?.blur();
-  };
-
-  const handleClear = () => {
+  const handleClear = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
     onChange("");
-    setSearchText("");
-    setHighlightedIndex(0);
-    inputRef.current?.focus();
-  };
-
-  const handleAddCustom = () => {
-    if (canAddCustom) {
-      onChange(searchText.trim().toLowerCase());
-      setSearchText("");
-      setIsOpen(false);
-      inputRef.current?.blur();
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    switch (e.key) {
-      case "ArrowDown":
-        e.preventDefault();
-        setIsOpen(true);
-        shouldScrollRef.current = true;
-        setHighlightedIndex((prev) =>
-          prev < deduplicatedOptions.length - 1 ? prev + 1 : prev
-        );
-        break;
-
-      case "ArrowUp":
-        e.preventDefault();
-        setIsOpen(true);
-        shouldScrollRef.current = true;
-        setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : 0));
-        break;
-
-      case "Home":
-        e.preventDefault();
-        shouldScrollRef.current = true;
-        setHighlightedIndex(0);
-        break;
-
-      case "End":
-        e.preventDefault();
-        shouldScrollRef.current = true;
-        setHighlightedIndex(deduplicatedOptions.length - 1);
-        break;
-
-      case "Enter":
-        e.preventDefault();
-        if (
-          isOpen &&
-          highlightedIndex >= 0 &&
-          highlightedIndex < deduplicatedOptions.length
-        ) {
-          handleOptionSelect(deduplicatedOptions[highlightedIndex].value);
-        } else if (canAddCustom) {
-          handleAddCustom();
-        }
-        break;
-
-      case "Escape":
-        e.preventDefault();
-        setIsOpen(false);
-        setSearchText("");
-        inputRef.current?.blur();
-        break;
-
-      case "Tab":
-        setIsOpen(false);
-        setSearchText("");
-        break;
-    }
   };
 
   return (
-    <div ref={containerRef} className={`relative ${className}`}>
-      <div className="flex items-center w-full px-3 border border-gray-300 rounded-md bg-white focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent">
-        <input
-          ref={inputRef}
-          id={id}
-          type="text"
-          value={isOpen ? searchText : displayLabel}
-          onChange={handleInputChange}
-          onFocus={handleInputFocus}
-          onBlur={handleInputBlur}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          disabled={disabled}
+    <div className={className}>
+      {label && (
+        <label
+          htmlFor={selectId}
+          className="block text-sm font-medium text-gray-700 mb-2"
+        >
+          {label}
+        </label>
+      )}
+
+      <div className="relative">
+        <BaseSelect.Root
+          id={selectId}
+          value={value || null}
+          items={flattenedItems}
+          onValueChange={(nextValue) =>
+            onChange((nextValue as string | null) ?? "")
+          }
+          open={open}
+          onOpenChange={setOpen}
           required={required}
-          autoComplete="off"
-          className="flex-1 outline-none py-2.5 bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-        />
-
-        <div className="flex items-center gap-1 shrink-0">
-          {/* Clear button */}
-          {value && !disabled && (
-            <IconButton
-              variant="ghost"
-              size="xs"
-              onClick={handleClear}
-              aria-label="Clear selection"
-              tabIndex={-1}
-              icon={<CrossIcon />}
+          disabled={disabled}
+        >
+          <BaseSelect.Trigger
+            aria-describedby={descriptionId}
+            className="group flex w-full items-center rounded-md border border-gray-300 bg-white px-3 py-2.5 pr-16 text-left text-sm text-gray-900 outline-none transition-colors focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500 data-popup-open:border-transparent data-popup-open:ring-2 data-popup-open:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <BaseSelect.Value
+              className="min-w-0 w-0 flex-1 truncate bg-transparent data-placeholder:text-gray-500"
+              placeholder={placeholder}
             />
-          )}
+          </BaseSelect.Trigger>
 
-          {/* Dropdown indicator */}
-          <IconButton
-            aria-label="Show options"
-            size="xs"
-            icon={
+          <div className="pointer-events-none absolute right-3 top-1/2 z-10 flex -translate-y-1/2 items-center gap-1 shrink-0">
+            {hasValue && !disabled && (
+              <button
+                type="button"
+                onMouseDown={handleClear}
+                onClick={handleClear}
+                aria-label="Clear selection"
+                className="pointer-events-auto inline-flex items-center justify-center rounded p-1 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+              >
+                <CrossIcon />
+              </button>
+            )}
+
+            <span className="inline-flex items-center justify-center rounded p-1 text-gray-500 transition-colors group-hover:bg-gray-100 group-hover:text-gray-700">
               <ChevronIcon
-                className={`text-gray-400 transition-transform ${
-                  isOpen ? "rotate-180" : ""
-                }`}
+                className={`text-gray-400 transition-transform ${open ? "rotate-180" : ""}`}
               />
-            }
-            onClick={handleInputFocus}
-          />
-        </div>
+            </span>
+          </div>
+
+          <BaseSelect.Portal>
+            <BaseSelect.Positioner
+              className="z-60 mt-1 outline-none"
+              sideOffset={4}
+              alignItemWithTrigger={false}
+              positionMethod="fixed"
+            >
+              <BaseSelect.Popup className="w-(--anchor-width) max-w-(--available-width) rounded-md border border-gray-300 bg-white text-gray-900 shadow-lg">
+                <BaseSelect.List className="max-h-(--available-height) overflow-auto py-1 outline-none">
+                  {renderedGroups.map((group, groupIndex) => (
+                    <Fragment key={group.key}>
+                      {isGrouped ? (
+                        <BaseSelect.Group className="block">
+                          <BaseSelect.GroupLabel className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            {group.label}
+                          </BaseSelect.GroupLabel>
+
+                          {group.options.map((option) => (
+                            <BaseSelect.Item
+                              key={option.value}
+                              value={option.value}
+                              className="grid cursor-default grid-cols-[1rem_1fr] items-center gap-2 px-3 py-2 text-sm outline-none transition-colors data-highlighted:bg-blue-50 data-highlighted:text-blue-900 data-selected:bg-blue-100 data-selected:font-medium"
+                            >
+                              <BaseSelect.ItemIndicator className="col-start-1 text-blue-700">
+                                <CheckIcon />
+                              </BaseSelect.ItemIndicator>
+                              <BaseSelect.ItemText className="col-start-2">
+                                {option.label}
+                              </BaseSelect.ItemText>
+                            </BaseSelect.Item>
+                          ))}
+                        </BaseSelect.Group>
+                      ) : (
+                        group.options.map((option) => (
+                          <BaseSelect.Item
+                            key={option.value}
+                            value={option.value}
+                            className="grid cursor-default grid-cols-[1rem_1fr] items-center gap-2 px-3 py-2 text-sm outline-none transition-colors data-highlighted:bg-blue-50 data-highlighted:text-blue-900 data-selected:bg-blue-100 data-selected:font-medium"
+                          >
+                            <BaseSelect.ItemIndicator className="col-start-1 text-blue-700">
+                              <CheckIcon />
+                            </BaseSelect.ItemIndicator>
+                            <BaseSelect.ItemText className="col-start-2">
+                              {option.label}
+                            </BaseSelect.ItemText>
+                          </BaseSelect.Item>
+                        ))
+                      )}
+
+                      {isGrouped && groupIndex < renderedGroups.length - 1 && (
+                        <BaseSelect.Separator className="mx-3 my-1 h-px bg-gray-200" />
+                      )}
+                    </Fragment>
+                  ))}
+                </BaseSelect.List>
+              </BaseSelect.Popup>
+            </BaseSelect.Positioner>
+          </BaseSelect.Portal>
+        </BaseSelect.Root>
       </div>
 
-      {/* Options dropdown */}
-      {isOpen && !disabled && (
-        <ul
-          ref={listRef}
-          className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
-        >
-          {/* Show add custom option at top when there are filtered results */}
-          {canAddCustom && deduplicatedOptions.length > 0 && (
-            <li className="px-3 py-2 text-sm text-gray-500">
-              <CustomTextButton
-                onClick={handleAddCustom}
-                searchText={searchText}
-              />
-            </li>
-          )}
-
-          {deduplicatedOptions.length === 0 ? (
-            <li className="px-3 py-2 text-sm text-gray-500">
-              {canAddCustom ? (
-                <CustomTextButton
-                  onClick={handleAddCustom}
-                  searchText={searchText}
-                />
-              ) : (
-                "No options found"
-              )}
-            </li>
-          ) : filteredGroups ? (
-            // Render grouped options
-            filteredGroups.map((group, groupIndex) => (
-              <React.Fragment key={group.label}>
-                {/* Group header */}
-                <li className="px-3 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide bg-gray-50 sticky top-0">
-                  {group.label}
-                </li>
-                {/* Group options */}
-                {group.options.map((option) => {
-                  const globalIndex = deduplicatedOptions.findIndex(
-                    (opt) => opt.value === option.value
-                  );
-                  return (
-                    <li
-                      key={option.value}
-                      data-option-index={globalIndex}
-                      className={`px-3 py-2 cursor-pointer text-sm transition-colors ${
-                        globalIndex === highlightedIndex
-                          ? "bg-blue-50 text-blue-900"
-                          : "hover:bg-gray-50"
-                      } ${
-                        option.value === value ? "bg-blue-100 font-medium" : ""
-                      }`}
-                      onClick={() => handleOptionSelect(option.value)}
-                      onKeyDown={() => handleOptionSelect(option.value)}
-                      onMouseEnter={() => setHighlightedIndex(globalIndex)}
-                    >
-                      {option.label}
-                    </li>
-                  );
-                })}
-                {/* Divider between groups (except after last group) */}
-                {groupIndex < filteredGroups.length - 1 && (
-                  <li className="border-t border-gray-200 my-1" />
-                )}
-              </React.Fragment>
-            ))
-          ) : (
-            // Render flat options
-            filteredOptions.map((option, index) => (
-              <li
-                key={option.value}
-                data-option-index={index}
-                className={`px-3 py-2 cursor-pointer text-sm transition-colors ${
-                  index === highlightedIndex
-                    ? "bg-blue-50 text-blue-900"
-                    : "hover:bg-gray-50"
-                } ${option.value === value ? "bg-blue-100 font-medium" : ""}`}
-                onClick={() => handleOptionSelect(option.value)}
-                onKeyDown={() => handleOptionSelect(option.value)}
-                onMouseEnter={() => setHighlightedIndex(index)}
-              >
-                {option.label}
-              </li>
-            ))
-          )}
-        </ul>
+      {description && (
+        <p id={descriptionId} className="mt-2 text-xs text-gray-500">
+          {description}
+        </p>
       )}
     </div>
-  );
-}
-
-function CustomTextButton({
-  onClick,
-  searchText
-}: {
-  onClick: () => void;
-  searchText: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="w-full text-left hover:bg-blue-50 px-2 py-1 rounded"
-    >
-      "{searchText.trim()}"
-    </button>
   );
 }

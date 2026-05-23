@@ -50,12 +50,35 @@ export function useSyncOnLogin() {
         ...r,
         updatedAt: r.updatedAt ?? r.createdAt
       })),
-      localSettings: localSettingsData
+      localSettings: {
+        defaultFormat: localSettingsData.defaultFormat,
+        defaultSet: localSettingsData.defaultSet,
+        recentUserPrimary: localSettingsData.recentUserPrimary,
+        recentUserSecondary: localSettingsData.recentUserSecondary,
+        recentOpponentPrimary: localSettingsData.recentOpponentPrimary,
+        recentOpponentSecondary: localSettingsData.recentOpponentSecondary
+      }
     })
       .then((result) => {
         replaceSavedDecks(result.decks);
         replaceMatchupRecords(result.records);
-        saveMatchupSettings(result.settings);
+        saveMatchupSettings({
+          ...localSettingsData,
+          defaultFormat: result.settings.defaultFormat,
+          defaultSet: result.settings.defaultSet,
+          recentUserPrimary:
+            result.settings.recentUserPrimary ??
+            localSettingsData.recentUserPrimary,
+          recentUserSecondary:
+            result.settings.recentUserSecondary ??
+            localSettingsData.recentUserSecondary,
+          recentOpponentPrimary:
+            result.settings.recentOpponentPrimary ??
+            localSettingsData.recentOpponentPrimary,
+          recentOpponentSecondary:
+            result.settings.recentOpponentSecondary ??
+            localSettingsData.recentOpponentSecondary
+        });
       })
       .catch((error) => {
         console.error("Sync on login failed:", error);
