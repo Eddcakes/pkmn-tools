@@ -1022,6 +1022,8 @@ export const POKEMON_SEARCH_ENTRIES: PokemonSearchEntry[] = [
   { value: "munkidori", label: "Munkidori", show: true },
   { value: "fezandipiti", label: "Fezandipiti", show: true },
   { value: "ogerpon", label: "Ogerpon", show: true },
+  { value: "ogerpon-wellspring", label: "Wellspring Ogerpon", show: true },
+  { value: "ogerpon-hearthflame", label: "Hearthflame Ogerpon", show: true },
   { value: "archaludon", label: "Archaludon", show: true },
   { value: "hydrapple", label: "Hydrapple", show: true },
   { value: "gouging-fire", label: "Gouging Fire", show: true },
