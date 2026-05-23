@@ -673,7 +673,7 @@ export const POKEMON_SEARCH_ENTRIES: PokemonSearchEntry[] = [
   { value: "vivillon", label: "Vivillon", show: true },
   { value: "litleo", label: "Litleo", show: true },
   { value: "pyroar", label: "Pyroar", show: true },
-  { value: "flabebe", label: "FlabÃ©bÃ©", show: true },
+  { value: "flabebe", label: "Flabébé", show: true },
   { value: "floette", label: "Floette", show: true },
   { value: "florges", label: "Florges", show: true },
   { value: "skiddo", label: "Skiddo", show: true },
