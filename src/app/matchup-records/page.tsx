@@ -4,10 +4,12 @@ import { useMemo, useRef, useState } from "react";
 import { Alert } from "@/components/Alert";
 import { IconButton } from "@/components/IconButton";
 import { CogIcon } from "@/components/Icons";
+import { PkmnSelector } from "@/components/PkmnSelector";
 import { EditMatchupRecordModal } from "@/features/EditMatchupRecordModal";
 import { MatchupChart } from "@/features/MatchupChart";
 import { MatchupSettingsModal } from "@/features/MatchupSettingsModal";
 import { addRecentArchetype } from "@/utils/matchupSettings";
+import { POKEMON_SEARCH_ENTRIES, POKEMON_SEARCH_SET } from "@/utils/pokemon";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
 import { Select, type SelectGroup } from "../../components/Select";
@@ -29,8 +31,10 @@ export default function MatchupRecordsPage() {
   const { records, saveRecord, updateRecord, deleteRecord } =
     useMatchupRecords();
   const { settings, saveSettings } = useMatchupSettings();
-  const [userArchetype, setUserArchetype] = useState("");
-  const [opponentArchetype, setOpponentArchetype] = useState("");
+  const [userPrimaryPokemon, setUserPrimaryPokemon] = useState("");
+  const [userSecondaryPokemon, setUserSecondaryPokemon] = useState("");
+  const [opponentPrimaryPokemon, setOpponentPrimaryPokemon] = useState("");
+  const [opponentSecondaryPokemon, setOpponentSecondaryPokemon] = useState("");
   const [result, setResult] = useState<"win" | "loss" | "tie" | "">("");
   const [formatOverrideValue, setFormatOverrideValue] = useState<string | null>(
     null
@@ -52,6 +56,56 @@ export default function MatchupRecordsPage() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [recordToEdit, setRecordToEdit] = useState<MatchupRecord | null>(null);
   const recordsListRef = useRef<HTMLDivElement>(null);
+
+  const deckPokemonSetters = {
+    userPrimaryPokemon: setUserPrimaryPokemon,
+    userSecondaryPokemon: setUserSecondaryPokemon,
+    opponentPrimaryPokemon: setOpponentPrimaryPokemon,
+    opponentSecondaryPokemon: setOpponentSecondaryPokemon
+  };
+
+  type DeckPokemonField = keyof typeof deckPokemonSetters;
+
+  const normalizePokemonValue = (value: string): string | null => {
+    const normalized = value.trim().toLowerCase();
+
+    if (!normalized) {
+      return "";
+    }
+
+    if (!POKEMON_SEARCH_SET.has(normalized)) {
+      return null;
+    }
+
+    const matchedOption = POKEMON_SEARCH_ENTRIES.find(
+      (option) =>
+        option.value.toLowerCase() === normalized ||
+        option.label.toLowerCase() === normalized
+    );
+
+    return matchedOption?.value ?? null;
+  };
+
+  const handleDeckPokemonChange = (value: string, fieldName?: string) => {
+    if (!fieldName || !(fieldName in deckPokemonSetters)) {
+      return;
+    }
+
+    const normalizedPokemonValue = normalizePokemonValue(value);
+    if (normalizedPokemonValue === null) {
+      return;
+    }
+
+    deckPokemonSetters[fieldName as DeckPokemonField](normalizedPokemonValue);
+  };
+
+  const buildDeckLabel = (primaryPokemon: string, secondaryPokemon: string) => {
+    const selectedPokemon = [primaryPokemon, secondaryPokemon].filter((value) =>
+      value.trim()
+    );
+
+    return selectedPokemon.join(" + ");
+  };
 
   const archetypeGroups = useMemo<SelectGroup[]>(() => {
     const customArchetypes = settings.customArchetypes
@@ -163,13 +217,22 @@ export default function MatchupRecordsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const userArchetype = buildDeckLabel(
+      userPrimaryPokemon,
+      userSecondaryPokemon
+    );
+    const opponentArchetype = buildDeckLabel(
+      opponentPrimaryPokemon,
+      opponentSecondaryPokemon
+    );
+
     if (!userArchetype) {
-      setError("Please select your deck archetype");
+      setError("Please select at least one Pokemon for your deck");
       return;
     }
 
     if (!opponentArchetype) {
-      setError("Please select opponent archetype");
+      setError("Please select at least one Pokemon for the opponent deck");
       return;
     }
 
@@ -204,8 +267,11 @@ export default function MatchupRecordsPage() {
       }
 
       // Reset form
-      setUserArchetype("");
-      setOpponentArchetype("");
+      // we should not reset Users deck
+      setUserPrimaryPokemon("");
+      setUserSecondaryPokemon("");
+      setOpponentPrimaryPokemon("");
+      setOpponentSecondaryPokemon("");
       setResult("");
       setFormatOverrideValue(null);
       setLatestSetOverrideValue(null);
@@ -317,43 +383,59 @@ export default function MatchupRecordsPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                {/* replace with the new pkmn selector */}
-                <label
-                  htmlFor="user-archetype"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Your Deck Archetype
-                </label>
-                <Select
-                  id="user-archetype"
-                  value={userArchetype}
-                  onChange={setUserArchetype}
-                  groups={archetypeGroups}
-                  placeholder="Select your archetype..."
+              <div className="grid gap-2">
+                <p className="block text-sm font-medium text-gray-700">
+                  Your Deck
+                </p>
+                <PkmnSelector
+                  id="user-primary-pokemon"
+                  name="userPrimaryPokemon"
+                  value={userPrimaryPokemon}
+                  onChange={handleDeckPokemonChange}
+                  label="Primary Pokemon"
+                  hideLabel
+                  placeholder="Choose primary Pokemon..."
                   disabled={saving}
                   required
-                  allowCustom={true}
+                />
+
+                <PkmnSelector
+                  id="user-secondary-pokemon"
+                  name="userSecondaryPokemon"
+                  value={userSecondaryPokemon}
+                  onChange={handleDeckPokemonChange}
+                  label="Secondary Pokemon (Optional)"
+                  hideLabel
+                  placeholder="Choose secondary Pokemon..."
+                  disabled={saving}
                 />
               </div>
 
-              <div>
-                {/* replace with the new pkmn selector */}
-                <label
-                  htmlFor="opponent-archetype"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Opponent Archetype
-                </label>
-                <Select
-                  id="opponent-archetype"
-                  value={opponentArchetype}
-                  onChange={setOpponentArchetype}
-                  groups={archetypeGroups}
-                  placeholder="Select opponent archetype..."
+              <div className="grid gap-2">
+                <p className="block text-sm font-medium text-gray-700">
+                  Opponent Deck
+                </p>
+                <PkmnSelector
+                  id="opponent-primary-pokemon"
+                  name="opponentPrimaryPokemon"
+                  value={opponentPrimaryPokemon}
+                  onChange={handleDeckPokemonChange}
+                  label="Primary Pokemon"
+                  hideLabel
+                  placeholder="Choose primary Pokemon..."
                   disabled={saving}
                   required
-                  allowCustom={true}
+                />
+
+                <PkmnSelector
+                  id="opponent-secondary-pokemon"
+                  name="opponentSecondaryPokemon"
+                  value={opponentSecondaryPokemon}
+                  onChange={handleDeckPokemonChange}
+                  label="Secondary Pokemon (Optional)"
+                  hideLabel
+                  placeholder="Choose secondary Pokemon..."
+                  disabled={saving}
                 />
               </div>
 
@@ -603,6 +685,16 @@ export default function MatchupRecordsPage() {
                     >
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex items-center gap-2">
+                          {/* this part here
+                            we should think are we still gonna save archetypes in the same way
+                            string space string
+
+                            or do we need to store them as an array
+
+                            will they be broken if we try keep the current method?
+
+                            We have things like Alakazam Dudunsparce - will this just be fine?
+                          */}
                           <Tag
                             label={record.userArchetype}
                             type={archetypeToTagType(record.userArchetype)}
@@ -728,7 +820,6 @@ export default function MatchupRecordsPage() {
         }}
         onUpdated={handleEditUpdated}
         record={recordToEdit}
-        archetypeGroups={archetypeGroups}
         formatOptions={AVAILABLE_FORMATS}
         latestSetOptions={AVAILABLE_LATEST_SETS}
         onUpdateRecord={updateRecord}

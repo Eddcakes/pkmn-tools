@@ -1,14 +1,14 @@
 "use client";
+"use no memo";
 
 import { Combobox } from "@base-ui/react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   type ComponentProps,
   type CSSProperties,
-  type RefObject,
   useCallback,
   useId,
-  useImperativeHandle,
+  useMemo,
   useRef,
   useState
 } from "react";
@@ -20,37 +20,80 @@ import { ChevronIcon, CrossIcon } from "./Icons";
 
 interface PkmnSelectorProps {
   id?: string;
+  name?: string;
   value: string;
-  onChange: (value: string) => void;
+  onChange: (value: string, name?: string) => void;
+  label?: string;
   placeholder?: string;
   disabled?: boolean;
   required?: boolean;
   className?: string;
-  allowCustom?: boolean;
+  topGroupValues?: string[];
+  hideLabel?: boolean;
 }
 
 export function PkmnSelector({
   id,
+  name,
   value,
   onChange,
+  label = "Choose a Pokemon",
   placeholder = "e.g. Pikachu",
   disabled = false,
   required = false,
-  className = ""
+  className = "",
+  topGroupValues,
+  hideLabel = false
 }: PkmnSelectorProps) {
   const [open, setOpen] = useState(false);
   const generatedId = useId();
   const inputId = id ?? generatedId;
   const virtualizerRef = useRef<Virtualizer | null>(null);
+
+  const orderedItems = useMemo(() => {
+    if (!topGroupValues?.length) {
+      return POKEMON_SEARCH_ENTRIES;
+    }
+
+    const normalizedTopGroupValues = new Set(
+      topGroupValues
+        .map((item) => item.trim().toLowerCase())
+        .filter((item) => item.length > 0)
+    );
+
+    if (!normalizedTopGroupValues.size) {
+      return POKEMON_SEARCH_ENTRIES;
+    }
+
+    const topItems: PokemonSearchEntry[] = [];
+    const remainingItems: PokemonSearchEntry[] = [];
+
+    for (const entry of POKEMON_SEARCH_ENTRIES) {
+      const normalizedValue = entry.value.toLowerCase();
+      const normalizedLabel = entry.label.toLowerCase();
+
+      if (
+        normalizedTopGroupValues.has(normalizedValue) ||
+        normalizedTopGroupValues.has(normalizedLabel)
+      ) {
+        topItems.push(entry);
+      } else {
+        remainingItems.push(entry);
+      }
+    }
+
+    return [...topItems, ...remainingItems];
+  }, [topGroupValues]);
+
   const selectedItem =
-    POKEMON_SEARCH_ENTRIES.find((entry) => entry.value === value) ?? null;
+    orderedItems.find((entry) => entry.value === value) ?? null;
 
   return (
     <Combobox.Root
       virtualized
-      items={POKEMON_SEARCH_ENTRIES}
+      items={orderedItems}
       value={selectedItem}
-      onValueChange={(nextItem) => onChange(nextItem?.value ?? "")}
+      onValueChange={(nextItem) => onChange(nextItem?.value ?? "", name)}
       open={open}
       onOpenChange={setOpen}
       itemToStringLabel={(item) => (item ? item.label : "")}
@@ -77,12 +120,14 @@ export function PkmnSelector({
       disabled={disabled}
     >
       <div className={`relative ${className}`.trim()}>
-        <label
-          htmlFor={inputId}
-          className="mb-1 block text-sm font-medium text-gray-700"
-        >
-          Choose a Pokemon
-        </label>
+        {!hideLabel && (
+          <label
+            htmlFor={inputId}
+            className="mb-1 block text-sm font-medium text-gray-700"
+          >
+            {label}
+          </label>
+        )}
 
         <Combobox.InputGroup className="flex items-center w-full px-3 border border-gray-300 rounded-md bg-white focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent">
           <img
@@ -100,9 +145,11 @@ export function PkmnSelector({
 
           <Combobox.Input
             id={inputId}
+            aria-label={hideLabel ? label : undefined}
+            name={name}
             placeholder={placeholder}
             required={required}
-            className="flex-1 outline-none py-2.5 bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+            className="min-w-0 w-0 flex-1 outline-none py-2.5 bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
           />
 
           <div className="flex items-center gap-1 shrink-0">
@@ -133,7 +180,11 @@ export function PkmnSelector({
               </Combobox.Empty>
 
               <Combobox.List className="p-0">
-                <VirtualizedList open={open} virtualizerRef={virtualizerRef} />
+                <VirtualizedList
+                  open={open}
+                  virtualizerRef={virtualizerRef}
+                  topGroupValues={topGroupValues}
+                />
               </Combobox.List>
             </Combobox.Popup>
           </Combobox.Positioner>
@@ -145,13 +196,52 @@ export function PkmnSelector({
 
 function VirtualizedList({
   open,
-  virtualizerRef
+  virtualizerRef,
+  topGroupValues
 }: {
   open: boolean;
-  virtualizerRef: RefObject<Virtualizer | null>;
+  virtualizerRef: { current: Virtualizer | null };
+  topGroupValues?: string[];
 }) {
   const filteredItems = Combobox.useFilteredItems<PokemonSearchEntry>();
   const scrollElementRef = useRef<HTMLDivElement | null>(null);
+
+  const normalizedTopGroupValues = useMemo(
+    () =>
+      new Set(
+        (topGroupValues ?? [])
+          .map((item) => item.trim().toLowerCase())
+          .filter((item) => item.length > 0)
+      ),
+    [topGroupValues]
+  );
+
+  const topFilteredCount = useMemo(() => {
+    if (!normalizedTopGroupValues.size) {
+      return 0;
+    }
+
+    let count = 0;
+
+    for (const item of filteredItems) {
+      const isTopItem =
+        normalizedTopGroupValues.has(item.value.toLowerCase()) ||
+        normalizedTopGroupValues.has(item.label.toLowerCase());
+
+      if (isTopItem) {
+        count += 1;
+        continue;
+      }
+
+      break;
+    }
+
+    return count;
+  }, [filteredItems, normalizedTopGroupValues]);
+
+  const showTopGroupSeparator =
+    topFilteredCount > 0 && topFilteredCount < filteredItems.length;
+  const separatorTop = 4 + topFilteredCount * 40;
 
   const virtualizer = useVirtualizer({
     enabled: open,
@@ -165,7 +255,7 @@ function VirtualizedList({
     scrollPaddingEnd: 4
   });
 
-  useImperativeHandle(virtualizerRef, () => virtualizer);
+  virtualizerRef.current = virtualizer;
 
   const handleScrollElementRef = useCallback(
     (element: HTMLDivElement | null) => {
@@ -187,7 +277,7 @@ function VirtualizedList({
     <div
       role="presentation"
       ref={handleScrollElementRef}
-      className="h-[min(22.5rem,var(--total-size))] max-h-[var(--available-height)] overflow-auto overscroll-contain scroll-py-1"
+      className="h-[min(22.5rem,var(--total-size))] max-h-(--available-height) overflow-auto overscroll-contain scroll-py-1"
       style={{ "--total-size": `${totalSize}px` } as CSSProperties}
     >
       <div
@@ -195,6 +285,13 @@ function VirtualizedList({
         className="relative w-full"
         style={{ height: totalSize }}
       >
+        {showTopGroupSeparator && (
+          <Combobox.Separator
+            className="pointer-events-none absolute left-3 right-3 h-px bg-gray-200"
+            style={{ top: separatorTop }}
+          />
+        )}
+
         {virtualizer.getVirtualItems().map((virtualItem) => {
           const item = filteredItems[virtualItem.index];
 
@@ -209,7 +306,7 @@ function VirtualizedList({
               data-index={virtualItem.index}
               ref={virtualizer.measureElement}
               value={item}
-              className="grid cursor-default grid-cols-[1rem_2rem_1fr] items-center gap-2 px-3 py-2 text-sm leading-4 outline-none select-none data-highlighted:relative data-highlighted:z-0 data-highlighted:text-white data-highlighted:before:absolute data-highlighted:before:inset-0 data-highlighted:before:z-[-1] data-highlighted:before:bg-blue-600 data-selected:font-medium"
+              className="grid cursor-default grid-cols-[1rem_2rem_1fr] items-center gap-2 px-3 py-2 text-sm leading-4 outline-none select-none transition-colors hover:bg-gray-50 data-highlighted:bg-blue-50 data-highlighted:text-blue-900 data-selected:bg-blue-100 data-selected:font-medium"
               aria-setsize={filteredItems.length}
               aria-posinset={virtualItem.index + 1}
               style={{
