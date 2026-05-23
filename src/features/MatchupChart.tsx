@@ -162,7 +162,7 @@ export function MatchupChart({ data }: MatchupChartProps) {
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-900 uppercase tracking-wider border-b border-r border-gray-200 sticky left-0 bg-gray-50 whitespace-nowrap">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-900 uppercase tracking-wider border-b border-r border-gray-200 sticky left-0 z-30 bg-gray-50 whitespace-nowrap">
                 Your Deck ▼
               </th>
               {opponentArchetypes.map((archetype) => (
@@ -185,7 +185,7 @@ export function MatchupChart({ data }: MatchupChartProps) {
                   key={userArchetype}
                   className={rowIndex % 2 === 0 ? "bg-white" : "bg-gray-50"}
                 >
-                  <td className="px-4 py-3 text-xs font-medium text-gray-900 border-b border-r border-gray-200 sticky left-0 bg-inherit capitalize tracking-wider">
+                  <td className="px-4 py-3 text-xs font-medium text-gray-900 border-b border-r border-gray-200 sticky left-0 z-20 bg-inherit capitalize tracking-wider">
                     {userArchetype}
                   </td>
                   {opponentArchetypes.map((opponentArchetype) => {
