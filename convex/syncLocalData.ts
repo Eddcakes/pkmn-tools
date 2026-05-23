@@ -180,7 +180,10 @@ export const syncOnLogin = mutation({
           ? { recentOpponentPrimary: args.localSettings.recentOpponentPrimary }
           : {}),
         ...(args.localSettings.recentOpponentSecondary !== undefined
-          ? { recentOpponentSecondary: args.localSettings.recentOpponentSecondary }
+          ? {
+              recentOpponentSecondary:
+                args.localSettings.recentOpponentSecondary
+            }
           : {})
       };
       await ctx.db.insert("matchupSettings", newSettings);
@@ -188,42 +191,44 @@ export const syncOnLogin = mutation({
     } else {
       const cleanedSettings = {
         userId,
-        ...(serverSettings.defaultFormat ?? args.localSettings.defaultFormat
+        ...((serverSettings.defaultFormat ?? args.localSettings.defaultFormat)
           ? {
               defaultFormat:
                 serverSettings.defaultFormat ?? args.localSettings.defaultFormat
             }
           : {}),
-        ...(serverSettings.defaultSet ?? args.localSettings.defaultSet
+        ...((serverSettings.defaultSet ?? args.localSettings.defaultSet)
           ? {
-              defaultSet: serverSettings.defaultSet ?? args.localSettings.defaultSet
+              defaultSet:
+                serverSettings.defaultSet ?? args.localSettings.defaultSet
             }
           : {}),
-        ...(serverSettings.recentUserPrimary ?? args.localSettings.recentUserPrimary
+        ...((serverSettings.recentUserPrimary ??
+        args.localSettings.recentUserPrimary)
           ? {
               recentUserPrimary:
                 serverSettings.recentUserPrimary ??
                 args.localSettings.recentUserPrimary
             }
           : {}),
-        ...(serverSettings.recentUserSecondary ??
-        args.localSettings.recentUserSecondary
+        ...((serverSettings.recentUserSecondary ??
+        args.localSettings.recentUserSecondary)
           ? {
               recentUserSecondary:
                 serverSettings.recentUserSecondary ??
                 args.localSettings.recentUserSecondary
             }
           : {}),
-        ...(serverSettings.recentOpponentPrimary ??
-        args.localSettings.recentOpponentPrimary
+        ...((serverSettings.recentOpponentPrimary ??
+        args.localSettings.recentOpponentPrimary)
           ? {
               recentOpponentPrimary:
                 serverSettings.recentOpponentPrimary ??
                 args.localSettings.recentOpponentPrimary
             }
           : {}),
-        ...(serverSettings.recentOpponentSecondary ??
-        args.localSettings.recentOpponentSecondary
+        ...((serverSettings.recentOpponentSecondary ??
+        args.localSettings.recentOpponentSecondary)
           ? {
               recentOpponentSecondary:
                 serverSettings.recentOpponentSecondary ??

@@ -31,7 +31,7 @@ export function EditDeckModal({
   const initialArchetypeLabel =
     deck?.primaryPokemon && deck?.secondaryPokemon
       ? `${deck.primaryPokemon} + ${deck.secondaryPokemon}`
-      : deck?.primaryPokemon ?? "";
+      : (deck?.primaryPokemon ?? "");
   const initialSlots = resolvePokemonSlots(
     initialArchetypeLabel,
     deck?.primaryPokemon,

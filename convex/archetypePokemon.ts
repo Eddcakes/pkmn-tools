@@ -110,7 +110,9 @@ const POKEMON_ALIAS_TO_SLUG: Record<string, string> = {
 };
 
 function normalizeExistingPokemonSlot(value?: string): string | undefined {
-  const trimmed = normalizeApostrophes(value ?? "").trim().toLowerCase();
+  const trimmed = normalizeApostrophes(value ?? "")
+    .trim()
+    .toLowerCase();
   if (!trimmed) {
     return undefined;
   }
@@ -124,7 +126,10 @@ function normalizeExistingPokemonSlot(value?: string): string | undefined {
 }
 
 export function normalizeArchetypeKey(archetype: string): string {
-  return normalizeApostrophes(archetype).trim().toLowerCase().replace(/\s+/g, " ");
+  return normalizeApostrophes(archetype)
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
 }
 
 export function splitDeckLabel(archetype: string): PokemonSlots {
@@ -139,7 +144,9 @@ export function splitDeckLabel(archetype: string): PokemonSlots {
   };
 }
 
-export function mapArchetypeToPokemon(archetype: string): PokemonSlots | undefined {
+export function mapArchetypeToPokemon(
+  archetype: string
+): PokemonSlots | undefined {
   return ARCHETYPE_TO_POKEMON[normalizeArchetypeKey(archetype)];
 }
 
@@ -149,7 +156,9 @@ export function resolvePokemonSlots(
   existingSecondaryPokemon?: string
 ): PokemonSlots {
   const trimmedPrimary = normalizeExistingPokemonSlot(existingPrimaryPokemon);
-  const trimmedSecondary = normalizeExistingPokemonSlot(existingSecondaryPokemon);
+  const trimmedSecondary = normalizeExistingPokemonSlot(
+    existingSecondaryPokemon
+  );
 
   if (trimmedPrimary && trimmedSecondary) {
     return {

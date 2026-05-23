@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { Alert, Card, Link } from "@/components";
-import { PkmnSelector } from "../../components/PkmnSelector";
 import { Button } from "../../components/Button";
+import { PkmnSelector } from "../../components/PkmnSelector";
 import { ComparisonTable } from "../../features/ComparisonTable";
 import { LoadDeckModal } from "../../features/LoadDeckModal";
 import { SaveDeckModal } from "../../features/SaveDeckModal";
@@ -375,7 +375,7 @@ Energy: 11
             ))}
 
             {decks.length < MAX_DECKS && (
-              <Card className="flex flex-col items-center justify-center min-h-[400px] bg-gray-50">
+              <Card className="flex flex-col items-center justify-center min-h-100 bg-gray-50">
                 <div className="text-center space-y-6">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-700 mb-2">

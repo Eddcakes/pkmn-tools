@@ -1,4 +1,5 @@
 export type MatchupResult = "win" | "loss" | "tie";
+
 import { resolvePokemonSlots } from "./archetypePokemon";
 
 export const MATCHUP_RESULT_OPTIONS: Array<{
@@ -68,8 +69,10 @@ function migrateStoredRecords(records: MatchupRecord[]): MatchupRecord[] {
     if (
       normalized.userPrimaryPokemon !== withUpdatedAt.userPrimaryPokemon ||
       normalized.userSecondaryPokemon !== withUpdatedAt.userSecondaryPokemon ||
-      normalized.opponentPrimaryPokemon !== withUpdatedAt.opponentPrimaryPokemon ||
-      normalized.opponentSecondaryPokemon !== withUpdatedAt.opponentSecondaryPokemon
+      normalized.opponentPrimaryPokemon !==
+        withUpdatedAt.opponentPrimaryPokemon ||
+      normalized.opponentSecondaryPokemon !==
+        withUpdatedAt.opponentSecondaryPokemon
     ) {
       needsMigration = true;
     }

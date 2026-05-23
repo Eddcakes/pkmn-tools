@@ -71,7 +71,8 @@ export function useMatchupSettings() {
           ...localSettingsFallback,
           defaultFormat:
             convexSettings.defaultFormat ?? localSettingsFallback.defaultFormat,
-          defaultSet: convexSettings.defaultSet ?? localSettingsFallback.defaultSet,
+          defaultSet:
+            convexSettings.defaultSet ?? localSettingsFallback.defaultSet,
           recentUserPrimary:
             convexSettings.recentUserPrimary ??
             localSettingsFallback.recentUserPrimary,

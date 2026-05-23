@@ -1,7 +1,13 @@
 "use client";
 
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore
+} from "react";
 import { api } from "../../convex/_generated/api";
 import { resolvePokemonSlots } from "../utils/archetypePokemon";
 import {
@@ -86,7 +92,11 @@ export function useMatchupRecords() {
   const localRecordsFallback = localRecordsOverride ?? localRecordsSnapshot;
 
   useEffect(() => {
-    if (!isAuthenticated || convexRecords === undefined || hasRequestedBackfill.current) {
+    if (
+      !isAuthenticated ||
+      convexRecords === undefined ||
+      hasRequestedBackfill.current
+    ) {
       return;
     }
 
@@ -113,21 +123,23 @@ export function useMatchupRecords() {
   const records: MatchupRecord[] =
     // For authenticated users: prefer Convex data, fall back to localStorage while loading
     isAuthenticated && convexRecords !== undefined
-      ? convexRecords.map((r) => ({
-          id: r.clientId,
-          userArchetype: r.userArchetype,
-          opponentArchetype: r.opponentArchetype,
-          userPrimaryPokemon: r.userPrimaryPokemon,
-          userSecondaryPokemon: r.userSecondaryPokemon,
-          opponentPrimaryPokemon: r.opponentPrimaryPokemon,
-          opponentSecondaryPokemon: r.opponentSecondaryPokemon,
-          format: r.format,
-          latestSet: r.latestSet,
-          result: r.result,
-          notes: r.notes,
-          createdAt: r.createdAt,
-          updatedAt: r.updatedAt
-        })).map(ensurePokemonSlotFields)
+      ? convexRecords
+          .map((r) => ({
+            id: r.clientId,
+            userArchetype: r.userArchetype,
+            opponentArchetype: r.opponentArchetype,
+            userPrimaryPokemon: r.userPrimaryPokemon,
+            userSecondaryPokemon: r.userSecondaryPokemon,
+            opponentPrimaryPokemon: r.opponentPrimaryPokemon,
+            opponentSecondaryPokemon: r.opponentSecondaryPokemon,
+            format: r.format,
+            latestSet: r.latestSet,
+            result: r.result,
+            notes: r.notes,
+            createdAt: r.createdAt,
+            updatedAt: r.updatedAt
+          }))
+          .map(ensurePokemonSlotFields)
       : // For unauthenticated users or while Convex is loading: use localStorage
         localRecordsFallback.map(ensurePokemonSlotFields);
 

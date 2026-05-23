@@ -2,10 +2,7 @@ import type { ReactNode, RefObject } from "react";
 import { Button } from "../components/Button";
 import { Card } from "../components/Card";
 import { DeckPokemonBadge } from "../components/DeckPokemonBadge";
-import {
-  formatDate,
-  formatFileNameFromDateString
-} from "../utils/date";
+import { formatDate, formatFileNameFromDateString } from "../utils/date";
 import type { MatchupRecord } from "../utils/matchupRecords";
 
 interface MatchupRecordsListProps {
@@ -24,7 +21,7 @@ interface MatchupRecordsListProps {
   onClearFilters: () => void;
 }
 
-function getResultBadgeColor(result: string) {
+function getResultBadgeColour(result: string) {
   switch (result) {
     case "win":
       return "bg-green-100 text-green-800";
@@ -57,7 +54,9 @@ export function MatchupRecordsList({
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold text-gray-900">
           Records ({filteredRecords.length}
-          {filteredRecords.length !== records.length ? ` of ${records.length}` : ""}
+          {filteredRecords.length !== records.length
+            ? ` of ${records.length}`
+            : ""}
           )
         </h2>
         {records.length > 0 && (
@@ -136,7 +135,7 @@ export function MatchupRecordsList({
 
                 <div className="flex items-center gap-3 mb-2">
                   <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium uppercase ${getResultBadgeColor(
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium uppercase ${getResultBadgeColour(
                       record.result
                     )}`}
                   >

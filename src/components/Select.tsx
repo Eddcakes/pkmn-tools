@@ -1,11 +1,5 @@
 import { Select as BaseSelect } from "@base-ui/react/select";
-import {
-  Fragment,
-  type MouseEvent,
-  useId,
-  useMemo,
-  useState
-} from "react";
+import { Fragment, type MouseEvent, useId, useMemo, useState } from "react";
 import { CheckIcon, ChevronIcon, CrossIcon } from "./Icons";
 
 export interface SelectOption {
@@ -53,24 +47,33 @@ export function Select({
   const renderedGroups = useMemo(() => {
     if (groups?.length) {
       const seenValues = new Set<string>();
+      const labelCounts = new Map<string, number>();
 
       return groups
-        .map((group) => ({
-          label: group.label,
-          options: group.options.filter((option) => {
+        .map((group) => {
+          const options = group.options.filter((option) => {
             if (seenValues.has(option.value)) {
               return false;
             }
 
             seenValues.add(option.value);
             return true;
-          })
-        }))
+          });
+          const count = (labelCounts.get(group.label) ?? 0) + 1;
+          labelCounts.set(group.label, count);
+
+          return {
+            key: count === 1 ? group.label : `${group.label}-${count}`,
+            label: group.label,
+            options
+          };
+        })
         .filter((group) => group.options.length > 0);
     }
 
     return [
       {
+        key: "options",
         label: "",
         options: options ?? []
       }
@@ -107,7 +110,9 @@ export function Select({
           id={selectId}
           value={value || null}
           items={flattenedItems}
-          onValueChange={(nextValue) => onChange((nextValue as string | null) ?? "")}
+          onValueChange={(nextValue) =>
+            onChange((nextValue as string | null) ?? "")
+          }
           open={open}
           onOpenChange={setOpen}
           required={required}
@@ -153,7 +158,7 @@ export function Select({
               <BaseSelect.Popup className="w-(--anchor-width) max-w-(--available-width) rounded-md border border-gray-300 bg-white text-gray-900 shadow-lg">
                 <BaseSelect.List className="max-h-(--available-height) overflow-auto py-1 outline-none">
                   {renderedGroups.map((group, groupIndex) => (
-                    <Fragment key={`${group.label}-${groupIndex}`}>
+                    <Fragment key={group.key}>
                       {isGrouped ? (
                         <BaseSelect.Group className="block">
                           <BaseSelect.GroupLabel className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500">

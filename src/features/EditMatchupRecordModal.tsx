@@ -4,7 +4,10 @@ import { Button } from "../components/Button";
 import { ButtonGroup } from "../components/ButtonGroup";
 import { Modal } from "../components/Modal";
 import { ModalFooter } from "../components/ModalFooter";
-import { PkmnSelector, type PkmnSelectorGroup } from "../components/PkmnSelector";
+import {
+  PkmnSelector,
+  type PkmnSelectorGroup
+} from "../components/PkmnSelector";
 import { Select } from "../components/Select";
 import { resolvePokemonSlots } from "../utils/archetypePokemon";
 import {
@@ -55,21 +58,28 @@ export function EditMatchupRecordModal({
   onUpdateRecord
 }: EditMatchupRecordModalProps) {
   const fallbackUserSlots = resolvePokemonSlots(record?.userArchetype ?? "");
-  const fallbackOpponentSlots = resolvePokemonSlots(record?.opponentArchetype ?? "");
+  const fallbackOpponentSlots = resolvePokemonSlots(
+    record?.opponentArchetype ?? ""
+  );
 
   const [userPrimaryPokemon, setUserPrimaryPokemon] = useState(
     () => record?.userPrimaryPokemon ?? fallbackUserSlots.primaryPokemon ?? ""
   );
   const [userSecondaryPokemon, setUserSecondaryPokemon] = useState(
-    () => record?.userSecondaryPokemon ?? fallbackUserSlots.secondaryPokemon ?? ""
+    () =>
+      record?.userSecondaryPokemon ?? fallbackUserSlots.secondaryPokemon ?? ""
   );
   const [opponentPrimaryPokemon, setOpponentPrimaryPokemon] = useState(
     () =>
-      record?.opponentPrimaryPokemon ?? fallbackOpponentSlots.primaryPokemon ?? ""
+      record?.opponentPrimaryPokemon ??
+      fallbackOpponentSlots.primaryPokemon ??
+      ""
   );
   const [opponentSecondaryPokemon, setOpponentSecondaryPokemon] = useState(
     () =>
-      record?.opponentSecondaryPokemon ?? fallbackOpponentSlots.secondaryPokemon ?? ""
+      record?.opponentSecondaryPokemon ??
+      fallbackOpponentSlots.secondaryPokemon ??
+      ""
   );
   const [result, setResult] = useState<MatchupResult | "">(
     () => record?.result ?? ""
@@ -125,7 +135,10 @@ export function EditMatchupRecordModal({
       return;
     }
 
-    const userArchetype = buildDeckLabel(userPrimaryPokemon, userSecondaryPokemon);
+    const userArchetype = buildDeckLabel(
+      userPrimaryPokemon,
+      userSecondaryPokemon
+    );
     const opponentArchetype = buildDeckLabel(
       opponentPrimaryPokemon,
       opponentSecondaryPokemon
@@ -219,7 +232,9 @@ export function EditMatchupRecordModal({
         </div>
 
         <div className="grid gap-2">
-          <p className="block text-sm font-medium text-gray-700">Opponent Deck</p>
+          <p className="block text-sm font-medium text-gray-700">
+            Opponent Deck
+          </p>
           <PkmnSelector
             id="edit-opponent-primary-pokemon"
             name="editOpponentPrimaryPokemon"

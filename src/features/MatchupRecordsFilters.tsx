@@ -1,5 +1,8 @@
 import { Button } from "../components/Button";
-import { PkmnSelector, type PkmnSelectorGroup } from "../components/PkmnSelector";
+import {
+  PkmnSelector,
+  type PkmnSelectorGroup
+} from "../components/PkmnSelector";
 import { Select, type SelectOption } from "../components/Select";
 
 interface MatchupRecordsFiltersProps {

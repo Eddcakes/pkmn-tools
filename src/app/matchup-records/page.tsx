@@ -11,8 +11,8 @@ import {
 } from "@/components/PkmnSelector";
 import { EditMatchupRecordModal } from "@/features/EditMatchupRecordModal";
 import { MatchupChart } from "@/features/MatchupChart";
-import { MatchupRecordsList } from "@/features/MatchupRecordsList";
 import { MatchupRecordsFilters } from "@/features/MatchupRecordsFilters";
+import { MatchupRecordsList } from "@/features/MatchupRecordsList";
 import { MatchupSettingsModal } from "@/features/MatchupSettingsModal";
 import {
   addRecentArchetype,
@@ -26,8 +26,8 @@ import { useMatchupRecords } from "../../hooks/useMatchupRecords";
 import { useMatchupSettings } from "../../hooks/useMatchupSettings";
 import {
   getMatchupChartData,
-  type MatchupResult,
-  type MatchupRecord
+  type MatchupRecord,
+  type MatchupResult
 } from "../../utils/matchupRecords";
 import {
   AVAILABLE_FORMATS,
@@ -62,7 +62,8 @@ export default function MatchupRecordsPage() {
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [showAllRecords, setShowAllRecords] = useState(false);
   const [userPrimaryPokemonFilter, setUserPrimaryPokemonFilter] = useState("");
-  const [userSecondaryPokemonFilter, setUserSecondaryPokemonFilter] = useState("");
+  const [userSecondaryPokemonFilter, setUserSecondaryPokemonFilter] =
+    useState("");
   const [opponentPrimaryPokemonFilter, setOpponentPrimaryPokemonFilter] =
     useState("");
   const [opponentSecondaryPokemonFilter, setOpponentSecondaryPokemonFilter] =
@@ -166,13 +167,18 @@ export default function MatchupRecordsPage() {
 
   const pokemonLabelByValue = useMemo(
     () =>
-      new Map(POKEMON_SEARCH_ENTRIES.map((entry) => [entry.value, entry.label])),
+      new Map(
+        POKEMON_SEARCH_ENTRIES.map((entry) => [entry.value, entry.label])
+      ),
     []
   );
 
   const buildPokemonGroups = useMemo(
     () =>
-      (recentValues: string[], recentGroupLabel: string): PkmnSelectorGroup[] => {
+      (
+        recentValues: string[],
+        recentGroupLabel: string
+      ): PkmnSelectorGroup[] => {
         const recentOptions = recentValues
           .map((value) => {
             const label = pokemonLabelByValue.get(value);
@@ -331,19 +337,6 @@ export default function MatchupRecordsPage() {
   const handleEditUpdated = () => {
     setSuccessMessage("Record updated successfully!");
     setTimeout(() => setSuccessMessage(""), 3000);
-  };
-
-  const getResultBadgeColor = (result: string) => {
-    switch (result) {
-      case "win":
-        return "bg-green-100 text-green-800";
-      case "loss":
-        return "bg-red-100 text-red-800";
-      case "tie":
-        return "bg-gray-100 text-gray-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
   };
 
   // Filter records based on selected filters
@@ -581,10 +574,10 @@ export default function MatchupRecordsPage() {
                 userSecondaryPokemonFilter={userSecondaryPokemonFilter}
                 setUserSecondaryPokemonFilter={setUserSecondaryPokemonFilter}
                 opponentPrimaryPokemonFilter={opponentPrimaryPokemonFilter}
-                setOpponentPrimaryPokemonFilter={setOpponentPrimaryPokemonFilter}
-                opponentSecondaryPokemonFilter={
-                  opponentSecondaryPokemonFilter
+                setOpponentPrimaryPokemonFilter={
+                  setOpponentPrimaryPokemonFilter
                 }
+                opponentSecondaryPokemonFilter={opponentSecondaryPokemonFilter}
                 setOpponentSecondaryPokemonFilter={
                   setOpponentSecondaryPokemonFilter
                 }

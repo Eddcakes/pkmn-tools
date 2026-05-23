@@ -68,7 +68,10 @@ function normalizeRecentPokemonList(values: unknown): string[] {
   return normalized;
 }
 
-function prependRecentPokemon(existing: string[], nextValue?: string): string[] {
+function prependRecentPokemon(
+  existing: string[],
+  nextValue?: string
+): string[] {
   if (!nextValue) {
     return existing;
   }
@@ -79,7 +82,9 @@ function prependRecentPokemon(existing: string[], nextValue?: string): string[] 
   }
 
   const dedupeKey = trimmed.toLowerCase();
-  const filtered = existing.filter((value) => value.toLowerCase() !== dedupeKey);
+  const filtered = existing.filter(
+    (value) => value.toLowerCase() !== dedupeKey
+  );
 
   return [trimmed, ...filtered].slice(0, MAX_RECENT_POKEMON);
 }
@@ -120,8 +125,12 @@ export function getMatchupSettings(): MatchupSettings {
       defaultFormat: normalizeFormat(parsed.defaultFormat),
       defaultSet: normalizeSet(parsed.defaultSet ?? parsed.defaultLatestSet),
       recentUserPrimary: normalizeRecentPokemonList(parsed.recentUserPrimary),
-      recentUserSecondary: normalizeRecentPokemonList(parsed.recentUserSecondary),
-      recentOpponentPrimary: normalizeRecentPokemonList(parsed.recentOpponentPrimary),
+      recentUserSecondary: normalizeRecentPokemonList(
+        parsed.recentUserSecondary
+      ),
+      recentOpponentPrimary: normalizeRecentPokemonList(
+        parsed.recentOpponentPrimary
+      ),
       recentOpponentSecondary: normalizeRecentPokemonList(
         parsed.recentOpponentSecondary
       )
@@ -141,7 +150,9 @@ export function saveMatchupSettings(settings: MatchupSettings): void {
       defaultFormat: normalizeFormat(settings.defaultFormat),
       defaultSet: normalizeSet(settings.defaultSet),
       recentUserPrimary: normalizeRecentPokemonList(settings.recentUserPrimary),
-      recentUserSecondary: normalizeRecentPokemonList(settings.recentUserSecondary),
+      recentUserSecondary: normalizeRecentPokemonList(
+        settings.recentUserSecondary
+      ),
       recentOpponentPrimary: normalizeRecentPokemonList(
         settings.recentOpponentPrimary
       ),

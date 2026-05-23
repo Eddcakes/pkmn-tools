@@ -42,9 +42,7 @@ export const upsert = mutation({
       ...(args.defaultFormat !== undefined
         ? { defaultFormat: args.defaultFormat }
         : {}),
-      ...(args.defaultSet !== undefined
-        ? { defaultSet: args.defaultSet }
-        : {}),
+      ...(args.defaultSet !== undefined ? { defaultSet: args.defaultSet } : {}),
       ...(args.recentUserPrimary !== undefined
         ? { recentUserPrimary: args.recentUserPrimary }
         : {}),
