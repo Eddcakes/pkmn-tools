@@ -26,14 +26,25 @@ export function subscribeSavedDecks(onStoreChange: () => void): () => void {
     return () => {};
   }
 
-  const handleChange = () => onStoreChange();
+  const handleStorageChange = (event: StorageEvent) => {
+    if (event.storageArea !== window.localStorage) {
+      return;
+    }
 
-  window.addEventListener("storage", handleChange);
-  window.addEventListener(SAVED_DECKS_CHANGED_EVENT, handleChange);
+    if (event.key !== STORAGE_KEY) {
+      return;
+    }
+
+    onStoreChange();
+  };
+  const handleInTabChange = () => onStoreChange();
+
+  window.addEventListener("storage", handleStorageChange);
+  window.addEventListener(SAVED_DECKS_CHANGED_EVENT, handleInTabChange);
 
   return () => {
-    window.removeEventListener("storage", handleChange);
-    window.removeEventListener(SAVED_DECKS_CHANGED_EVENT, handleChange);
+    window.removeEventListener("storage", handleStorageChange);
+    window.removeEventListener(SAVED_DECKS_CHANGED_EVENT, handleInTabChange);
   };
 }
 
