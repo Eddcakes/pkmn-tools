@@ -18,6 +18,10 @@ interface MatchupRecordsFiltersProps {
   setFormatFilter: (value: string) => void;
   latestSetFilter: string;
   setLatestSetFilter: (value: string) => void;
+  createdAfterFilter: string;
+  setCreatedAfterFilter: (value: string) => void;
+  createdBeforeFilter: string;
+  setCreatedBeforeFilter: (value: string) => void;
   userPrimaryGroups: PkmnSelectorGroup[];
   userSecondaryGroups: PkmnSelectorGroup[];
   opponentPrimaryGroups: PkmnSelectorGroup[];
@@ -40,6 +44,10 @@ export function MatchupRecordsFilters({
   setFormatFilter,
   latestSetFilter,
   setLatestSetFilter,
+  createdAfterFilter,
+  setCreatedAfterFilter,
+  createdBeforeFilter,
+  setCreatedBeforeFilter,
   userPrimaryGroups,
   userSecondaryGroups,
   opponentPrimaryGroups,
@@ -54,7 +62,9 @@ export function MatchupRecordsFilters({
     opponentPrimaryPokemonFilter ||
     opponentSecondaryPokemonFilter ||
     formatFilter ||
-    latestSetFilter;
+    latestSetFilter ||
+    createdAfterFilter ||
+    createdBeforeFilter;
 
   return (
     <>
@@ -152,6 +162,44 @@ export function MatchupRecordsFilters({
           options={latestSetOptions}
           placeholder="Select Latest Set"
         />
+      </div>
+
+      <div className="col-span-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label
+              htmlFor="filter-created-after"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Created On or After
+            </label>
+            <input
+              id="filter-created-after"
+              type="date"
+              value={createdAfterFilter}
+              onChange={(event) => setCreatedAfterFilter(event.target.value)}
+              max={createdBeforeFilter || undefined}
+              className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition-colors focus:border-transparent focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="filter-created-before"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Created On or Before
+            </label>
+            <input
+              id="filter-created-before"
+              type="date"
+              value={createdBeforeFilter}
+              onChange={(event) => setCreatedBeforeFilter(event.target.value)}
+              min={createdAfterFilter || undefined}
+              className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition-colors focus:border-transparent focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
       </div>
 
       {hasAnyFilter && (
