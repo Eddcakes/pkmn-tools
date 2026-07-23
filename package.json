@@ -13,10 +13,10 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
-    "@convex-dev/auth": "^0.0.91",
+    "@convex-dev/auth": "^0.0.94",
     "@tailwindcss/postcss": "^4.3.3",
     "@tanstack/react-virtual": "^3.14.8",
-    "convex": "^1.36.1",
+    "convex": "^1.42.3",
     "next": "^16.2.11",
     "postcss": "^8.5.22",
     "react": "^19.2.8",
