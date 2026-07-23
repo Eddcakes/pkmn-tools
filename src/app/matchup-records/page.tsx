@@ -47,6 +47,12 @@ const VISIBLE_POKEMON_LOOKUP = new Map(
   ])
 );
 
+const startOfLocalDayTimestamp = (dateValue: string): number =>
+  new Date(`${dateValue}T00:00:00.000`).getTime();
+
+const endOfLocalDayTimestamp = (dateValue: string): number =>
+  new Date(`${dateValue}T23:59:59.999`).getTime();
+
 export default function MatchupRecordsPage() {
   const { records, saveRecord, updateRecord, deleteRecord } =
     useMatchupRecords();
@@ -77,6 +83,8 @@ export default function MatchupRecordsPage() {
     useState("");
   const [formatFilter, setFormatFilter] = useState("");
   const [latestSetFilter, setLatestSetFilter] = useState("");
+  const [startDateFilter, setStartDateFilter] = useState("");
+  const [endDateFilter, setEndDateFilter] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [recordToEdit, setRecordToEdit] = useState<MatchupRecord | null>(null);
@@ -351,13 +359,25 @@ export default function MatchupRecordsPage() {
     const matchesLatestSet =
       !latestSetFilter ||
       record.latestSet?.toLowerCase() === latestSetFilter.toLowerCase();
+    const createdAtTimestamp = new Date(record.createdAt).getTime();
+    const hasValidCreatedAt = Number.isFinite(createdAtTimestamp);
+    const matchesStartDate =
+      !startDateFilter ||
+      (hasValidCreatedAt &&
+        createdAtTimestamp >= startOfLocalDayTimestamp(startDateFilter));
+    const matchesEndDate =
+      !endDateFilter ||
+      (hasValidCreatedAt &&
+        createdAtTimestamp <= endOfLocalDayTimestamp(endDateFilter));
     return (
       matchesUserPrimaryPokemon &&
       matchesUserSecondaryPokemon &&
       matchesOpponentPrimaryPokemon &&
       matchesOpponentSecondaryPokemon &&
       matchesFormat &&
-      matchesLatestSet
+      matchesLatestSet &&
+      matchesStartDate &&
+      matchesEndDate
     );
   });
 
@@ -379,6 +399,8 @@ export default function MatchupRecordsPage() {
     setOpponentSecondaryPokemonFilter("");
     setFormatFilter("");
     setLatestSetFilter("");
+    setStartDateFilter("");
+    setEndDateFilter("");
   };
 
   return (
@@ -573,6 +595,10 @@ export default function MatchupRecordsPage() {
                 setFormatFilter={setFormatFilter}
                 latestSetFilter={latestSetFilter}
                 setLatestSetFilter={setLatestSetFilter}
+                startDateFilter={startDateFilter}
+                setStartDateFilter={setStartDateFilter}
+                endDateFilter={endDateFilter}
+                setEndDateFilter={setEndDateFilter}
                 userPrimaryGroups={userPrimaryGroups}
                 userSecondaryGroups={userSecondaryGroups}
                 opponentPrimaryGroups={opponentPrimaryGroups}

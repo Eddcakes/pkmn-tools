@@ -18,6 +18,10 @@ interface MatchupRecordsFiltersProps {
   setFormatFilter: (value: string) => void;
   latestSetFilter: string;
   setLatestSetFilter: (value: string) => void;
+  startDateFilter: string;
+  setStartDateFilter: (value: string) => void;
+  endDateFilter: string;
+  setEndDateFilter: (value: string) => void;
   userPrimaryGroups: PkmnSelectorGroup[];
   userSecondaryGroups: PkmnSelectorGroup[];
   opponentPrimaryGroups: PkmnSelectorGroup[];
@@ -40,6 +44,10 @@ export function MatchupRecordsFilters({
   setFormatFilter,
   latestSetFilter,
   setLatestSetFilter,
+  startDateFilter,
+  setStartDateFilter,
+  endDateFilter,
+  setEndDateFilter,
   userPrimaryGroups,
   userSecondaryGroups,
   opponentPrimaryGroups,
@@ -54,7 +62,9 @@ export function MatchupRecordsFilters({
     opponentPrimaryPokemonFilter ||
     opponentSecondaryPokemonFilter ||
     formatFilter ||
-    latestSetFilter;
+    latestSetFilter ||
+    startDateFilter ||
+    endDateFilter;
 
   return (
     <>
@@ -132,26 +142,64 @@ export function MatchupRecordsFilters({
         </div>
       </div>
 
-      <div>
-        <Select
-          id="filter-format"
-          label="Filter Format"
-          value={formatFilter}
-          onChange={setFormatFilter}
-          options={formatOptions}
-          placeholder="Select Format"
-        />
-      </div>
+      <div className="col-span-full">
+        <p className="block text-sm font-medium text-gray-700 mb-2">
+          Meta and date
+        </p>
+        <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+          <Select
+            id="filter-format"
+            label="Filter Format"
+            value={formatFilter}
+            onChange={setFormatFilter}
+            options={formatOptions}
+            placeholder="Select Format"
+          />
 
-      <div>
-        <Select
-          id="filter-latest-set"
-          label="Filter Latest Set"
-          value={latestSetFilter}
-          onChange={setLatestSetFilter}
-          options={latestSetOptions}
-          placeholder="Select Latest Set"
-        />
+          <Select
+            id="filter-latest-set"
+            label="Filter Latest Set"
+            value={latestSetFilter}
+            onChange={setLatestSetFilter}
+            options={latestSetOptions}
+            placeholder="Select Latest Set"
+          />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label
+              htmlFor="filter-start-date"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Start date
+            </label>
+            <input
+              id="filter-start-date"
+              type="date"
+              value={startDateFilter}
+              onChange={(event) => setStartDateFilter(event.target.value)}
+              max={endDateFilter || undefined}
+              className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition-colors focus:border-transparent focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="filter-end-date"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              End date
+            </label>
+            <input
+              id="filter-end-date"
+              type="date"
+              value={endDateFilter}
+              onChange={(event) => setEndDateFilter(event.target.value)}
+              min={startDateFilter || undefined}
+              className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition-colors focus:border-transparent focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
       </div>
 
       {hasAnyFilter && (
