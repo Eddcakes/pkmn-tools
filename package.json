@@ -32,6 +32,6 @@
     "babel-plugin-react-compiler": "^1.0.0",
     "eslint": "^10.7.0",
     "eslint-plugin-react-hooks": "^7.1.1",
-    "typescript": "^5"
+    "typescript": "^6.0.3"
   }
 }
