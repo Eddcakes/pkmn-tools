@@ -361,11 +361,11 @@ export default function MatchupRecordsPage() {
       record.latestSet?.toLowerCase() === latestSetFilter.toLowerCase();
     const createdAtTimestamp = new Date(record.createdAt).getTime();
     const hasValidCreatedAt = Number.isFinite(createdAtTimestamp);
-    const matchesCreatedAfter =
+    const matchesFromDate =
       !createdAfterFilter ||
       (hasValidCreatedAt &&
         createdAtTimestamp >= startOfLocalDayTimestamp(createdAfterFilter));
-    const matchesCreatedBefore =
+    const matchesToDateFilter =
       !createdBeforeFilter ||
       (hasValidCreatedAt &&
         createdAtTimestamp <= endOfLocalDayTimestamp(createdBeforeFilter));
@@ -376,8 +376,8 @@ export default function MatchupRecordsPage() {
       matchesOpponentSecondaryPokemon &&
       matchesFormat &&
       matchesLatestSet &&
-      matchesCreatedAfter &&
-      matchesCreatedBefore
+      matchesFromDate &&
+      matchesToDateFilter
     );
   });
 
@@ -595,10 +595,10 @@ export default function MatchupRecordsPage() {
                 setFormatFilter={setFormatFilter}
                 latestSetFilter={latestSetFilter}
                 setLatestSetFilter={setLatestSetFilter}
-                createdAfterFilter={createdAfterFilter}
-                setCreatedAfterFilter={setCreatedAfterFilter}
-                createdBeforeFilter={createdBeforeFilter}
-                setCreatedBeforeFilter={setCreatedBeforeFilter}
+                fromDateFilter={createdAfterFilter}
+                setFromDateFilter={setCreatedAfterFilter}
+                toDateFilter={createdBeforeFilter}
+                setToDateFilter={setCreatedBeforeFilter}
                 userPrimaryGroups={userPrimaryGroups}
                 userSecondaryGroups={userSecondaryGroups}
                 opponentPrimaryGroups={opponentPrimaryGroups}

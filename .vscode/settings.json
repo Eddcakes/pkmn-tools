@@ -19,5 +19,8 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.biome": "always",
     "source.organizeImports.biome": "always"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   }
 }
