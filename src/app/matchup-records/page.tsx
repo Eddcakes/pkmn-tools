@@ -83,8 +83,8 @@ export default function MatchupRecordsPage() {
     useState("");
   const [formatFilter, setFormatFilter] = useState("");
   const [latestSetFilter, setLatestSetFilter] = useState("");
-  const [createdAfterFilter, setCreatedAfterFilter] = useState("");
-  const [createdBeforeFilter, setCreatedBeforeFilter] = useState("");
+  const [startDateFilter, setStartDateFilter] = useState("");
+  const [endDateFilter, setEndDateFilter] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [recordToEdit, setRecordToEdit] = useState<MatchupRecord | null>(null);
@@ -361,14 +361,14 @@ export default function MatchupRecordsPage() {
       record.latestSet?.toLowerCase() === latestSetFilter.toLowerCase();
     const createdAtTimestamp = new Date(record.createdAt).getTime();
     const hasValidCreatedAt = Number.isFinite(createdAtTimestamp);
-    const matchesFromDate =
-      !createdAfterFilter ||
+    const matchesStartDate =
+      !startDateFilter ||
       (hasValidCreatedAt &&
-        createdAtTimestamp >= startOfLocalDayTimestamp(createdAfterFilter));
-    const matchesToDateFilter =
-      !createdBeforeFilter ||
+        createdAtTimestamp >= startOfLocalDayTimestamp(startDateFilter));
+    const matchesEndDate =
+      !endDateFilter ||
       (hasValidCreatedAt &&
-        createdAtTimestamp <= endOfLocalDayTimestamp(createdBeforeFilter));
+        createdAtTimestamp <= endOfLocalDayTimestamp(endDateFilter));
     return (
       matchesUserPrimaryPokemon &&
       matchesUserSecondaryPokemon &&
@@ -376,8 +376,8 @@ export default function MatchupRecordsPage() {
       matchesOpponentSecondaryPokemon &&
       matchesFormat &&
       matchesLatestSet &&
-      matchesFromDate &&
-      matchesToDateFilter
+      matchesStartDate &&
+      matchesEndDate
     );
   });
 
@@ -399,8 +399,8 @@ export default function MatchupRecordsPage() {
     setOpponentSecondaryPokemonFilter("");
     setFormatFilter("");
     setLatestSetFilter("");
-    setCreatedAfterFilter("");
-    setCreatedBeforeFilter("");
+    setStartDateFilter("");
+    setEndDateFilter("");
   };
 
   return (
@@ -595,10 +595,10 @@ export default function MatchupRecordsPage() {
                 setFormatFilter={setFormatFilter}
                 latestSetFilter={latestSetFilter}
                 setLatestSetFilter={setLatestSetFilter}
-                fromDateFilter={createdAfterFilter}
-                setFromDateFilter={setCreatedAfterFilter}
-                toDateFilter={createdBeforeFilter}
-                setToDateFilter={setCreatedBeforeFilter}
+                startDateFilter={startDateFilter}
+                setStartDateFilter={setStartDateFilter}
+                endDateFilter={endDateFilter}
+                setEndDateFilter={setEndDateFilter}
                 userPrimaryGroups={userPrimaryGroups}
                 userSecondaryGroups={userSecondaryGroups}
                 opponentPrimaryGroups={opponentPrimaryGroups}

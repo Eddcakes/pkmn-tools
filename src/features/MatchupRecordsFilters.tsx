@@ -18,10 +18,10 @@ interface MatchupRecordsFiltersProps {
   setFormatFilter: (value: string) => void;
   latestSetFilter: string;
   setLatestSetFilter: (value: string) => void;
-  fromDateFilter: string;
-  setFromDateFilter: (value: string) => void;
-  toDateFilter: string;
-  setToDateFilter: (value: string) => void;
+  startDateFilter: string;
+  setStartDateFilter: (value: string) => void;
+  endDateFilter: string;
+  setEndDateFilter: (value: string) => void;
   userPrimaryGroups: PkmnSelectorGroup[];
   userSecondaryGroups: PkmnSelectorGroup[];
   opponentPrimaryGroups: PkmnSelectorGroup[];
@@ -44,10 +44,10 @@ export function MatchupRecordsFilters({
   setFormatFilter,
   latestSetFilter,
   setLatestSetFilter,
-  fromDateFilter,
-  setFromDateFilter,
-  toDateFilter,
-  setToDateFilter,
+  startDateFilter,
+  setStartDateFilter,
+  endDateFilter,
+  setEndDateFilter,
   userPrimaryGroups,
   userSecondaryGroups,
   opponentPrimaryGroups,
@@ -63,8 +63,8 @@ export function MatchupRecordsFilters({
     opponentSecondaryPokemonFilter ||
     formatFilter ||
     latestSetFilter ||
-    fromDateFilter ||
-    toDateFilter;
+    startDateFilter ||
+    endDateFilter;
 
   return (
     <>
@@ -168,34 +168,34 @@ export function MatchupRecordsFilters({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label
-              htmlFor="filter-created-after"
+              htmlFor="filter-start-date"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
-              From
+              Start date
             </label>
             <input
-              id="filter-created-after"
+              id="filter-start-date"
               type="date"
-              value={fromDateFilter}
-              onChange={(event) => setFromDateFilter(event.target.value)}
-              max={toDateFilter || undefined}
+              value={startDateFilter}
+              onChange={(event) => setStartDateFilter(event.target.value)}
+              max={endDateFilter || undefined}
               className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition-colors focus:border-transparent focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
             <label
-              htmlFor="filter-created-before"
+              htmlFor="filter-end-date"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
-              To
+              End date
             </label>
             <input
-              id="filter-created-before"
+              id="filter-end-date"
               type="date"
-              value={toDateFilter}
-              onChange={(event) => setToDateFilter(event.target.value)}
-              min={fromDateFilter || undefined}
+              value={endDateFilter}
+              onChange={(event) => setEndDateFilter(event.target.value)}
+              min={startDateFilter || undefined}
               className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition-colors focus:border-transparent focus:ring-2 focus:ring-blue-500"
             />
           </div>
