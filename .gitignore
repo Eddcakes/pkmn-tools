@@ -42,3 +42,10 @@ next-env.d.ts
 
 # local testing data
 .data
+convex/archetypePokemon.ts
+convex/matchupRecords.ts
+convex/matchupSettings.ts
+convex/migrateArchetypePokemon.ts
+convex/savedDecks.ts
+convex/schema.ts
+convex/syncLocalData.ts
