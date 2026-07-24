@@ -10,10 +10,14 @@ import {
 export function useMatchupCatalog() {
   const catalog = useQuery(api.matchupCatalog.list, {});
 
+  const formats =
+    catalog?.formats.map((item) => item.value) ?? AVAILABLE_FORMATS;
+  const latestSets =
+    catalog?.latestSets.map((item) => item.value) ?? AVAILABLE_LATEST_SETS;
+
   return {
-    formats: catalog?.formats.map((item) => item.value) ?? AVAILABLE_FORMATS,
-    latestSets:
-      catalog?.latestSets.map((item) => item.value) ?? AVAILABLE_LATEST_SETS,
+    formats: [...formats].reverse(),
+    latestSets: [...latestSets].reverse(),
     isLoading: catalog === undefined
   };
 }
