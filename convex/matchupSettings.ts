@@ -1,5 +1,6 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
+import { normalizeOptionalFormatAndSet } from "./matchupCatalog";
 import { mutation, query } from "./_generated/server";
 
 export const get = query({
@@ -38,11 +39,18 @@ export const upsert = mutation({
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
+    const normalizedFormatAndSet = await normalizeOptionalFormatAndSet(ctx, {
+      format: args.defaultFormat,
+      latestSet: args.defaultSet
+    });
+
     const normalizedSettings = {
       ...(args.defaultFormat !== undefined
-        ? { defaultFormat: args.defaultFormat }
+        ? { defaultFormat: normalizedFormatAndSet.format }
         : {}),
-      ...(args.defaultSet !== undefined ? { defaultSet: args.defaultSet } : {}),
+      ...(args.defaultSet !== undefined
+        ? { defaultSet: normalizedFormatAndSet.latestSet }
+        : {}),
       ...(args.recentUserPrimary !== undefined
         ? { recentUserPrimary: args.recentUserPrimary }
         : {}),

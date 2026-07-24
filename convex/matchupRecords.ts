@@ -1,5 +1,10 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
+import {
+  getMatchupCatalogSnapshot,
+  normalizeOptionalFormatAndSet,
+  normalizeOptionalFormatAndSetFromSnapshot
+} from "./matchupCatalog";
 import { mutation, query } from "./_generated/server";
 
 const MAX_MATCHUP_RECORDS = 1000;
@@ -37,6 +42,11 @@ export const upsert = mutation({
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
+    const normalizedFormatAndSet = await normalizeOptionalFormatAndSet(ctx, {
+      format: args.format,
+      latestSet: args.latestSet
+    });
+
     const existing = await ctx.db
       .query("matchupRecords")
       .withIndex("by_user_and_client_id", (q) =>
@@ -52,8 +62,8 @@ export const upsert = mutation({
         userSecondaryPokemon: args.userSecondaryPokemon,
         opponentPrimaryPokemon: args.opponentPrimaryPokemon,
         opponentSecondaryPokemon: args.opponentSecondaryPokemon,
-        format: args.format,
-        latestSet: args.latestSet,
+        format: normalizedFormatAndSet.format,
+        latestSet: normalizedFormatAndSet.latestSet,
         result: args.result,
         notes: args.notes,
         updatedAt: args.updatedAt
@@ -61,7 +71,12 @@ export const upsert = mutation({
       return existing._id;
     }
 
-    return ctx.db.insert("matchupRecords", { userId, ...args });
+    return ctx.db.insert("matchupRecords", {
+      userId,
+      ...args,
+      format: normalizedFormatAndSet.format,
+      latestSet: normalizedFormatAndSet.latestSet
+    });
   }
 });
 
@@ -90,8 +105,17 @@ export const batchUpsert = mutation({
     if (!userId) throw new Error("Not authenticated");
 
     const ids: string[] = [];
+    const catalogSnapshot = await getMatchupCatalogSnapshot(ctx);
 
     for (const recordArg of args.records) {
+      const normalizedFormatAndSet = normalizeOptionalFormatAndSetFromSnapshot(
+        catalogSnapshot,
+        {
+          format: recordArg.format,
+          latestSet: recordArg.latestSet
+        }
+      );
+
       const existing = await ctx.db
         .query("matchupRecords")
         .withIndex("by_user_and_client_id", (q) =>
@@ -107,8 +131,8 @@ export const batchUpsert = mutation({
           userSecondaryPokemon: recordArg.userSecondaryPokemon,
           opponentPrimaryPokemon: recordArg.opponentPrimaryPokemon,
           opponentSecondaryPokemon: recordArg.opponentSecondaryPokemon,
-          format: recordArg.format,
-          latestSet: recordArg.latestSet,
+          format: normalizedFormatAndSet.format,
+          latestSet: normalizedFormatAndSet.latestSet,
           result: recordArg.result,
           notes: recordArg.notes,
           updatedAt: recordArg.updatedAt
@@ -117,7 +141,9 @@ export const batchUpsert = mutation({
       } else {
         const newId = await ctx.db.insert("matchupRecords", {
           userId,
-          ...recordArg
+          ...recordArg,
+          format: normalizedFormatAndSet.format,
+          latestSet: normalizedFormatAndSet.latestSet
         });
         ids.push(newId);
       }
@@ -148,6 +174,11 @@ export const update = mutation({
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
+    const normalizedFormatAndSet = await normalizeOptionalFormatAndSet(ctx, {
+      format: args.format,
+      latestSet: args.latestSet
+    });
+
     const existing = await ctx.db
       .query("matchupRecords")
       .withIndex("by_user_and_client_id", (q) =>
@@ -158,7 +189,15 @@ export const update = mutation({
     if (!existing) throw new Error("Not found");
 
     const { clientId, ...updates } = args;
-    await ctx.db.patch(existing._id, updates);
+    await ctx.db.patch(existing._id, {
+      ...updates,
+      ...(args.format !== undefined
+        ? { format: normalizedFormatAndSet.format }
+        : {}),
+      ...(args.latestSet !== undefined
+        ? { latestSet: normalizedFormatAndSet.latestSet }
+        : {})
+    });
   }
 });
 

@@ -54,5 +54,16 @@ export default defineSchema({
     recentUserSecondary: v.optional(v.array(v.string())),
     recentOpponentPrimary: v.optional(v.array(v.string())),
     recentOpponentSecondary: v.optional(v.array(v.string()))
-  }).index("by_user", ["userId"])
+  }).index("by_user", ["userId"]),
+
+  matchupCatalog: defineTable({
+    category: v.union(v.literal("format"), v.literal("set")),
+    value: v.string(),
+    sortOrder: v.number(),
+    isActive: v.optional(v.boolean()),
+    createdAt: v.string(),
+    updatedAt: v.string()
+  })
+    .index("by_category_and_sort_order", ["category", "sortOrder"])
+    .index("by_category_and_value", ["category", "value"])
 });

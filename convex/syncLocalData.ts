@@ -1,5 +1,6 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
+import { normalizeOptionalFormatAndSet } from "./matchupCatalog";
 import { mutation } from "./_generated/server";
 
 export const syncOnLogin = mutation({
@@ -116,6 +117,11 @@ export const syncOnLogin = mutation({
     // Perform upserts for records
     const recordIds: string[] = [];
     for (const recordArg of recordsToSync) {
+      const normalizedFormatAndSet = await normalizeOptionalFormatAndSet(ctx, {
+        format: recordArg.format,
+        latestSet: recordArg.latestSet
+      });
+
       const existing = await ctx.db
         .query("matchupRecords")
         .withIndex("by_user_and_client_id", (q) =>
@@ -131,8 +137,8 @@ export const syncOnLogin = mutation({
           userSecondaryPokemon: recordArg.userSecondaryPokemon,
           opponentPrimaryPokemon: recordArg.opponentPrimaryPokemon,
           opponentSecondaryPokemon: recordArg.opponentSecondaryPokemon,
-          format: recordArg.format,
-          latestSet: recordArg.latestSet,
+          format: normalizedFormatAndSet.format,
+          latestSet: normalizedFormatAndSet.latestSet,
           result: recordArg.result,
           notes: recordArg.notes,
           updatedAt: recordArg.updatedAt
@@ -148,8 +154,8 @@ export const syncOnLogin = mutation({
           userSecondaryPokemon: recordArg.userSecondaryPokemon,
           opponentPrimaryPokemon: recordArg.opponentPrimaryPokemon,
           opponentSecondaryPokemon: recordArg.opponentSecondaryPokemon,
-          format: recordArg.format,
-          latestSet: recordArg.latestSet,
+          format: normalizedFormatAndSet.format,
+          latestSet: normalizedFormatAndSet.latestSet,
           result: recordArg.result,
           notes: recordArg.notes,
           createdAt: recordArg.createdAt,
@@ -162,13 +168,18 @@ export const syncOnLogin = mutation({
     // Sync settings if server has none
     let settingsSynced = false;
     if (!serverSettings) {
+      const normalizedDefaults = await normalizeOptionalFormatAndSet(ctx, {
+        format: args.localSettings.defaultFormat,
+        latestSet: args.localSettings.defaultSet
+      });
+
       const newSettings = {
         userId,
         ...(args.localSettings.defaultFormat !== undefined
-          ? { defaultFormat: args.localSettings.defaultFormat }
+          ? { defaultFormat: normalizedDefaults.format }
           : {}),
         ...(args.localSettings.defaultSet !== undefined
-          ? { defaultSet: args.localSettings.defaultSet }
+          ? { defaultSet: normalizedDefaults.latestSet }
           : {}),
         ...(args.localSettings.recentUserPrimary !== undefined
           ? { recentUserPrimary: args.localSettings.recentUserPrimary }
@@ -189,18 +200,21 @@ export const syncOnLogin = mutation({
       await ctx.db.insert("matchupSettings", newSettings);
       settingsSynced = true;
     } else {
+      const normalizedDefaults = await normalizeOptionalFormatAndSet(ctx, {
+        format: serverSettings.defaultFormat ?? args.localSettings.defaultFormat,
+        latestSet: serverSettings.defaultSet ?? args.localSettings.defaultSet
+      });
+
       const cleanedSettings = {
         userId,
         ...((serverSettings.defaultFormat ?? args.localSettings.defaultFormat)
           ? {
-              defaultFormat:
-                serverSettings.defaultFormat ?? args.localSettings.defaultFormat
+              defaultFormat: normalizedDefaults.format
             }
           : {}),
         ...((serverSettings.defaultSet ?? args.localSettings.defaultSet)
           ? {
-              defaultSet:
-                serverSettings.defaultSet ?? args.localSettings.defaultSet
+              defaultSet: normalizedDefaults.latestSet
             }
           : {}),
         ...((serverSettings.recentUserPrimary ??
