@@ -22,6 +22,7 @@ import { POKEMON_VISIBLE_OPTIONS } from "@/utils/pokemon";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
 import { Select } from "../../components/Select";
+import { useMatchupCatalog } from "../../hooks/useMatchupCatalog";
 import { useMatchupRecords } from "../../hooks/useMatchupRecords";
 import { useMatchupSettings } from "../../hooks/useMatchupSettings";
 import {
@@ -29,10 +30,6 @@ import {
   type MatchupRecord,
   type MatchupResult
 } from "../../utils/matchupRecords";
-import {
-  AVAILABLE_FORMATS,
-  AVAILABLE_LATEST_SETS
-} from "../../utils/matchupSettings";
 
 const RESULT_BUTTON_OPTIONS: ButtonGroupOption<MatchupResult>[] = [
   { value: "win", label: "W", ariaLabel: "Win" },
@@ -57,6 +54,7 @@ export default function MatchupRecordsPage() {
   const { records, saveRecord, updateRecord, deleteRecord } =
     useMatchupRecords();
   const { settings, saveSettings } = useMatchupSettings();
+  const { formats, latestSets } = useMatchupCatalog();
   const [userPrimaryPokemon, setUserPrimaryPokemon] = useState("");
   const [userSecondaryPokemon, setUserSecondaryPokemon] = useState("");
   const [opponentPrimaryPokemon, setOpponentPrimaryPokemon] = useState("");
@@ -137,19 +135,19 @@ export default function MatchupRecordsPage() {
 
   const formatOptions = useMemo(
     () =>
-      AVAILABLE_FORMATS.map((formatOption) => ({
+      formats.map((formatOption) => ({
         value: formatOption,
         label: formatOption
       })),
-    []
+    [formats]
   );
   const latestSetOptions = useMemo(
     () =>
-      AVAILABLE_LATEST_SETS.map((setOption) => ({
+      latestSets.map((setOption) => ({
         value: setOption,
         label: setOption
       })),
-    []
+    [latestSets]
   );
 
   const selectedFormatValue =
@@ -656,8 +654,8 @@ export default function MatchupRecordsPage() {
         userSecondaryGroups={userSecondaryGroups}
         opponentPrimaryGroups={opponentPrimaryGroups}
         opponentSecondaryGroups={opponentSecondaryGroups}
-        formatOptions={AVAILABLE_FORMATS}
-        latestSetOptions={AVAILABLE_LATEST_SETS}
+        formatOptions={formats}
+        latestSetOptions={latestSets}
         onUpdateRecord={updateRecord}
       />
     </div>

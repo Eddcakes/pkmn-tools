@@ -11,6 +11,7 @@
 import type * as archetypePokemon from "../archetypePokemon.js";
 import type * as auth from "../auth.js";
 import type * as http from "../http.js";
+import type * as matchupCatalog from "../matchupCatalog.js";
 import type * as matchupRecords from "../matchupRecords.js";
 import type * as matchupSettings from "../matchupSettings.js";
 import type * as migrateArchetypePokemon from "../migrateArchetypePokemon.js";
@@ -27,6 +28,7 @@ declare const fullApi: ApiFromModules<{
   archetypePokemon: typeof archetypePokemon;
   auth: typeof auth;
   http: typeof http;
+  matchupCatalog: typeof matchupCatalog;
   matchupRecords: typeof matchupRecords;
   matchupSettings: typeof matchupSettings;
   migrateArchetypePokemon: typeof migrateArchetypePokemon;

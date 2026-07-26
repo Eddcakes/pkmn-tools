@@ -5,11 +5,8 @@ import { Button } from "../components/Button";
 import { Modal } from "../components/Modal";
 import { ModalFooter } from "../components/ModalFooter";
 import { Select } from "../components/Select";
+import { useMatchupCatalog } from "../hooks/useMatchupCatalog";
 import type { MatchupSettings } from "../utils/matchupSettings";
-import {
-  AVAILABLE_FORMATS,
-  AVAILABLE_LATEST_SETS
-} from "../utils/matchupSettings";
 
 interface MatchupSettingsModalProps {
   isOpen: boolean;
@@ -26,6 +23,7 @@ export function MatchupSettingsModal({
   onSaveSettings,
   onUpdated
 }: MatchupSettingsModalProps) {
+  const { formats, latestSets } = useMatchupCatalog();
   const [settings, setSettings] = useState<MatchupSettings>(initialSettings);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -98,7 +96,7 @@ export function MatchupSettingsModal({
                 defaultFormat: value || undefined
               })
             }
-            options={AVAILABLE_FORMATS.map((formatOption) => ({
+            options={formats.map((formatOption) => ({
               value: formatOption,
               label: formatOption
             }))}
@@ -120,7 +118,7 @@ export function MatchupSettingsModal({
                 defaultSet: value || undefined
               })
             }
-            options={AVAILABLE_LATEST_SETS.map((setOption) => ({
+            options={latestSets.map((setOption) => ({
               value: setOption,
               label: setOption
             }))}

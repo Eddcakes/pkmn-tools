@@ -17,21 +17,16 @@ const MAX_RECENT = 5;
 const MAX_FAVOURITES = 5;
 const MAX_RECENT_POKEMON = 5;
 
-// Keep these newest -> oldest so dropdowns render in the desired order.
-// Add newly released values at the start of each array.
-export const AVAILABLE_FORMATS = ["H-on", "G-on", "F-on", "E-on", "D-on"];
-export const AVAILABLE_LATEST_SETS = ["CRI", "POR", "ASC", "PFL", "MEG"];
-
 function normalizeFormat(format?: string): string | undefined {
   if (!format) return undefined;
   const normalized = format.trim();
-  return AVAILABLE_FORMATS.includes(normalized) ? normalized : undefined;
+  return normalized || undefined;
 }
 
 function normalizeSet(setValue?: string): string | undefined {
   if (!setValue) return undefined;
   const normalized = setValue.trim().toUpperCase();
-  return AVAILABLE_LATEST_SETS.includes(normalized) ? normalized : undefined;
+  return normalized || undefined;
 }
 
 function normalizeRecentPokemonList(values: unknown): string[] {
