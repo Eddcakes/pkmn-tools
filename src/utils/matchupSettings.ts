@@ -17,11 +17,6 @@ const MAX_RECENT = 5;
 const MAX_FAVOURITES = 5;
 const MAX_RECENT_POKEMON = 5;
 
-// Keep these oldest -> newest so sortOrder can be append-only.
-// Add newly released values at the end of each array.
-export const AVAILABLE_FORMATS = ["D-on", "E-on", "F-on", "G-on", "H-on"];
-export const AVAILABLE_LATEST_SETS = ["MEG", "PFL", "ASC", "POR", "CRI"];
-
 function normalizeFormat(format?: string): string | undefined {
   if (!format) return undefined;
   const normalized = format.trim();

@@ -2,18 +2,12 @@
 
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import {
-  AVAILABLE_FORMATS,
-  AVAILABLE_LATEST_SETS
-} from "../utils/matchupSettings";
 
 export function useMatchupCatalog() {
   const catalog = useQuery(api.matchupCatalog.list, {});
 
-  const formats =
-    catalog?.formats.map((item) => item.value) ?? AVAILABLE_FORMATS;
-  const latestSets =
-    catalog?.latestSets.map((item) => item.value) ?? AVAILABLE_LATEST_SETS;
+  const formats = catalog?.formats.map((item) => item.value) ?? [];
+  const latestSets = catalog?.latestSets.map((item) => item.value) ?? [];
 
   return {
     formats: [...formats].reverse(),

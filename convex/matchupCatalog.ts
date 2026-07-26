@@ -4,7 +4,7 @@ import { internalMutation, query } from "./_generated/server";
 
 // Oldest -> newest so new releases can be appended at max sortOrder + 1.
 export const DEFAULT_FORMATS = ["D-on", "E-on", "F-on", "G-on", "H-on"];
-export const DEFAULT_LATEST_SETS = ["MEG", "PFL", "ASC", "POR", "CRI"];
+export const DEFAULT_LATEST_SETS = ["MEG", "PFL", "ASC", "POR", "CRI", "PBL"];
 
 export type MatchupCatalogCategory = "format" | "set";
 
