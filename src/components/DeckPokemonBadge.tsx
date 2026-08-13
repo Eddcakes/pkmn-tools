@@ -60,7 +60,7 @@ function PokemonSprite({ pokemon }: { pokemon?: string }) {
     <img
       src={spriteUrl}
       alt={altText}
-      className="h-6 w-6 rounded-full border border-white bg-white object-contain"
+      className="size-6 shrink-0 rounded-full border border-white bg-white object-contain"
     />
   );
 }
