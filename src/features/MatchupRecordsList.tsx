@@ -1,4 +1,5 @@
 import type { ReactNode, RefObject } from "react";
+import { Badge } from "@/components/Badge";
 import { Button } from "../components/Button";
 import { Card } from "../components/Card";
 import { DeckPokemonBadge } from "../components/DeckPokemonBadge";
@@ -16,6 +17,7 @@ interface MatchupRecordsListProps {
   showAllRecords: boolean;
   setShowAllRecords: (value: boolean) => void;
   recordsListRef: RefObject<HTMLDivElement | null>;
+  hasAnyFilter: boolean;
   onEdit: (record: MatchupRecord) => void;
   onDelete: (id: string) => void;
   onClearFilters: () => void;
@@ -45,6 +47,7 @@ export function MatchupRecordsList({
   showAllRecords,
   setShowAllRecords,
   recordsListRef,
+  hasAnyFilter,
   onEdit,
   onDelete,
   onClearFilters
@@ -60,13 +63,15 @@ export function MatchupRecordsList({
           )
         </h2>
         {records.length > 0 && (
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => setShowFilters(!showFilters)}
-          >
-            {showFilters ? "Hide Filters" : "Filters"}
-          </Button>
+          <Badge show={hasAnyFilter}>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              {showFilters ? "Hide Filters" : "Filters"}
+            </Button>
+          </Badge>
         )}
       </div>
 

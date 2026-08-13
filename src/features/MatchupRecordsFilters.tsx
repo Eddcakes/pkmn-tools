@@ -28,6 +28,7 @@ interface MatchupRecordsFiltersProps {
   opponentSecondaryGroups: PkmnSelectorGroup[];
   formatOptions: SelectOption[];
   latestSetOptions: SelectOption[];
+  hasAnyFilter: boolean;
   onClearFilters: () => void;
 }
 
@@ -54,18 +55,9 @@ export function MatchupRecordsFilters({
   opponentSecondaryGroups,
   formatOptions,
   latestSetOptions,
+  hasAnyFilter,
   onClearFilters
 }: MatchupRecordsFiltersProps) {
-  const hasAnyFilter =
-    userPrimaryPokemonFilter ||
-    userSecondaryPokemonFilter ||
-    opponentPrimaryPokemonFilter ||
-    opponentSecondaryPokemonFilter ||
-    formatFilter ||
-    latestSetFilter ||
-    startDateFilter ||
-    endDateFilter;
-
   return (
     <>
       <div className="col-span-full">

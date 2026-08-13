@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert } from "@/components/Alert";
 import { ButtonGroup, type ButtonGroupOption } from "@/components/ButtonGroup";
 import { IconButton } from "@/components/IconButton";
@@ -50,6 +50,8 @@ const startOfLocalDayTimestamp = (dateValue: string): number =>
 const endOfLocalDayTimestamp = (dateValue: string): number =>
   new Date(`${dateValue}T23:59:59.999`).getTime();
 
+const LATEST_SET_FILTER_STORAGE_KEY = "matchup-records-latest-set-filter";
+
 export default function MatchupRecordsPage() {
   const { records, saveRecord, updateRecord, deleteRecord } =
     useMatchupRecords();
@@ -80,13 +82,45 @@ export default function MatchupRecordsPage() {
   const [opponentSecondaryPokemonFilter, setOpponentSecondaryPokemonFilter] =
     useState("");
   const [formatFilter, setFormatFilter] = useState("");
-  const [latestSetFilter, setLatestSetFilter] = useState("");
+  const [latestSetFilter, setLatestSetFilter] = useState(() => {
+    if (typeof window === "undefined") {
+      return "";
+    }
+
+    return window.localStorage.getItem(LATEST_SET_FILTER_STORAGE_KEY) ?? "";
+  });
   const [startDateFilter, setStartDateFilter] = useState("");
   const [endDateFilter, setEndDateFilter] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [recordToEdit, setRecordToEdit] = useState<MatchupRecord | null>(null);
   const recordsListRef = useRef<HTMLDivElement>(null);
+
+  const hasAnyFilter = Boolean(
+    userPrimaryPokemonFilter ||
+      userSecondaryPokemonFilter ||
+      opponentPrimaryPokemonFilter ||
+      opponentSecondaryPokemonFilter ||
+      formatFilter ||
+      latestSetFilter ||
+      startDateFilter ||
+      endDateFilter
+  );
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if (latestSetFilter) {
+      window.localStorage.setItem(
+        LATEST_SET_FILTER_STORAGE_KEY,
+        latestSetFilter
+      );
+    } else {
+      window.localStorage.removeItem(LATEST_SET_FILTER_STORAGE_KEY);
+    }
+  }, [latestSetFilter]);
 
   const deckPokemonSetters = {
     userPrimaryPokemon: setUserPrimaryPokemon,
@@ -603,6 +637,7 @@ export default function MatchupRecordsPage() {
                 opponentSecondaryGroups={opponentSecondaryGroups}
                 formatOptions={formatOptions}
                 latestSetOptions={latestSetOptions}
+                hasAnyFilter={hasAnyFilter}
                 onClearFilters={clearFilters}
               />
             }
@@ -613,6 +648,7 @@ export default function MatchupRecordsPage() {
             showAllRecords={showAllRecords}
             setShowAllRecords={setShowAllRecords}
             recordsListRef={recordsListRef}
+            hasAnyFilter={hasAnyFilter}
             onEdit={handleEdit}
             onDelete={handleDelete}
             onClearFilters={clearFilters}
