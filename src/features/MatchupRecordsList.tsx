@@ -19,7 +19,6 @@ interface MatchupRecordsListProps {
   recordsListRef: RefObject<HTMLDivElement | null>;
   hasAnyFilter: boolean;
   onEdit: (record: MatchupRecord) => void;
-  onDelete: (id: string) => void;
   onClearFilters: () => void;
 }
 
@@ -49,7 +48,6 @@ export function MatchupRecordsList({
   recordsListRef,
   hasAnyFilter,
   onEdit,
-  onDelete,
   onClearFilters
 }: MatchupRecordsListProps) {
   return (
@@ -106,39 +104,21 @@ export function MatchupRecordsList({
                 key={record.id}
                 className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors"
               >
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex items-center gap-2">
-                    <DeckPokemonBadge
-                      label={record.userArchetype}
-                      primaryPokemon={record.userPrimaryPokemon}
-                      secondaryPokemon={record.userSecondaryPokemon}
-                    />
-                    <span className="text-gray-400">vs</span>
-                    <DeckPokemonBadge
-                      label={record.opponentArchetype}
-                      primaryPokemon={record.opponentPrimaryPokemon}
-                      secondaryPokemon={record.opponentSecondaryPokemon}
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => onEdit(record)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="danger"
-                      onClick={() => onDelete(record.id)}
-                    >
-                      Delete
-                    </Button>
-                  </div>
+                <div className="flex justify-center items-start mb-3 gap-2">
+                  <DeckPokemonBadge
+                    label={record.userArchetype}
+                    primaryPokemon={record.userPrimaryPokemon}
+                    secondaryPokemon={record.userSecondaryPokemon}
+                  />
+                  <span className="text-gray-400">vs</span>
+                  <DeckPokemonBadge
+                    label={record.opponentArchetype}
+                    primaryPokemon={record.opponentPrimaryPokemon}
+                    secondaryPokemon={record.opponentSecondaryPokemon}
+                  />
                 </div>
 
-                <div className="flex items-center gap-3 mb-2">
+                <div className="flex justify-center items-start mb-3 gap-2">
                   <span
                     className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium uppercase ${getResultBadgeColour(
                       record.result
@@ -159,17 +139,27 @@ export function MatchupRecordsList({
                       {record.latestSet}
                     </span>
                   )}
+                </div>
+
+                {record.notes && (
+                  <p className="text-sm text-gray-600">{record.notes}</p>
+                )}
+
+                <div className="flex justify-end">
                   <span
                     data-file-name-for-syncing
                     className="text-xs text-white"
                   >
                     {formatFileNameFromDateString(record.createdAt)}
                   </span>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => onEdit(record)}
+                  >
+                    Edit
+                  </Button>
                 </div>
-
-                {record.notes && (
-                  <p className="text-sm text-gray-600 mt-2">{record.notes}</p>
-                )}
               </div>
             ))}
           </div>

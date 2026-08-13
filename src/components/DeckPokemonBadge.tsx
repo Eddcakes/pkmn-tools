@@ -38,20 +38,29 @@ export function DeckPokemonBadge({
   return (
     <span className="inline-flex items-center gap-2 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700">
       <span className="flex items-center -space-x-1">
-        <img
-          src={getPokemonSpriteUrl(resolved.primaryPokemon)}
-          alt={primaryLabel ?? "Unknown primary Pokemon"}
-          className="h-6 w-6 rounded-full border border-white bg-white object-contain"
-        />
+        {resolved.primaryPokemon && (
+          <PokemonSprite pokemon={resolved.primaryPokemon} />
+        )}
         {resolved.secondaryPokemon && (
-          <img
-            src={getPokemonSpriteUrl(resolved.secondaryPokemon)}
-            alt={secondaryLabel ?? "Unknown secondary Pokemon"}
-            className="h-6 w-6 rounded-full border border-white bg-white object-contain"
-          />
+          <PokemonSprite pokemon={resolved.secondaryPokemon} />
         )}
       </span>
-      <span>{displayLabel}</span>
+      <span className="hidden min-[480px]:inline">{displayLabel}</span>
     </span>
+  );
+}
+
+function PokemonSprite({ pokemon }: { pokemon?: string }) {
+  const spriteUrl = getPokemonSpriteUrl(pokemon);
+  const altText = pokemon
+    ? (getPokemonLabel(pokemon) ?? pokemon)
+    : "Unknown Pokemon";
+
+  return (
+    <img
+      src={spriteUrl}
+      alt={altText}
+      className="h-6 w-6 rounded-full border border-white bg-white object-contain"
+    />
   );
 }

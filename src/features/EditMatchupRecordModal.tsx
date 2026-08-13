@@ -32,6 +32,7 @@ interface EditMatchupRecordModalProps {
     id: string,
     updates: Partial<Omit<MatchupRecord, "id" | "createdAt">>
   ) => Promise<unknown>;
+  onDeleteRecord?: (id: string) => Promise<boolean>;
 }
 
 function buildDeckLabel(primaryPokemon: string, secondaryPokemon: string) {
@@ -55,7 +56,8 @@ export function EditMatchupRecordModal({
   opponentSecondaryGroups,
   formatOptions,
   latestSetOptions,
-  onUpdateRecord
+  onUpdateRecord,
+  onDeleteRecord
 }: EditMatchupRecordModalProps) {
   const fallbackUserSlots = resolvePokemonSlots(record?.userArchetype ?? "");
   const fallbackOpponentSlots = resolvePokemonSlots(
@@ -90,6 +92,7 @@ export function EditMatchupRecordModal({
   );
   const [notes, setNotes] = useState(() => record?.notes || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState("");
 
   const handleDeckPokemonChange = (value: string, name?: string) => {
@@ -183,8 +186,35 @@ export function EditMatchupRecordModal({
   };
 
   const handleClose = () => {
-    if (!isSubmitting) {
+    if (!isSubmitting && !isDeleting) {
       onClose();
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!record || !onDeleteRecord) {
+      return;
+    }
+
+    if (!window.confirm("Are you sure you want to delete this record?")) {
+      return;
+    }
+
+    setIsDeleting(true);
+    setError("");
+
+    try {
+      const deleted = await onDeleteRecord(record.id);
+      if (deleted) {
+        onClose();
+      } else {
+        setError("Failed to delete record. Please try again.");
+      }
+    } catch (deleteError) {
+      console.error("Error deleting matchup record:", deleteError);
+      setError("Failed to delete record. Please try again.");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -332,24 +362,35 @@ export function EditMatchupRecordModal({
       <ModalFooter>
         <Button
           type="button"
-          variant="secondary"
-          onClick={handleClose}
-          disabled={isSubmitting}
+          variant="danger"
+          onClick={handleDelete}
+          disabled={isSubmitting || isDeleting || !onDeleteRecord}
         >
-          Cancel
+          {isDeleting ? "Deleting..." : "Delete"}
         </Button>
-        <Button
-          type="submit"
-          onClick={handleSubmit}
-          disabled={
-            isSubmitting ||
-            !userPrimaryPokemon.trim() ||
-            !opponentPrimaryPokemon.trim() ||
-            !result
-          }
-        >
-          {isSubmitting ? "Updating..." : "Update Record"}
-        </Button>
+        <div className="flex gap-3 ml-auto">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleClose}
+            disabled={isSubmitting || isDeleting}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            onClick={handleSubmit}
+            disabled={
+              isSubmitting ||
+              isDeleting ||
+              !userPrimaryPokemon.trim() ||
+              !opponentPrimaryPokemon.trim() ||
+              !result
+            }
+          >
+            {isSubmitting ? "Updating..." : "Update Record"}
+          </Button>
+        </div>
       </ModalFooter>
     </Modal>
   );
