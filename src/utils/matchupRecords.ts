@@ -288,13 +288,19 @@ export function getMatchupStatsByArchetype(userArchetype: string): {
 }
 
 export interface MatchupChartData {
-  userArchetypes: string[]; // Archetypes the user has played (rows)
-  opponentArchetypes: string[]; // All archetypes faced (columns)
-  matrix: Map<string, Map<string, number>>; // userArchetype -> opponentArchetype -> winRate
+  // Archetypes the user has played (rows)
+  userArchetypes: string[];
+  // All archetypes faced (columns)
+  opponentArchetypes: string[];
+  // userArchetype -> opponentArchetype -> winRate
+  matrix: Map<string, Map<string, number>>;
+  // userArchetype -> opponentArchetype -> counts
   counts: Map<
     string,
     Map<string, { wins: number; losses: number; ties: number }>
-  >; // userArchetype -> opponentArchetype -> counts
+  >;
+  // userArchetype -> total counts across all opponents
+  rowTotals: Map<string, { wins: number; losses: number; ties: number }>;
 }
 
 export function getMatchupChartData(
@@ -350,6 +356,10 @@ export function getMatchupChartData(
     string,
     Map<string, { wins: number; losses: number; ties: number }>
   >();
+  const rowTotals = new Map<
+    string,
+    { wins: number; losses: number; ties: number }
+  >();
 
   for (const userArch of userArchetypes) {
     const winRateMap = new Map<string, number>();
@@ -357,14 +367,19 @@ export function getMatchupChartData(
       string,
       { wins: number; losses: number; ties: number }
     >();
+    const rowTotal = { wins: 0, losses: 0, ties: 0 };
     matrix.set(userArch, winRateMap);
     counts.set(userArch, countsMap);
+    rowTotals.set(userArch, rowTotal);
 
     for (const oppArch of opponentArchetypes) {
       const stats = statsMatrix.get(userArch)?.get(oppArch);
       if (stats) {
         const total = stats.wins + stats.losses + stats.ties;
         if (total > 0) {
+          rowTotal.wins += stats.wins;
+          rowTotal.losses += stats.losses;
+          rowTotal.ties += stats.ties;
           // Calculate win rate as decimal (0-1)
           const winRate = stats.wins / total;
           // Round to 2 decimal places
@@ -390,7 +405,8 @@ export function getMatchupChartData(
     userArchetypes,
     opponentArchetypes,
     matrix,
-    counts
+    counts,
+    rowTotals
   };
 }
 

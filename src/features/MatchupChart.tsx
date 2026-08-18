@@ -51,7 +51,8 @@ function formatWinRate(winRate: number): string {
 }
 
 export function MatchupChart({ data }: MatchupChartProps) {
-  const { userArchetypes, opponentArchetypes, matrix, counts } = data;
+  const { userArchetypes, opponentArchetypes, matrix, counts, rowTotals } =
+    data;
   const [showCounts, setShowCounts] = useState(() => {
     if (typeof window === "undefined") {
       return true;
@@ -187,6 +188,13 @@ export function MatchupChart({ data }: MatchupChartProps) {
                 >
                   <td className="px-4 py-3 text-xs font-medium text-gray-900 border-b border-r border-gray-200 sticky left-0 z-20 bg-inherit capitalize tracking-wider">
                     {userArchetype}
+                    {showCounts && (
+                      <span className="absolute top-1 right-1 text-xs text-gray-500 transition-opacity opacity-100">
+                        {rowTotals.get(userArchetype)?.wins ?? 0}-
+                        {rowTotals.get(userArchetype)?.losses ?? 0}-
+                        {rowTotals.get(userArchetype)?.ties ?? 0}
+                      </span>
+                    )}
                   </td>
                   {opponentArchetypes.map((opponentArchetype) => {
                     const winRate = winRates.get(opponentArchetype) ?? -1;
