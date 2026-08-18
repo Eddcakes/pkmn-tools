@@ -4,8 +4,8 @@ A collection of tools for Pokémon Trading Card Game players to track matchups, 
 
 ## Features
 
-- **Deck Comparison**: Compare multiple Pokémon TCG deck lists side-by-side
 - **Matchup Records**: Track your game results against different archetypes
+- **Deck Comparison**: Compare multiple Pokémon TCG deck lists side-by-side
 - **Saved Decks**: Import and save deck lists for quick access
 
 ## Usage
