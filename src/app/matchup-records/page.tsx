@@ -107,6 +107,13 @@ export default function MatchupRecordsPage() {
       endDateFilter
   );
 
+  const hasAnyDeckFilter = Boolean(
+    userPrimaryPokemonFilter ||
+      userSecondaryPokemonFilter ||
+      opponentPrimaryPokemonFilter ||
+      opponentSecondaryPokemonFilter
+  );
+
   useEffect(() => {
     if (typeof window === "undefined") {
       return;
@@ -439,6 +446,64 @@ export default function MatchupRecordsPage() {
     setEndDateFilter("");
   };
 
+  const clearDeckFilters = () => {
+    setUserPrimaryPokemonFilter("");
+    setUserSecondaryPokemonFilter("");
+    setOpponentPrimaryPokemonFilter("");
+    setOpponentSecondaryPokemonFilter("");
+  };
+
+  const resolveChartCellFilterValues = (
+    userArchetype: string,
+    opponentArchetype: string
+  ) => {
+    const user = chartData.archetypePokemon.get(userArchetype);
+    const opponent = chartData.archetypePokemon.get(opponentArchetype);
+
+    return {
+      userPrimary: user?.primary ?? "",
+      userSecondary: user?.secondary ?? "",
+      opponentPrimary: opponent?.primary ?? "",
+      opponentSecondary: opponent?.secondary ?? ""
+    };
+  };
+
+  const isChartCellActive = (
+    userArchetype: string,
+    opponentArchetype: string
+  ) => {
+    const { userPrimary, userSecondary, opponentPrimary, opponentSecondary } =
+      resolveChartCellFilterValues(userArchetype, opponentArchetype);
+
+    return (
+      userPrimaryPokemonFilter.toLowerCase() === userPrimary &&
+      userSecondaryPokemonFilter.toLowerCase() === userSecondary &&
+      opponentPrimaryPokemonFilter.toLowerCase() === opponentPrimary &&
+      opponentSecondaryPokemonFilter.toLowerCase() === opponentSecondary
+    );
+  };
+
+  const handleChartCellClick = (
+    userArchetype: string,
+    opponentArchetype: string
+  ) => {
+    if (isChartCellActive(userArchetype, opponentArchetype)) {
+      // Only clear the archetype filters this cell set, leave other filters intact
+      clearDeckFilters();
+      return;
+    }
+
+    const { userPrimary, userSecondary, opponentPrimary, opponentSecondary } =
+      resolveChartCellFilterValues(userArchetype, opponentArchetype);
+
+    setUserPrimaryPokemonFilter(userPrimary);
+    setUserSecondaryPokemonFilter(userSecondary);
+    setOpponentPrimaryPokemonFilter(opponentPrimary);
+    setOpponentSecondaryPokemonFilter(opponentSecondary);
+    setShowFilters(true);
+    recordsListRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <div className="p-8 max-w-6xl mx-auto">
       <div className="mb-8">
@@ -643,6 +708,8 @@ export default function MatchupRecordsPage() {
                 latestSetOptions={latestSetOptions}
                 hasAnyFilter={hasAnyFilter}
                 onClearFilters={clearFilters}
+                hasAnyDeckFilter={hasAnyDeckFilter}
+                onClearDeckFilters={clearDeckFilters}
               />
             }
             records={records}
@@ -662,7 +729,11 @@ export default function MatchupRecordsPage() {
       {/* Matchup Chart Section */}
       {filteredRecords.length > 0 && (
         <div className="mt-8">
-          <MatchupChart data={chartData} />
+          <MatchupChart
+            data={chartData}
+            onCellClick={handleChartCellClick}
+            isCellActive={isChartCellActive}
+          />
         </div>
       )}
 

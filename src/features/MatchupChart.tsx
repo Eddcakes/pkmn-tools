@@ -5,6 +5,8 @@ import type { MatchupChartData } from "../utils/matchupRecords";
 
 interface MatchupChartProps {
   data: MatchupChartData;
+  onCellClick?: (userArchetype: string, opponentArchetype: string) => void;
+  isCellActive?: (userArchetype: string, opponentArchetype: string) => boolean;
 }
 
 // Colour configuration for win rates
@@ -50,7 +52,11 @@ function formatWinRate(winRate: number): string {
   return winRate.toFixed(2);
 }
 
-export function MatchupChart({ data }: MatchupChartProps) {
+export function MatchupChart({
+  data,
+  onCellClick,
+  isCellActive
+}: MatchupChartProps) {
   const { userArchetypes, opponentArchetypes, matrix, counts, rowTotals } =
     data;
   const [showCounts, setShowCounts] = useState(() => {
@@ -205,25 +211,44 @@ export function MatchupChart({ data }: MatchupChartProps) {
                     const hasData =
                       cellCounts &&
                       cellCounts.wins + cellCounts.losses + cellCounts.ties > 0;
+                    const isActive = Boolean(
+                      hasData &&
+                        isCellActive?.(userArchetype, opponentArchetype)
+                    );
 
                     return (
                       <td
                         key={opponentArchetype}
-                        className={`px-4 py-3 text-sm text-gray-900 text-center border-b border-gray-200 ${colorClass} relative`}
+                        className={`p-0 text-sm text-gray-900 text-center border-b border-gray-200 ${colorClass} relative ${
+                          isActive ? "ring-2 ring-inset ring-blue-500" : ""
+                        }`}
                       >
-                        {hasData && cellCounts && (
-                          <span
-                            className={`absolute top-1 right-1 text-xs text-gray-500 transition-opacity ${
-                              showCounts
-                                ? "opacity-100"
-                                : "opacity-0 pointer-events-none"
-                            }`}
+                        {hasData && cellCounts ? (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              onCellClick?.(userArchetype, opponentArchetype)
+                            }
+                            aria-label={`Filter records for ${userArchetype} vs ${opponentArchetype}`}
+                            className="w-full h-full px-4 py-3 cursor-pointer hover:brightness-95"
                           >
-                            {cellCounts.wins}-{cellCounts.losses}-
-                            {cellCounts.ties}
-                          </span>
+                            <span
+                              className={`absolute top-1 right-1 text-xs text-gray-500 transition-opacity ${
+                                showCounts
+                                  ? "opacity-100"
+                                  : "opacity-0 pointer-events-none"
+                              }`}
+                            >
+                              {cellCounts.wins}-{cellCounts.losses}-
+                              {cellCounts.ties}
+                            </span>
+                            {formatWinRate(winRate)}
+                          </button>
+                        ) : (
+                          <div className="px-4 py-3">
+                            {formatWinRate(winRate)}
+                          </div>
                         )}
-                        {formatWinRate(winRate)}
                       </td>
                     );
                   })}
