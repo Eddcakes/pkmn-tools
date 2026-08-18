@@ -97,7 +97,7 @@ export function MatchupRecordsList({
         <>
           <div
             ref={recordsListRef}
-            className="space-y-4 max-h-150 overflow-y-auto pr-2"
+            className="space-y-4 max-h-150 overflow-y-auto"
           >
             {displayedRecords.map((record) => (
               <div
