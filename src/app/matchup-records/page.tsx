@@ -94,6 +94,7 @@ export default function MatchupRecordsPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [recordToEdit, setRecordToEdit] = useState<MatchupRecord | null>(null);
+  const [showAddRecordForm, setShowAddRecordForm] = useState(false);
   const recordsListRef = useRef<HTMLDivElement>(null);
 
   const hasAnyFilter = Boolean(
@@ -337,6 +338,7 @@ export default function MatchupRecordsPage() {
       setFormatOverrideValue(null);
       setLatestSetOverrideValue(null);
       setNotes("");
+      setShowAddRecordForm(false);
 
       // Scroll the records list to the top
       recordsListRef.current?.scrollTo({ top: 0, behavior: "smooth" });
@@ -506,14 +508,23 @@ export default function MatchupRecordsPage() {
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
-      <div className="mb-8">
+      <div className="mb-8 flex items-center justify-between gap-4">
         <h1 className="text-3xl font-bold text-gray-900">Matchup Records</h1>
+        <Button
+          className="lg:hidden"
+          size="sm"
+          onClick={() => setShowAddRecordForm((current) => !current)}
+        >
+          {showAddRecordForm ? "Hide Form" : "Add Record"}
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Form Section */}
-        <div className="lg:col-span-1">
-          <Card className="sticky top-8">
+        <div
+          className={`lg:col-span-1 ${showAddRecordForm ? "block" : "hidden"} lg:block`}
+        >
+          <Card className="lg:sticky lg:top-8">
             <div className="flex justify-between mb-4">
               <h2 className="text-xl font-semibold text-gray-900">
                 Add Matchup Record
