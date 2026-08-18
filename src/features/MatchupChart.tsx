@@ -230,7 +230,7 @@ export function MatchupChart({
                               onCellClick?.(userArchetype, opponentArchetype)
                             }
                             aria-label={`Filter records for ${userArchetype} vs ${opponentArchetype}`}
-                            className="w-full h-full px-4 py-3 cursor-pointer hover:brightness-95"
+                            className="absolute inset-0 flex items-center justify-center px-4 py-3 cursor-pointer hover:bg-black/5"
                           >
                             <span
                               className={`absolute top-1 right-1 text-xs text-gray-500 transition-opacity ${
