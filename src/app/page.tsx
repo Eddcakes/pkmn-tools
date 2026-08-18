@@ -10,6 +10,19 @@ export default function Home() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            Matchup Log
+          </h2>
+          <p className="text-gray-600 mb-4">
+            Track your matchup results against different archetypes to analyse
+            your deck's performance.
+          </p>
+          <Link variant="button" href="/matchup-records">
+            Matchup Log
+          </Link>
+        </Card>
+
+        <Card>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
             Deck Comparison
           </h2>
           <p className="text-gray-600 mb-4">
@@ -31,19 +44,6 @@ export default function Home() {
           </p>
           <Link variant="button" href="/saved-decks">
             Manage Saved Decks
-          </Link>
-        </Card>
-
-        <Card>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            Matchup Log
-          </h2>
-          <p className="text-gray-600 mb-4">
-            Track your matchup results against different archetypes to analyse
-            your deck's performance.
-          </p>
-          <Link variant="button" href="/matchup-records">
-            Matchup Log
           </Link>
         </Card>
 

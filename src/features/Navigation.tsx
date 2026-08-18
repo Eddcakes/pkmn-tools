@@ -15,12 +15,12 @@ interface NavigationItem {
 
 const navigationItems: NavigationItem[] = [
   {
-    href: "/comparison",
-    label: "Deck Comparison"
-  },
-  {
     href: "/matchup-records",
     label: "Matchup Records"
+  },
+  {
+    href: "/comparison",
+    label: "Deck Comparison"
   },
   {
     href: "/saved-decks",
