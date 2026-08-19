@@ -359,9 +359,7 @@ export default function MatchupRecordsPage() {
       setTimeout(() => setSuccessMessage(""), 3000);
       return true;
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to delete record"
-      );
+      setError(err instanceof Error ? err.message : "Failed to delete record");
       return false;
     }
   };

@@ -231,7 +231,9 @@ export function MatchupChart({
                             }
                             aria-pressed={isActive}
                             aria-label={`${
-                              isActive ? "Clear deck filters for" : "Filter records for"
+                              isActive
+                                ? "Clear deck filters for"
+                                : "Filter records for"
                             } ${userArchetype} vs ${opponentArchetype}`}
                             className="absolute inset-0 flex items-center justify-center px-4 py-3 cursor-pointer hover:bg-black/5"
                           >
