@@ -28,7 +28,10 @@ interface MatchupRecordsFiltersProps {
   opponentSecondaryGroups: PkmnSelectorGroup[];
   formatOptions: SelectOption[];
   latestSetOptions: SelectOption[];
+  hasAnyFilter: boolean;
   onClearFilters: () => void;
+  hasAnyDeckFilter: boolean;
+  onClearDeckFilters: () => void;
 }
 
 export function MatchupRecordsFilters({
@@ -54,18 +57,11 @@ export function MatchupRecordsFilters({
   opponentSecondaryGroups,
   formatOptions,
   latestSetOptions,
-  onClearFilters
+  hasAnyFilter,
+  onClearFilters,
+  hasAnyDeckFilter,
+  onClearDeckFilters
 }: MatchupRecordsFiltersProps) {
-  const hasAnyFilter =
-    userPrimaryPokemonFilter ||
-    userSecondaryPokemonFilter ||
-    opponentPrimaryPokemonFilter ||
-    opponentSecondaryPokemonFilter ||
-    formatFilter ||
-    latestSetFilter ||
-    startDateFilter ||
-    endDateFilter;
-
   return (
     <>
       <div className="col-span-full">
@@ -142,6 +138,14 @@ export function MatchupRecordsFilters({
         </div>
       </div>
 
+      {hasAnyDeckFilter && (
+        <div className="col-span-full mt-2">
+          <Button size="sm" variant="secondary" onClick={onClearDeckFilters}>
+            Clear Deck Filters
+          </Button>
+        </div>
+      )}
+
       <div className="col-span-full">
         <p className="block text-sm font-medium text-gray-700 mb-2">
           Meta and date
@@ -203,9 +207,9 @@ export function MatchupRecordsFilters({
       </div>
 
       {hasAnyFilter && (
-        <div className="col-span-full">
+        <div className="col-span-full mt-2">
           <Button size="sm" variant="secondary" onClick={onClearFilters}>
-            Clear Filters
+            Clear All Filters
           </Button>
         </div>
       )}

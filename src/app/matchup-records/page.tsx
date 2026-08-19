@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert } from "@/components/Alert";
 import { ButtonGroup, type ButtonGroupOption } from "@/components/ButtonGroup";
 import { IconButton } from "@/components/IconButton";
@@ -50,6 +50,8 @@ const startOfLocalDayTimestamp = (dateValue: string): number =>
 const endOfLocalDayTimestamp = (dateValue: string): number =>
   new Date(`${dateValue}T23:59:59.999`).getTime();
 
+const LATEST_SET_FILTER_STORAGE_KEY = "matchup-records-latest-set-filter";
+
 export default function MatchupRecordsPage() {
   const { records, saveRecord, updateRecord, deleteRecord } =
     useMatchupRecords();
@@ -80,13 +82,53 @@ export default function MatchupRecordsPage() {
   const [opponentSecondaryPokemonFilter, setOpponentSecondaryPokemonFilter] =
     useState("");
   const [formatFilter, setFormatFilter] = useState("");
-  const [latestSetFilter, setLatestSetFilter] = useState("");
+  const [latestSetFilter, setLatestSetFilter] = useState(() => {
+    if (typeof window === "undefined") {
+      return "";
+    }
+
+    return window.localStorage.getItem(LATEST_SET_FILTER_STORAGE_KEY) ?? "";
+  });
   const [startDateFilter, setStartDateFilter] = useState("");
   const [endDateFilter, setEndDateFilter] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [recordToEdit, setRecordToEdit] = useState<MatchupRecord | null>(null);
+  const [showAddRecordForm, setShowAddRecordForm] = useState(false);
   const recordsListRef = useRef<HTMLDivElement>(null);
+
+  const hasAnyFilter = Boolean(
+    userPrimaryPokemonFilter ||
+      userSecondaryPokemonFilter ||
+      opponentPrimaryPokemonFilter ||
+      opponentSecondaryPokemonFilter ||
+      formatFilter ||
+      latestSetFilter ||
+      startDateFilter ||
+      endDateFilter
+  );
+
+  const hasAnyDeckFilter = Boolean(
+    userPrimaryPokemonFilter ||
+      userSecondaryPokemonFilter ||
+      opponentPrimaryPokemonFilter ||
+      opponentSecondaryPokemonFilter
+  );
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if (latestSetFilter) {
+      window.localStorage.setItem(
+        LATEST_SET_FILTER_STORAGE_KEY,
+        latestSetFilter
+      );
+    } else {
+      window.localStorage.removeItem(LATEST_SET_FILTER_STORAGE_KEY);
+    }
+  }, [latestSetFilter]);
 
   const deckPokemonSetters = {
     userPrimaryPokemon: setUserPrimaryPokemon,
@@ -296,6 +338,7 @@ export default function MatchupRecordsPage() {
       setFormatOverrideValue(null);
       setLatestSetOverrideValue(null);
       setNotes("");
+      setShowAddRecordForm(false);
 
       // Scroll the records list to the top
       recordsListRef.current?.scrollTo({ top: 0, behavior: "smooth" });
@@ -309,17 +352,15 @@ export default function MatchupRecordsPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this record?")) {
-      try {
-        await deleteRecord(id);
-        setSuccessMessage("Record deleted successfully!");
-        setTimeout(() => setSuccessMessage(""), 3000);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to delete record"
-        );
-      }
+  const handleDelete = async (id: string): Promise<boolean> => {
+    try {
+      await deleteRecord(id);
+      setSuccessMessage("Record deleted successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete record");
+      return false;
     }
   };
 
@@ -401,16 +442,83 @@ export default function MatchupRecordsPage() {
     setEndDateFilter("");
   };
 
+  const clearDeckFilters = () => {
+    setUserPrimaryPokemonFilter("");
+    setUserSecondaryPokemonFilter("");
+    setOpponentPrimaryPokemonFilter("");
+    setOpponentSecondaryPokemonFilter("");
+  };
+
+  const resolveChartCellFilterValues = (
+    userArchetype: string,
+    opponentArchetype: string
+  ) => {
+    const user = chartData.archetypePokemon.get(userArchetype);
+    const opponent = chartData.archetypePokemon.get(opponentArchetype);
+
+    return {
+      userPrimary: user?.primary ?? "",
+      userSecondary: user?.secondary ?? "",
+      opponentPrimary: opponent?.primary ?? "",
+      opponentSecondary: opponent?.secondary ?? ""
+    };
+  };
+
+  const isChartCellActive = (
+    userArchetype: string,
+    opponentArchetype: string
+  ) => {
+    const { userPrimary, userSecondary, opponentPrimary, opponentSecondary } =
+      resolveChartCellFilterValues(userArchetype, opponentArchetype);
+
+    return (
+      userPrimaryPokemonFilter.toLowerCase() === userPrimary &&
+      userSecondaryPokemonFilter.toLowerCase() === userSecondary &&
+      opponentPrimaryPokemonFilter.toLowerCase() === opponentPrimary &&
+      opponentSecondaryPokemonFilter.toLowerCase() === opponentSecondary
+    );
+  };
+
+  const handleChartCellClick = (
+    userArchetype: string,
+    opponentArchetype: string
+  ) => {
+    if (isChartCellActive(userArchetype, opponentArchetype)) {
+      // Only clear the archetype filters this cell set, leave other filters intact
+      clearDeckFilters();
+      return;
+    }
+
+    const { userPrimary, userSecondary, opponentPrimary, opponentSecondary } =
+      resolveChartCellFilterValues(userArchetype, opponentArchetype);
+
+    setUserPrimaryPokemonFilter(userPrimary);
+    setUserSecondaryPokemonFilter(userSecondary);
+    setOpponentPrimaryPokemonFilter(opponentPrimary);
+    setOpponentSecondaryPokemonFilter(opponentSecondary);
+    setShowFilters(true);
+    recordsListRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <div className="p-8 max-w-6xl mx-auto">
-      <div className="mb-8">
+      <div className="mb-8 flex items-center justify-between gap-4">
         <h1 className="text-3xl font-bold text-gray-900">Matchup Records</h1>
+        <Button
+          className="lg:hidden"
+          size="sm"
+          onClick={() => setShowAddRecordForm((current) => !current)}
+        >
+          {showAddRecordForm ? "Hide Form" : "Add Record"}
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Form Section */}
-        <div className="lg:col-span-1">
-          <Card className="sticky top-8">
+        <div
+          className={`lg:col-span-1 ${showAddRecordForm ? "block" : "hidden"} lg:block`}
+        >
+          <Card className="lg:sticky lg:top-8">
             <div className="flex justify-between mb-4">
               <h2 className="text-xl font-semibold text-gray-900">
                 Add Matchup Record
@@ -603,7 +711,10 @@ export default function MatchupRecordsPage() {
                 opponentSecondaryGroups={opponentSecondaryGroups}
                 formatOptions={formatOptions}
                 latestSetOptions={latestSetOptions}
+                hasAnyFilter={hasAnyFilter}
                 onClearFilters={clearFilters}
+                hasAnyDeckFilter={hasAnyDeckFilter}
+                onClearDeckFilters={clearDeckFilters}
               />
             }
             records={records}
@@ -613,8 +724,8 @@ export default function MatchupRecordsPage() {
             showAllRecords={showAllRecords}
             setShowAllRecords={setShowAllRecords}
             recordsListRef={recordsListRef}
+            hasAnyFilter={hasAnyFilter}
             onEdit={handleEdit}
-            onDelete={handleDelete}
             onClearFilters={clearFilters}
           />
         </div>
@@ -623,7 +734,11 @@ export default function MatchupRecordsPage() {
       {/* Matchup Chart Section */}
       {filteredRecords.length > 0 && (
         <div className="mt-8">
-          <MatchupChart data={chartData} />
+          <MatchupChart
+            data={chartData}
+            onCellClick={handleChartCellClick}
+            isCellActive={isChartCellActive}
+          />
         </div>
       )}
 
@@ -657,6 +772,7 @@ export default function MatchupRecordsPage() {
         formatOptions={formats}
         latestSetOptions={latestSets}
         onUpdateRecord={updateRecord}
+        onDeleteRecord={handleDelete}
       />
     </div>
   );

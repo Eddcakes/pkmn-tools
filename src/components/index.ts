@@ -1,4 +1,5 @@
 export { Alert } from "./Alert";
+export { Badge } from "./Badge";
 export { Button } from "./Button";
 export { ButtonGroup } from "./ButtonGroup";
 export { Card } from "./Card";

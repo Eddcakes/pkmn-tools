@@ -288,13 +288,21 @@ export function getMatchupStatsByArchetype(userArchetype: string): {
 }
 
 export interface MatchupChartData {
-  userArchetypes: string[]; // Archetypes the user has played (rows)
-  opponentArchetypes: string[]; // All archetypes faced (columns)
-  matrix: Map<string, Map<string, number>>; // userArchetype -> opponentArchetype -> winRate
+  // Archetypes the user has played (rows)
+  userArchetypes: string[];
+  // All archetypes faced (columns)
+  opponentArchetypes: string[];
+  // userArchetype -> opponentArchetype -> winRate
+  matrix: Map<string, Map<string, number>>;
+  // userArchetype -> opponentArchetype -> counts
   counts: Map<
     string,
     Map<string, { wins: number; losses: number; ties: number }>
-  >; // userArchetype -> opponentArchetype -> counts
+  >;
+  // userArchetype -> total counts across all opponents
+  rowTotals: Map<string, { wins: number; losses: number; ties: number }>;
+  // archetype label -> the actual primary/secondary Pokemon fields it was built from
+  archetypePokemon: Map<string, { primary: string; secondary: string }>;
 }
 
 export function getMatchupChartData(
@@ -312,6 +320,30 @@ export function getMatchupChartData(
 
   const userArchetypes = Array.from(userArchetypesSet).sort();
   const opponentArchetypes = Array.from(opponentArchetypesSet).sort();
+
+  // Archetype label -> the underlying Pokemon fields, read directly off records
+  // instead of parsed from the label (label formatting is inconsistent, e.g. legacy data)
+  const archetypePokemon = new Map<
+    string,
+    { primary: string; secondary: string }
+  >();
+  for (const record of records) {
+    const userArch = record.userArchetype.toLowerCase();
+    if (!archetypePokemon.has(userArch)) {
+      archetypePokemon.set(userArch, {
+        primary: record.userPrimaryPokemon?.toLowerCase() ?? "",
+        secondary: record.userSecondaryPokemon?.toLowerCase() ?? ""
+      });
+    }
+
+    const oppArch = record.opponentArchetype.toLowerCase();
+    if (!archetypePokemon.has(oppArch)) {
+      archetypePokemon.set(oppArch, {
+        primary: record.opponentPrimaryPokemon?.toLowerCase() ?? "",
+        secondary: record.opponentSecondaryPokemon?.toLowerCase() ?? ""
+      });
+    }
+  }
 
   // Build matrix: userArchetype -> opponentArchetype -> { wins, losses, ties }
   const statsMatrix = new Map<
@@ -350,6 +382,10 @@ export function getMatchupChartData(
     string,
     Map<string, { wins: number; losses: number; ties: number }>
   >();
+  const rowTotals = new Map<
+    string,
+    { wins: number; losses: number; ties: number }
+  >();
 
   for (const userArch of userArchetypes) {
     const winRateMap = new Map<string, number>();
@@ -357,14 +393,19 @@ export function getMatchupChartData(
       string,
       { wins: number; losses: number; ties: number }
     >();
+    const rowTotal = { wins: 0, losses: 0, ties: 0 };
     matrix.set(userArch, winRateMap);
     counts.set(userArch, countsMap);
+    rowTotals.set(userArch, rowTotal);
 
     for (const oppArch of opponentArchetypes) {
       const stats = statsMatrix.get(userArch)?.get(oppArch);
       if (stats) {
         const total = stats.wins + stats.losses + stats.ties;
         if (total > 0) {
+          rowTotal.wins += stats.wins;
+          rowTotal.losses += stats.losses;
+          rowTotal.ties += stats.ties;
           // Calculate win rate as decimal (0-1)
           const winRate = stats.wins / total;
           // Round to 2 decimal places
@@ -390,7 +431,9 @@ export function getMatchupChartData(
     userArchetypes,
     opponentArchetypes,
     matrix,
-    counts
+    counts,
+    archetypePokemon,
+    rowTotals
   };
 }
 
