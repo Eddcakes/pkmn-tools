@@ -66,6 +66,9 @@ export function MatchupRecordsList({
               size="sm"
               variant="secondary"
               onClick={() => setShowFilters(!showFilters)}
+              aria-label={`${showFilters ? "Hide" : "Show"} filters${
+                hasAnyFilter ? " (active)" : ""
+              }`}
             >
               {showFilters ? "Hide Filters" : "Filters"}
             </Button>
