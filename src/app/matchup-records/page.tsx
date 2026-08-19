@@ -353,21 +353,17 @@ export default function MatchupRecordsPage() {
   };
 
   const handleDelete = async (id: string): Promise<boolean> => {
-    if (window.confirm("Are you sure you want to delete this record?")) {
-      try {
-        await deleteRecord(id);
-        setSuccessMessage("Record deleted successfully!");
-        setTimeout(() => setSuccessMessage(""), 3000);
-        return true;
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to delete record"
-        );
-        return false;
-      }
+    try {
+      await deleteRecord(id);
+      setSuccessMessage("Record deleted successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+      return true;
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to delete record"
+      );
+      return false;
     }
-
-    return false;
   };
 
   const handleEdit = (record: MatchupRecord) => {
